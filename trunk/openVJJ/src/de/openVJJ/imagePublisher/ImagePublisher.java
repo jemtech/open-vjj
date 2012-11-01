@@ -50,6 +50,13 @@ public class ImagePublisher {
 			return;
 		}
 		synchronized (imageListener) {
+        if(imageListener.size()<1){
+          return;
+        }
+     if(imageListener.size()=1){
+       ListenerUpdater listenerUpdater = new ListenerUpdater(imageListenerElement, videoFrame);
+       listenerUpdater.run();
+     }
 			for(ImageListener imageListenerElement : imageListener){
 				ListenerUpdater listenerUpdater = new ListenerUpdater(imageListenerElement, videoFrame);
 				executor.execute(listenerUpdater);
