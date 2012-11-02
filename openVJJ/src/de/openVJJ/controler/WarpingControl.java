@@ -78,12 +78,9 @@ public class WarpingControl extends ImageViweFrame{
 	}
 	@Override
 	public void newImageReceived(VideoFrame videoFrame) {
-		Graphics g = frame.getGraphics();
-		videoFrame.draw(g);
 		Image image = videoFrame.getImage();
 		points = warper.getWarpPoints();
 		paintCorners(image.getGraphics());
-		paintCorners(g);
 		super.newImageReceived(image);
 	}
 	
