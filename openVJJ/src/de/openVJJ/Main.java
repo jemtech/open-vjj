@@ -1,6 +1,7 @@
 package de.openVJJ;
 
 
+import de.openVJJ.GUI.MainFrame;
 import de.openVJJ.controler.WarpingControl;
 import de.openVJJ.imagePublisher.XuggleVideoFileInput;
 import de.openVJJ.processor.Resulution;
@@ -30,6 +31,7 @@ public class Main {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		new MainFrame();
 		XuggleVideoFileInput fileInput = new XuggleVideoFileInput();
 		Resulution resulution = new Resulution();
 		fileInput.addListener(resulution);
