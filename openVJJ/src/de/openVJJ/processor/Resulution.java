@@ -22,10 +22,8 @@ import de.openVJJ.graphic.VideoFrame;
  */
 
 public class Resulution extends ImageProcessor {
-	int width = 1080;
-	int height = 800;
-
-	private GraphicsConfiguration gConfiguration = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+	int width = 800;
+	int height = 600;
 
 	@Override
 	public VideoFrame processImage(VideoFrame videoFrame) {
