@@ -3,7 +3,12 @@ package de.openVJJ.graphic;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsEnvironment;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
+
+import javax.swing.ImageIcon;
 
 /*
  * Copyright (C) 2012  Jan-Erik Matthies
@@ -27,7 +32,21 @@ public class VideoFrame {
 		rgbImageArray = new int[width][height][3];
 	}
 	
+	GraphicsConfiguration gConfiguration = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+	public VideoFrame(Image image){
+		ImageIcon icon = new ImageIcon(image);
+		BufferedImage bufferedImage = gConfiguration.createCompatibleImage(icon.getIconWidth(), icon.getIconHeight());
+		Graphics2D g = bufferedImage.createGraphics();
+		g.drawImage(image, 0, 0, null);
+		g.dispose();
+		setByBufferdImage(bufferedImage);
+	} 
+	
 	public VideoFrame(BufferedImage bufferedImage){
+		setByBufferdImage(bufferedImage);
+	}
+	
+	private void setByBufferdImage(BufferedImage bufferedImage){
 		rgbImageArray = new int[bufferedImage.getWidth()][bufferedImage.getHeight()][3];
 		for(int x = 0; x < rgbImageArray.length; x++ ){
 			for(int y = 0; y < rgbImageArray[0].length; y++ ){
@@ -105,6 +124,7 @@ public class VideoFrame {
 		return bufferedImage;
 	}
 	
+	@Deprecated
 	public void draw(Graphics g){
 		Graphics2D g2d = (Graphics2D) g;
 		for(int x = 0; x < rgbImageArray.length; x++ ){
