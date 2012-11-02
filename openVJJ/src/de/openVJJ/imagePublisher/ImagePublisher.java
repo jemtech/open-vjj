@@ -44,8 +44,12 @@ public class ImagePublisher {
 		}
 	}
 	
-	ExecutorService executor = Executors.newCachedThreadPool();
 	public void publishImage(VideoFrame videoFrame){
+		publishImage(videoFrame, true);
+	}
+	
+	ExecutorService executor = Executors.newCachedThreadPool();
+	public void publishImage(VideoFrame videoFrame, boolean forceThread){
 		if(imageListener == null){
 			return;
 		}
@@ -53,9 +57,8 @@ public class ImagePublisher {
 	        if(imageListener.size()<1){
 	          return;
 	        }
-	        if(imageListener.size()==1){
-		       ListenerUpdater listenerUpdater = new ListenerUpdater(imageListener.get(0), videoFrame);
-		       listenerUpdater.run();
+	        if(imageListener.size()==1 && !forceThread){
+	        	imageListener.get(0).newImageReceived(videoFrame);
 		    }
 			for(ImageListener imageListenerElement : imageListener){
 				ListenerUpdater listenerUpdater = new ListenerUpdater(imageListenerElement, videoFrame);
