@@ -20,7 +20,9 @@ import javax.swing.JFrame;
 
 public class MainFrame extends JFrame{
 	public MainFrame() {
+		setTitle("open-VJJ");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setVisible(true);
+		setBounds(0, 0, 800, 600);
 	}
 }
