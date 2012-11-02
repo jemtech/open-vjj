@@ -41,6 +41,8 @@ public class XuggleVideoFileInput extends ImagePublisher {
 		if(read){
 			stopReading();
 			startReading();
+		}else{
+			startReading();
 		}
 	}
 	public void stopReading(){
