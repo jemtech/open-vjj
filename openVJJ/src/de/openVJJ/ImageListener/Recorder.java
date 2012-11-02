@@ -113,16 +113,5 @@ public class Recorder implements ImageListener {
 		
 		writer.encodeVideo(0, videoFrame.getImage(), now-startTime, TimeUnit.NANOSECONDS);
 	}
-	
-	
-	
-	
-	public static void main(String[] args){
-		ImagePublisher ipCam = new IPCam_250E_IGuard(IPCam_250E_IGuard.CAM_ADDRESS, IPCam_250E_IGuard.CAM_PORT);
-		new ImageViweFrame(ipCam);
-		Recorder recorder = new Recorder();
-		recorder.restartAfterNanos = ((long)3600) * ((long)1000000000);
-		ipCam.addListener(recorder);
-	}
 
 }
