@@ -34,55 +34,71 @@ public class XuggleVideoFileInput extends ImagePublisher {
 	float speed = 1f;
 	
 	public XuggleVideoFileInput() {
-		openFilechooser();
-	}
-	private void openFilechooser(){
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				while(true){
-					fileChooser();
-				}
-			}
-		}).start();
 	}
 	
 	public void setInputFileName(String inputFileName) {
-		stopReading();
 		this.inputFileName = inputFileName;
-		startReading();
+		if(read){
+			stopReading();
+			startReading();
+		}
 	}
 	public void stopReading(){
 		read = false;
-		if(mediaReader != null){
-			mediaReader.close();
-			mediaReader = null;
-		}
-	}
-	boolean read = true;
-	IMediaReader mediaReader;
-	public void startReading() {
-		mediaReader = ToolFactory.makeReader(inputFileName);
-		mediaReader.setBufferedImageTypeToGenerate(BufferedImage.TYPE_3BYTE_BGR);
-		mediaReader.addListener(new MyInputListener(this));
-		read = true;
-		while (read){
-			if(mediaReader.readPacket() == null){
-			}
+		while(lockRead){
+			System.out.println("Still reading");
 			try {
 				Thread.sleep((long)(((1000)/framerate)/speed));
 			} catch (Exception e) {
 			}
 		}
-	}
-	JFileChooser chooser;
-	private void fileChooser(){
-		if(chooser == null){
-			chooser = new JFileChooser();
+		if(inputListener != null){
+			mediaReader.removeListener(inputListener);
+			inputListener = null;
 		}
+		if(mediaReader != null){
+			mediaReader.close();
+			mediaReader = null;
+		}
+	}
+	
+	boolean read = false;
+	IMediaReader mediaReader;
+	MyInputListener inputListener;
+	boolean lockRead;
+	public void startReading() {
+		inputListener = new MyInputListener(this);
+		new Thread(new Runnable(){
+
+			@Override
+			public void run() {
+				mediaReader = ToolFactory.makeReader(inputFileName);
+				mediaReader.setBufferedImageTypeToGenerate(BufferedImage.TYPE_3BYTE_BGR);
+				mediaReader.addListener(inputListener);
+				read = true;
+				while (read){
+					lockRead = true;
+					try{
+					if(mediaReader.readPacket() == null){
+					}
+					}catch (Exception e) {
+						e.printStackTrace();
+					}
+					try {
+						Thread.sleep((long)(((1000)/framerate)/speed));
+					} catch (Exception e) {
+					}
+					lockRead = false;
+				}
+			}
+			
+		}).start();
+	}
+	
+	public void fileChooser(){
+		JFileChooser chooser = new JFileChooser();
 		chooser.showOpenDialog(null);
 		setInputFileName(chooser.getSelectedFile().getPath());
-		chooser = null;
 	}
 
 	private class MyInputListener extends MediaListenerAdapter {
@@ -111,7 +127,7 @@ public class XuggleVideoFileInput extends ImagePublisher {
 				jumpt = 1;
 			}
 			VideoFrame videoFrame = new VideoFrame(event.getImage());
-			xuggleVideoFileInput.publishImage(videoFrame);
+			xuggleVideoFileInput.publishImage(videoFrame, true);
 		}
 		
 		
