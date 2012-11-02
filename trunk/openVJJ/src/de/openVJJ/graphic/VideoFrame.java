@@ -52,8 +52,8 @@ public class VideoFrame {
 			for(int y = 0; y < rgbImageArray[0].length; y++ ){
 				Color c = new Color(bufferedImage.getRGB(x, y));
 				rgbImageArray[x][y][0] = c.getRed();
-				rgbImageArray[x][y][1] = c.getBlue();
-				rgbImageArray[x][y][2] = c.getGreen();
+				rgbImageArray[x][y][1] = c.getGreen();
+				rgbImageArray[x][y][2] = c.getBlue();
 				bufferedImage.setRGB(x, y, new Color(rgbImageArray[x][y][0], rgbImageArray[x][y][1], rgbImageArray[x][y][2]).getRGB());
 			}
 		}
