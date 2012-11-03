@@ -44,6 +44,10 @@ public class ImagePublisher {
 		}
 	}
 	
+	public List<ImageListener> getImageListenerList(){
+		return imageListener;
+	}
+	
 	public void publishImage(VideoFrame videoFrame){
 		publishImage(videoFrame, true);
 	}
