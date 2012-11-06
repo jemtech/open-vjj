@@ -3,10 +3,12 @@ package de.openVJJ.GUI;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.sound.sampled.ReverbType;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 
 import de.openVJJ.InputComponents;
 
@@ -32,11 +34,13 @@ public class MainFrame extends JFrame{
 		setTitle("open-VJJ");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setVisible(true);
-		setBounds(0, 0, 800, 600);
 		buildMenue();
+		setBounds(0, 0, 800, 600);
+		contentPanel = new JPanel();
+		this.add(contentPanel);
 	}
 	
-
+	JPanel contentPanel;
 	JMenuBar menuBar;
 	private void buildMenue(){
 		menuBar = new JMenuBar();
@@ -47,10 +51,16 @@ public class MainFrame extends JFrame{
 		menuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				new ShowComponets();
+				contentPanel.removeAll();
+				ShowComponets showComponets = new ShowComponets();
+				contentPanel.add(showComponets);
+				refresh();
 			}
 		});
 		componentsMenue.add(menuItem);
+	}
+	private void refresh(){
+		this.validate();
 	}
 
 }

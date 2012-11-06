@@ -1,8 +1,12 @@
 package de.openVJJ.GUI;
 
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.util.List;
 
+import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.JTable;
 
 import de.openVJJ.InputComponents;
 import de.openVJJ.ImageListener.ImageListener;
@@ -27,8 +31,9 @@ import de.openVJJ.imagePublisher.ImagePublisher;
 
 
 public class ShowComponets extends JPanel {
-	
+	//private JTable componentsTable;
 	public ShowComponets(){
+		setLayout(new GridBagLayout());
 		buidStructure();
 	}
 	
@@ -38,9 +43,17 @@ public class ShowComponets extends JPanel {
 			return;
 		}
 		synchronized (imagePublishers) {
+			GridBagConstraints gridBagConstraints =  new GridBagConstraints();
+			gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+			gridBagConstraints.gridx =0;
+			int i =0;
 			for(ImagePublisher imagePublisher : imagePublishers){
-				System.out.println(imagePublisher.getClass().getSimpleName());
+				gridBagConstraints.gridy =i;
+				JButton button = new JButton(imagePublisher.getClass().getSimpleName()) ;
+				this.add(button, gridBagConstraints);
+				//System.out.println(imagePublisher.getClass().getSimpleName());
 				doPublisherRecursion(imagePublisher);
+				i++;
 			}
 		}
 	}
