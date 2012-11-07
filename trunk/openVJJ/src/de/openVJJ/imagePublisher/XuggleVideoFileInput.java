@@ -1,6 +1,7 @@
 package de.openVJJ.imagePublisher;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
 
 import javax.swing.JFileChooser;
 
@@ -100,7 +101,15 @@ public class XuggleVideoFileInput extends ImagePublisher {
 	public void fileChooser(){
 		JFileChooser chooser = new JFileChooser();
 		chooser.showOpenDialog(null);
-		setInputFileName(chooser.getSelectedFile().getPath());
+		File selectedFile = chooser.getSelectedFile();
+		if(selectedFile == null){
+			return;
+		}
+		String path = selectedFile.getPath();
+		if(path == null){
+			return;
+		}
+		setInputFileName(path);
 	}
 
 	private class MyInputListener extends MediaListenerAdapter {

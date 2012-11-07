@@ -44,6 +44,9 @@ public class IPCam_250E_IGuard extends ImagePublisher implements Runnable{
 		this.port = port;
 	}
 	
+	public IPCam_250E_IGuard(){
+	}
+	
 	private Thread receivingThread = null;
 	private void startReciving(){
 		if(receivingThread == null){
