@@ -24,13 +24,17 @@ import de.openVJJ.graphic.VideoFrame;
 
 public class Warping extends ImageProcessor {
 	private Point[][][] imageMatrix;
-	int imageWidth = 800;
-	int imageHeight = 600;
+	private int[][][] fastImageMatrix;
+	int imageWidth = -1;
+	int imageHeight = -1;
 	Point pointTL;
 	Point pointTR;
 	Point pointBR;
 	Point pointBL;
-	private final static boolean FAST = true;
+	
+	public int speed = 2;
+	private final static int FAST = 2;
+	private final static int NORMAL = 1;
 	
 	@Override
 	public VideoFrame processImage(VideoFrame videoFrame) {
@@ -101,7 +105,11 @@ public class Warping extends ImageProcessor {
 	}
 	
 	private void generateMatrix(double[] fX, double[] fY){
-		imageMatrix = new Point[imageWidth][imageHeight][];
+		if(speed<FAST){
+			imageMatrix = new Point[imageWidth][imageHeight][];
+		}else{
+			fastImageMatrix = new int[imageWidth][imageHeight][3];
+		}
 		for(double x=0; x<imageWidth; x++){
 			for(double y=0; y<imageHeight; y++){
 				int xPos = (int) (x*(fX[0] - (fX[3]*y )) + fX[1] + y*fX[2] ); 
@@ -110,6 +118,14 @@ public class Warping extends ImageProcessor {
 					continue;
 				}
 				try{
+					if(speed>NORMAL){
+						if(fastImageMatrix[xPos][yPos][2] != 1){
+							fastImageMatrix[xPos][yPos][2] = 1;//for isSet
+							fastImageMatrix[xPos][yPos][0] = (int)x;
+							fastImageMatrix[xPos][yPos][1] = (int)y;
+						}
+						continue;
+					}
 					if(imageMatrix[xPos][yPos]==null){
 						imageMatrix[xPos][yPos] = new Point[1];
 						imageMatrix[xPos][yPos][0] = new Point((int)x, (int)y);
@@ -128,6 +144,26 @@ public class Warping extends ImageProcessor {
 	}
 	
 	private VideoFrame warpe(VideoFrame videoFrame){
+		if(speed>NORMAL){
+			if(fastImageMatrix == null){
+				return videoFrame;
+			}
+			int xMax = fastImageMatrix.length;
+			int yMax = fastImageMatrix[0].length;
+			
+			VideoFrame newVideoFrame = new VideoFrame(videoFrame.getWidth(), videoFrame.getHeight());
+			
+			for(int x=0; x < xMax; x++){
+				for(int y=0; y < yMax; y++){
+					if(fastImageMatrix[x][y][2] != 1){
+						continue;
+					}
+					newVideoFrame.setRGB(x,y, videoFrame.getRGB(fastImageMatrix[x][y][0], fastImageMatrix[x][y][1]));
+				}
+			}
+			return newVideoFrame;
+		}
+		
 		if(imageMatrix == null){
 			return videoFrame;
 		}
@@ -139,7 +175,7 @@ public class Warping extends ImageProcessor {
 						continue;
 					}
 					try{
-						if(FAST || imageMatrix[x][y].length == 1 ){
+						if(speed == NORMAL || imageMatrix[x][y].length == 1 ){
 							newVideoFrame.setRGB(x,y, videoFrame.getRGB(imageMatrix[x][y][0].x, imageMatrix[x][y][0].y));
 							continue;
 						}
