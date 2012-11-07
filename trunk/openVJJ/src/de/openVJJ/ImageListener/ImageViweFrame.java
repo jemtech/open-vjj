@@ -1,8 +1,15 @@
 package de.openVJJ.ImageListener;
 
+import java.awt.Graphics2D;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
+import java.awt.Rectangle;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.awt.image.BufferedImage;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -29,33 +36,68 @@ import de.openVJJ.imagePublisher.ImagePublisher;
 
 public class ImageViweFrame implements ImageListener{
 	JLabel oldLable = null;
-	protected JFrame frame = null;
+	protected MyFrame frame = null;
 	ImagePublisher imagePublisher;
 	protected JLabel camImage;
 	protected int windowWidth = 800;
 	protected int windowHeight= 600;
+	protected boolean sizeByFrame = true;
+	protected boolean onClickToggelFullscreen = true;
 	
 	public ImageViweFrame(){
 	}
 	
 	public  ImageViweFrame(ImagePublisher imagePublisher){
 		this.imagePublisher = imagePublisher;
-		startWatching();
 	}
 	
 	public  ImageViweFrame(ImagePublisher imagePublisher, int width, int height){
 		this.imagePublisher = imagePublisher;
 		windowWidth = width;
 		windowHeight = height;
-		startWatching();
 	}
 	boolean starting = false;
 	public void startWatching(){
 		starting = true;
-		frame = new JFrame();
+		frame = new MyFrame();
 		if(imagePublisher != null){
 			imagePublisher.addListener(this);
 			frame.addWindowListener(new MyWindowListener(this, imagePublisher));
+		}
+
+		if(onClickToggelFullscreen){
+		frame.addMouseListener(new MouseListener() {
+			
+			@Override
+			public void mouseReleased(MouseEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void mousePressed(MouseEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void mouseExited(MouseEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void mouseEntered(MouseEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				// TODO Auto-generated method stub
+					toggleFullSceen();
+			}
+		});
 		}
 		frame.setBounds(0, 0, windowWidth, windowHeight);
 		frame.setVisible(true);
@@ -64,11 +106,47 @@ public class ImageViweFrame implements ImageListener{
 		frame.add(camImage);
 		starting = false;
 	}
+	boolean fullScreen = false;
+	Rectangle oldBounds;
+	public void toggleFullSceen(){
+		if(fullScreen){
+			toWindowScreen();
+		}else{
+			toFullScreen();
+		}
+		fullScreen = !fullScreen;
+	}
+	
+	public void toWindowScreen(){
+		frame.dispose();
+		frame.setExtendedState(JFrame.NORMAL);
+		frame.setUndecorated(false);
+		frame.setBounds(oldBounds);
+		frame.setVisible(true);
+	}
+	
+	public void toFullScreen(){
+		oldBounds = frame.getBounds();
+		frame.setVisible(false);
+		frame.dispose();
+		frame.setUndecorated(true);
+		frame.setVisible(true);
+		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+	}
+	
 	
 	int camImageH;
 	int camImageW;
 	public void newImageReceived(VideoFrame videoFrame) {
 		if(videoFrame == null){
+			return;
+		}
+		newImageReceived(videoFrame.getImage());
+	}
+	
+	GraphicsConfiguration gConfiguration = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+	public void newImageReceived(Image image) {
+		if(image == null){
 			return;
 		}
 		if(frame == null){
@@ -77,21 +155,19 @@ public class ImageViweFrame implements ImageListener{
 			}
 			startWatching();
 		}
-		ImageIcon imageIcon = new ImageIcon(videoFrame.getImage());
-		camImage.setIcon(imageIcon);
-		if(camImageH != imageIcon.getIconHeight() || camImageW != imageIcon.getIconWidth()){
-			camImageH = imageIcon.getIconHeight();
-			camImageW = imageIcon.getIconWidth();
-			frame.pack();
-		}
-	}
-	public void newImageReceived(Image image) {
-		if(image == null){
-			return;
+		if(sizeByFrame){
+			if(BufferedImage.class.isInstance(image)){
+				image = ((BufferedImage)image).getScaledInstance(windowWidth, windowHeight, BufferedImage.SCALE_DEFAULT);
+			}else{
+				BufferedImage bufferedImage = gConfiguration.createCompatibleImage(windowWidth, windowHeight);
+				Graphics2D g = bufferedImage.createGraphics();
+				g.drawImage(image, 0, 0, windowWidth, windowHeight, null);
+				g.dispose();
+			}
 		}
 		ImageIcon imageIcon = new ImageIcon(image);
 		camImage.setIcon(imageIcon);
-		if(camImageH != imageIcon.getIconHeight() || camImageW != imageIcon.getIconWidth()){
+		if(!sizeByFrame && (camImageH != imageIcon.getIconHeight() || camImageW != imageIcon.getIconWidth())){
 			camImageH = imageIcon.getIconHeight();
 			camImageW = imageIcon.getIconWidth();
 			frame.pack();
@@ -152,5 +228,14 @@ public class ImageViweFrame implements ImageListener{
 	@Override
 	public void openConfigPanel() {
 		
+	}
+	
+	public class MyFrame extends JFrame{
+		@Override
+		public void validate() {
+			super.validate();
+			windowWidth = getWidth();
+			windowHeight = getHeight();
+		}
 	}
 }
