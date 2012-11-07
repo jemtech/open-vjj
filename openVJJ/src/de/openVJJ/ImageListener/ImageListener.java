@@ -1,5 +1,6 @@
 package de.openVJJ.ImageListener;
 
+import de.openVJJ.VJJComponent;
 import de.openVJJ.graphic.VideoFrame;
 
 /*
@@ -18,6 +19,6 @@ import de.openVJJ.graphic.VideoFrame;
  * if not, see <http://www.gnu.org/licenses/>.  
  */
 
-public interface ImageListener {
+public interface ImageListener extends VJJComponent{
 	void newImageReceived(VideoFrame videoFrame);
 }
