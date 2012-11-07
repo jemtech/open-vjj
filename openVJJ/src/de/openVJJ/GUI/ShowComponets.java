@@ -1,5 +1,6 @@
 package de.openVJJ.GUI;
 
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.util.List;
@@ -44,29 +45,53 @@ public class ShowComponets extends JPanel {
 		}
 		synchronized (imagePublishers) {
 			GridBagConstraints gridBagConstraints =  new GridBagConstraints();
-			gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-			gridBagConstraints.gridx =0;
+			gridBagConstraints.anchor = GridBagConstraints.WEST;
 			int i =0;
 			for(ImagePublisher imagePublisher : imagePublishers){
 				gridBagConstraints.gridy =i;
+				gridBagConstraints.gridx =0;
 				JButton button = new JButton(imagePublisher.getClass().getSimpleName()) ;
 				this.add(button, gridBagConstraints);
-				//System.out.println(imagePublisher.getClass().getSimpleName());
-				doPublisherRecursion(imagePublisher);
+				gridBagConstraints.gridx =1;
+				Component result = doPublisherRecursion(imagePublisher);
+				if(result!= null){
+						this.add(result,gridBagConstraints);
+				}
 				i++;
 			}
 		}
 	}
 	
-	private void doPublisherRecursion(ImagePublisher imagePublisher){
+	private Component doPublisherRecursion(ImagePublisher imagePublisher){
 		List<ImageListener> imageListeners =  imagePublisher.getImageListenerList();
+		if(imageListeners == null){
+			return null;
+		}
+		if(imageListeners.size()<1){
+			return null;
+		}
+		int i =0;
 		synchronized (imageListeners) {
+			
+			JPanel componetPanel = new JPanel();
+			componetPanel.setLayout(new GridBagLayout());
+			GridBagConstraints gridBagConstraints =  new GridBagConstraints();
+			gridBagConstraints.anchor = GridBagConstraints.WEST;
 			for(ImageListener imageListener : imageListeners){
+				gridBagConstraints.gridy = i;
+				gridBagConstraints.gridx = 0;
+				componetPanel.add(new JButton(imageListener.getClass().getSimpleName()), gridBagConstraints);
 				if(ImagePublisher.class.isInstance(imageListener)){
-					doPublisherRecursion((ImagePublisher) imageListener);
+					Component component = doPublisherRecursion((ImagePublisher) imageListener);
+					if(component != null){
+						gridBagConstraints.gridx = 1;
+						componetPanel.add(component, gridBagConstraints);
+					}
 				}
-				System.out.println(imageListener.getClass().getSimpleName());
+
+				i++;
 			}
+			return componetPanel;
 		}
 	}
 }

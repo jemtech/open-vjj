@@ -51,16 +51,35 @@ public class MainFrame extends JFrame{
 		menuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				contentPanel.removeAll();
-				ShowComponets showComponets = new ShowComponets();
-				contentPanel.add(showComponets);
-				refresh();
+				showComponets();
+			}
+		});
+		componentsMenue.add(menuItem);
+		menuItem = new JMenuItem("add Component");
+		menuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				showAddComponent();
 			}
 		});
 		componentsMenue.add(menuItem);
 	}
 	private void refresh(){
 		this.validate();
+	}
+	
+	public void showAddComponent(){
+		contentPanel.removeAll();
+		AddComponent addComponent = new AddComponent();
+		contentPanel.add(addComponent);
+		refresh();
+	}
+	
+	public void showComponets(){
+		contentPanel.removeAll();
+		ShowComponets showComponets = new ShowComponets();
+		contentPanel.add(showComponets);
+		refresh();
 	}
 
 }
