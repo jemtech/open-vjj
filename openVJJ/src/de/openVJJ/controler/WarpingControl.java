@@ -35,7 +35,11 @@ public class WarpingControl extends ImageViweFrame{
 	Point[] points;
 	public WarpingControl(Warping warping){
 		super(warping);
+		onClickToggelFullscreen = false;
+		sizeByFrame = false;
+		startWatching();
 		frame.setTitle("Warp-Control");
+		frame.setResizable(false);
 		warper = warping;
 		points = warping.getWarpPoints();
 		camImage.addMouseListener(new MouseListener() {

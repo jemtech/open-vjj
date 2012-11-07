@@ -43,13 +43,13 @@ public class Warping extends ImageProcessor {
 				pointTL = new Point(0, 0);
 			}
 			if(pointTR == null){
-				pointTR = new Point(0, imageWidth);
+				pointTR = new Point(imageWidth, 0);
 			}
 			if(pointBR == null){
-				pointBR = new Point(imageHeight, imageWidth);
+				pointBR = new Point(imageWidth, imageHeight);
 			}
 			if(pointBL == null){
-				pointBL = new Point(imageHeight, 0);
+				pointBL = new Point(0, imageHeight);
 			}
 			if(pointTL.y > imageHeight){
 				pointTL.y = imageHeight;
