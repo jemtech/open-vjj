@@ -35,6 +35,8 @@ public class ImageViweFrame implements ImageListener{
 	protected int windowWidth = 800;
 	protected int windowHeight= 600;
 	
+	public ImageViweFrame(){
+	}
 	
 	public  ImageViweFrame(ImagePublisher imagePublisher){
 		this.imagePublisher = imagePublisher;
@@ -47,16 +49,20 @@ public class ImageViweFrame implements ImageListener{
 		windowHeight = height;
 		startWatching();
 	}
-	
+	boolean starting = false;
 	public void startWatching(){
+		starting = true;
 		frame = new JFrame();
-		imagePublisher.addListener(this);
-		frame.addWindowListener(new MyWindowListener(this, imagePublisher));
+		if(imagePublisher != null){
+			imagePublisher.addListener(this);
+			frame.addWindowListener(new MyWindowListener(this, imagePublisher));
+		}
 		frame.setBounds(0, 0, windowWidth, windowHeight);
 		frame.setVisible(true);
 		camImage = new JLabel();
 		camImage.setVisible(true);
 		frame.add(camImage);
+		starting = false;
 	}
 	
 	int camImageH;
@@ -64,6 +70,12 @@ public class ImageViweFrame implements ImageListener{
 	public void newImageReceived(VideoFrame videoFrame) {
 		if(videoFrame == null){
 			return;
+		}
+		if(frame == null){
+			if(starting){
+				return;
+			}
+			startWatching();
 		}
 		ImageIcon imageIcon = new ImageIcon(videoFrame.getImage());
 		camImage.setIcon(imageIcon);
@@ -134,6 +146,11 @@ public class ImageViweFrame implements ImageListener{
 			// TODO Auto-generated method stub
 			
 		}
+		
+	}
+
+	@Override
+	public void openConfigPanel() {
 		
 	}
 }

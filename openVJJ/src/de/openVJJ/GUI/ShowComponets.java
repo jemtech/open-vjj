@@ -3,6 +3,9 @@ package de.openVJJ.GUI;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -10,6 +13,7 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 
 import de.openVJJ.InputComponents;
+import de.openVJJ.VJJComponent;
 import de.openVJJ.ImageListener.ImageListener;
 import de.openVJJ.imagePublisher.ImagePublisher;
 
@@ -32,10 +36,25 @@ import de.openVJJ.imagePublisher.ImagePublisher;
 
 
 public class ShowComponets extends JPanel {
-	//private JTable componentsTable;
+	private List<ShowComponetsListener> componetsListeners;
+	public static final int MODUS_DISABLE_NOT_PUBLISHERS = 1;
+	int modus = 0;
 	public ShowComponets(){
 		setLayout(new GridBagLayout());
 		buidStructure();
+	}
+	
+	public ShowComponets(int modus){
+		this.modus = modus;
+		setLayout(new GridBagLayout());
+		buidStructure();
+	}
+	
+	public void addShowComponetsListener(ShowComponetsListener componetsListener){
+		if(componetsListeners == null){
+			componetsListeners = new ArrayList<ShowComponets.ShowComponetsListener>();
+		}
+		componetsListeners.add(componetsListener);
 	}
 	
 	private void buidStructure(){
@@ -50,7 +69,8 @@ public class ShowComponets extends JPanel {
 			for(ImagePublisher imagePublisher : imagePublishers){
 				gridBagConstraints.gridy =i;
 				gridBagConstraints.gridx =0;
-				JButton button = new JButton(imagePublisher.getClass().getSimpleName()) ;
+				JButton button = new JButton(imagePublisher.getClass().getSimpleName());
+				button.addActionListener(new ButtonListener(imagePublisher));
 				this.add(button, gridBagConstraints);
 				gridBagConstraints.gridx =1;
 				Component result = doPublisherRecursion(imagePublisher);
@@ -80,12 +100,18 @@ public class ShowComponets extends JPanel {
 			for(ImageListener imageListener : imageListeners){
 				gridBagConstraints.gridy = i;
 				gridBagConstraints.gridx = 0;
-				componetPanel.add(new JButton(imageListener.getClass().getSimpleName()), gridBagConstraints);
+				JButton componetButton = new JButton(imageListener.getClass().getSimpleName());
+				componetButton.addActionListener(new ButtonListener(imageListener));
+				componetPanel.add(componetButton, gridBagConstraints);
 				if(ImagePublisher.class.isInstance(imageListener)){
 					Component component = doPublisherRecursion((ImagePublisher) imageListener);
 					if(component != null){
 						gridBagConstraints.gridx = 1;
 						componetPanel.add(component, gridBagConstraints);
+					}
+				}else{
+					if(modus == MODUS_DISABLE_NOT_PUBLISHERS){
+						componetButton.setEnabled(false);
 					}
 				}
 
@@ -93,5 +119,32 @@ public class ShowComponets extends JPanel {
 			}
 			return componetPanel;
 		}
+	}
+	
+	public interface ShowComponetsListener{
+		public void componentClicked(VJJComponent vjjComponent);
+	}
+	
+	private void componentClicked(VJJComponent vjjComponent){
+		if(componetsListeners == null){
+			return;
+		}
+		synchronized (componetsListeners) {
+			for(ShowComponetsListener listener : componetsListeners){
+				listener.componentClicked(vjjComponent);
+			}
+		}
+	}
+	
+	private class ButtonListener implements ActionListener{
+		VJJComponent componentButtonIsFor;
+		public ButtonListener(VJJComponent vjjComponent){
+			componentButtonIsFor = vjjComponent;
+		}
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			componentClicked(componentButtonIsFor);
+		}
+		
 	}
 }

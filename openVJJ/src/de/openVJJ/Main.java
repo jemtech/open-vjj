@@ -32,16 +32,6 @@ public class Main {
 	 */
 	public static void main(String[] args) {
 		new MainFrame();
-		XuggleVideoFileInput fileInput = new XuggleVideoFileInput();
-		InputComponents.addComponent(fileInput);
-		Resulution resulution = new Resulution();
-		InputComponents.addComponent(resulution, fileInput);
-		
-		Warping warping = new Warping();
-		warping.setWarp(new Warping.Point(0, 0), new Warping.Point(800, 0), new Warping.Point(800, 600),  new Warping.Point(0, 600));
-		InputComponents.addComponent(warping, resulution);
-		new WarpingControl(warping);
-		fileInput.fileChooser();
 
 	}
 

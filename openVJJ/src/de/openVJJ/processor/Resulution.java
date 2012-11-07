@@ -3,6 +3,8 @@ package de.openVJJ.processor;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
 
+import javax.swing.JPanel;
+
 import de.openVJJ.graphic.VideoFrame;
 
 /*
@@ -33,5 +35,11 @@ public class Resulution extends ImageProcessor {
 		videoFrame.scaleTo(width, height);
 		return videoFrame;
 	}
+
+	@Override
+	public void openConfigPanel() {
+		
+	}
+
 
 }

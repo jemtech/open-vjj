@@ -21,7 +21,6 @@ import com.xuggle.xuggler.video.IConverter;
 
 import de.openVJJ.graphic.VideoFrame;
 import de.openVJJ.imagePublisher.ImagePublisher;
-import de.openVJJ.ipCam.IPCam_250E_IGuard;
 
 /*
  * Copyright (C) 2012  Jan-Erik Matthies
@@ -112,6 +111,11 @@ public class Recorder implements ImageListener {
 		}
 		
 		writer.encodeVideo(0, videoFrame.getImage(), now-startTime, TimeUnit.NANOSECONDS);
+	}
+
+	@Override
+	public void openConfigPanel() {
+		
 	}
 
 }

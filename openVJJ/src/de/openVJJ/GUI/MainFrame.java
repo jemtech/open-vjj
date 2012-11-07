@@ -11,6 +11,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 
 import de.openVJJ.InputComponents;
+import de.openVJJ.VJJComponent;
 
 /*
  * Copyright (C) 2012  Jan-Erik Matthies
@@ -78,6 +79,13 @@ public class MainFrame extends JFrame{
 	public void showComponets(){
 		contentPanel.removeAll();
 		ShowComponets showComponets = new ShowComponets();
+		showComponets.addShowComponetsListener(new ShowComponets.ShowComponetsListener() {
+			
+			@Override
+			public void componentClicked(VJJComponent vjjComponent) {
+				vjjComponent.openConfigPanel();
+			}
+		});
 		contentPanel.add(showComponets);
 		refresh();
 	}
