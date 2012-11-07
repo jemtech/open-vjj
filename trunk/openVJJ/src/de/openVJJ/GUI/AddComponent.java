@@ -5,10 +5,13 @@ import java.awt.event.ItemListener;
 import java.util.List;
 
 import javax.swing.JComboBox;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import de.openVJJ.InputComponents;
 import de.openVJJ.RegisteredComponents;
+import de.openVJJ.VJJComponent;
+import de.openVJJ.GUI.ShowComponets.ShowComponetsListener;
 import de.openVJJ.ImageListener.ImageListener;
 import de.openVJJ.imagePublisher.ImagePublisher;
 
@@ -65,7 +68,7 @@ public class AddComponent extends JPanel {
 		}
 		selectedItem = boxComponentItem;
 		System.out.println(boxComponentItem);
-		Class componet = selectedItem.getComponetClass();
+		Class<VJJComponent> componet = selectedItem.getComponetClass();
 		Object componetInstance = null;
 		try {
 			componetInstance = componet.newInstance();
@@ -75,7 +78,7 @@ public class AddComponent extends JPanel {
 			e1.printStackTrace();
 		}
 		if(ImageListener.class.isInstance(componetInstance)){
-			System.out.println("must find add to!");
+			selectToAddTo((ImageListener) componetInstance);
 		}else if(ImagePublisher.class.isInstance(componetInstance)){
 			InputComponents.addComponent((ImagePublisher) componetInstance);
 		}else{
@@ -83,9 +86,34 @@ public class AddComponent extends JPanel {
 		}
 	}
 	
+	JFrame selectToAddToFrame = null;
+	private void selectToAddTo(ImageListener imageListener){
+		selectToAddToFrame = new JFrame();
+		ShowComponets showComponets = new ShowComponets(ShowComponets.MODUS_DISABLE_NOT_PUBLISHERS);
+		showComponets.addShowComponetsListener(new MyShowComponetsListener(imageListener));
+		selectToAddToFrame.add(showComponets);
+		selectToAddToFrame.setVisible(true);
+		selectToAddToFrame.pack();
+	}
+	
+	private class MyShowComponetsListener implements ShowComponetsListener{
+		ImageListener imageListener;
+		public MyShowComponetsListener(ImageListener imageListener){
+			this.imageListener = imageListener;
+		}
+		@Override
+		public void componentClicked(VJJComponent vjjComponent) {
+			if(ImagePublisher.class.isInstance(vjjComponent)){
+				InputComponents.addComponent(imageListener, (ImagePublisher) vjjComponent);
+				selectToAddToFrame.dispose();
+			}
+		}
+		
+	}
+	
 	public class ComboBoxComponentItem{
-		Class componet;
-		public ComboBoxComponentItem(Class componet){
+		Class<VJJComponent> componet;
+		public ComboBoxComponentItem(Class<VJJComponent> componet){
 			this.componet = componet;
 		}
 		
@@ -94,7 +122,7 @@ public class AddComponent extends JPanel {
 			return componet.getSimpleName();
 		}
 		
-		public Class getComponetClass(){
+		public Class<VJJComponent> getComponetClass(){
 			return componet;
 		}
 	}

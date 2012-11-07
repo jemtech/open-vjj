@@ -25,7 +25,7 @@ import de.openVJJ.graphic.VideoFrame;
  * if not, see <http://www.gnu.org/licenses/>.  
  */
 
-public class ImagePublisher implements VJJComponent{
+public abstract class ImagePublisher implements VJJComponent{
 	private List<ImageListener> imageListener = null;
 	
 	synchronized protected List<ImageListener> getImageListener(){
@@ -92,4 +92,7 @@ public class ImagePublisher implements VJJComponent{
 		}
 		
 	}
+
+	@Override
+	public abstract void openConfigPanel();
 }

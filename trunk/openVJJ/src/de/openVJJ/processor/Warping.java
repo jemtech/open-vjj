@@ -2,6 +2,8 @@ package de.openVJJ.processor;
 
 import java.util.Arrays;
 
+
+import de.openVJJ.controler.WarpingControl;
 import de.openVJJ.graphic.VideoFrame;
 
 /*
@@ -37,6 +39,18 @@ public class Warping extends ImageProcessor {
 		if(imageHeight != newImageX || imageWidth != newImageY){
 			imageHeight = newImageX;
 			imageWidth = newImageY;
+			if(pointTL == null){
+				pointTL = new Point(0, 0);
+			}
+			if(pointTR == null){
+				pointTR = new Point(0, imageWidth);
+			}
+			if(pointBR == null){
+				pointBR = new Point(imageHeight, imageWidth);
+			}
+			if(pointBL == null){
+				pointBL = new Point(imageHeight, 0);
+			}
 			if(pointTL.y > imageHeight){
 				pointTL.y = imageHeight;
 			}
@@ -151,4 +165,11 @@ public class Warping extends ImageProcessor {
 		public int x;
 		public int y;
 	}
+
+	@Override
+	public void openConfigPanel() {
+		new WarpingControl(this);
+	}
+
+	
 }

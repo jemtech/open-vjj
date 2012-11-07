@@ -3,6 +3,8 @@ package de.openVJJ.processor;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
 
+import javax.swing.JPanel;
+
 import de.openVJJ.graphic.VideoFrame;
 
 
@@ -126,5 +128,11 @@ public class EdgeBlender extends ImageProcessor{
 			}
 		}
 	}
+
+	@Override
+	public void openConfigPanel() {
+		
+	}
+
 
 }
