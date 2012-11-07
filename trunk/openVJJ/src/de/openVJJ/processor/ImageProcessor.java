@@ -2,6 +2,7 @@ package de.openVJJ.processor;
 
 import java.awt.Image;
 
+import de.openVJJ.VJJComponent;
 import de.openVJJ.ImageListener.ImageListener;
 import de.openVJJ.graphic.VideoFrame;
 import de.openVJJ.imagePublisher.ImagePublisher;
@@ -22,7 +23,7 @@ import de.openVJJ.imagePublisher.ImagePublisher;
  * if not, see <http://www.gnu.org/licenses/>.  
  */
 
-public abstract class ImageProcessor extends ImagePublisher implements ImageListener {
+public abstract class ImageProcessor extends ImagePublisher implements ImageListener, VJJComponent {
 	
 	@Override
 	public void newImageReceived(VideoFrame videoFrame) {

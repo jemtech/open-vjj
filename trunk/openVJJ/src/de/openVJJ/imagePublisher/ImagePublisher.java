@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import de.openVJJ.VJJComponent;
 import de.openVJJ.ImageListener.ImageListener;
 import de.openVJJ.graphic.VideoFrame;
 
@@ -24,7 +25,7 @@ import de.openVJJ.graphic.VideoFrame;
  * if not, see <http://www.gnu.org/licenses/>.  
  */
 
-public class ImagePublisher {
+public class ImagePublisher implements VJJComponent{
 	private List<ImageListener> imageListener = null;
 	
 	synchronized protected List<ImageListener> getImageListener(){
