@@ -145,13 +145,15 @@ public class VideoFrame {
 	}
 	
 	public void scaleTo(int width, int height){
-		int newRgbImageArray[][][] = new int[width][height][3];
+		int newRgbImageArray[][][] = new int[width][height][];
 		float xMul = getWidth()/(float)width;
 		float yMul = getHeight()/(float)height;
 		int xN = 0;
-		for(float x = 0; x < rgbImageArray.length && xN<width; x += xMul){
+		int xMax = rgbImageArray.length;
+		int yMax = rgbImageArray[0].length;
+		for(float x = 0; x < xMax && xN<width; x += xMul){
 			int yN = 0;
-			for(float y = 0; y < rgbImageArray[0].length && yN<height; y += yMul){
+			for(float y = 0; y < yMax && yN<height; y += yMul){
 				newRgbImageArray[xN][yN] = rgbImageArray[(int)x][(int)y];
 				yN++;
 			}
