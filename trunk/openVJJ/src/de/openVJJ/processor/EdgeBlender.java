@@ -30,8 +30,8 @@ public class EdgeBlender extends ImageProcessor{
 	public static final int Bottom =1;
 	public static final int Left =2;
 	public static final int RIGHT =3;
-	double xBlend=600;
-	double yBlend=100;
+	int xBlend=600;
+	int yBlend=100;
 	int edge = 0;
 	double blendGrade = 2.2F;
 	
@@ -40,8 +40,8 @@ public class EdgeBlender extends ImageProcessor{
 	}
 	
 	public EdgeBlender(int xBlend, int yBlend, int edge){
-		this.xBlend = (double)xBlend;
-		this.yBlend = (double)yBlend;
+		this.xBlend = xBlend;
+		this.yBlend = yBlend;
 		this.edge = edge;
 		
 	}
@@ -70,25 +70,42 @@ public class EdgeBlender extends ImageProcessor{
 	}
 	
 	private void blendTop(VideoFrame videoFrame){
-		for(int y = 0; y<yBlend; y++){
-			double reducktion = Math.pow((y+1.0)/yBlend,blendGrade);
-			for(int x = 0; x<xBlend; x++){
+		double yMax = yBlend;
+		if(yBlend > videoFrame.getHeight()){
+			yMax = videoFrame.getHeight();
+		}
+		double xMax = xBlend;
+		if(xBlend > videoFrame.getWidth()){
+			xMax = videoFrame.getWidth();
+		}
+		for(int y = 0; y<yMax; y++){
+			double reducktion = Math.pow((y+1.0)/yMax,blendGrade);
+			for(int x = 0; x<xMax; x++){
 				try{
 					videoFrame.multiply(x, y, reducktion);
 				}catch (Exception e) {
 					System.out.println("blendTop " + e.getMessage());
 					System.out.println("reducktion" + reducktion + " y=" + y);
+					e.printStackTrace();
 				}
 			}
 		}
 	}
 	
 	private void blendBottom(VideoFrame videoFrame){
-		int ymax = videoFrame.getHeight();
-		for(int y = 0; y<yBlend; y++){
-			double reducktion = Math.pow((yBlend-(double)y)/yBlend,blendGrade);
-			int yt = ymax-(int)yBlend+y;
-			for(int x = 0; x<xBlend; x++){
+		double yMax = yBlend;
+		if(yBlend > videoFrame.getHeight()){
+			yMax = videoFrame.getHeight();
+		}
+		double xMax = xBlend;
+		if(xBlend > videoFrame.getWidth()){
+			xMax = videoFrame.getWidth();
+		}
+		int imH = videoFrame.getHeight();
+		for(int y = 0; y<yMax; y++){
+			double reducktion = Math.pow((yMax-(double)y)/yMax,blendGrade);
+			int yt = imH-(int)yMax+y;
+			for(int x = 0; x<xMax; x++){
 				try{
 					videoFrame.multiply(x, yt, reducktion);
 				}catch (Exception e) {
@@ -100,9 +117,17 @@ public class EdgeBlender extends ImageProcessor{
 	}
 	
 	private void blendLeft(VideoFrame videoFrame){
-		for(int x = 0; x<xBlend; x++){
-			double reducktion = Math.pow((x+1.0)/xBlend,blendGrade);
-			for(int y = 0; y<yBlend; y++){
+		double yMax = yBlend;
+		if(yBlend > videoFrame.getHeight()){
+			yMax = videoFrame.getHeight();
+		}
+		double xMax = xBlend;
+		if(xBlend > videoFrame.getWidth()){
+			xMax = videoFrame.getWidth();
+		}
+		for(int x = 0; x<xMax; x++){
+			double reducktion = Math.pow((x+1.0)/xMax,blendGrade);
+			for(int y = 0; y<yMax; y++){
 				try{
 					videoFrame.multiply(x, y, reducktion);
 				}catch (Exception e) {
@@ -114,11 +139,19 @@ public class EdgeBlender extends ImageProcessor{
 	}
 
 	private void blendRight(VideoFrame videoFrame){
-		int xmax = videoFrame.getWidth();
-		for(int x = 0; x<xBlend; x++){
-			double reducktion = Math.pow((xBlend-(double)x)/xBlend,blendGrade);
-			int xt = xmax-(int)xBlend+x;
-			for(int y = 0; y<yBlend; y++){
+		double yMax = yBlend;
+		if(yBlend > videoFrame.getHeight()){
+			yMax = videoFrame.getHeight();
+		}
+		double xMax = xBlend;
+		if(xBlend > videoFrame.getWidth()){
+			xMax = videoFrame.getWidth();
+		}
+		int imW = videoFrame.getWidth();
+		for(int x = 0; x<xMax; x++){
+			double reducktion = Math.pow((xMax-(double)x)/xMax,blendGrade);
+			int xt = imW-(int)xMax+x;
+			for(int y = 0; y<yMax; y++){
 				try{
 					videoFrame.multiply(xt, y, reducktion);
 				}catch (Exception e) {
