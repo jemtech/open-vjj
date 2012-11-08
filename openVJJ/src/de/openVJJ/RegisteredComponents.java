@@ -9,6 +9,7 @@ import de.openVJJ.imagePublisher.IPCam_250E_IGuard;
 import de.openVJJ.imagePublisher.XuggleVideoFileInput;
 import de.openVJJ.processor.EdgeBlender;
 import de.openVJJ.processor.GammaCorrection;
+import de.openVJJ.processor.LinearRGBCorrection;
 import de.openVJJ.processor.Resulution;
 import de.openVJJ.processor.Warping;
 
@@ -42,6 +43,7 @@ public class RegisteredComponents {
 		registeredComponents.add(Resulution.class);
 		registeredComponents.add(Warping.class);
 		registeredComponents.add(GammaCorrection.class);
+		registeredComponents.add(LinearRGBCorrection.class);
 	}
 	
 	static public List<Class> getRegisteredComponents(){
