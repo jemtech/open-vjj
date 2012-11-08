@@ -11,6 +11,7 @@ import de.openVJJ.processor.EdgeBlender;
 import de.openVJJ.processor.GammaCorrection;
 import de.openVJJ.processor.LinearRGBCorrection;
 import de.openVJJ.processor.Resulution;
+import de.openVJJ.processor.Stroboscope;
 import de.openVJJ.processor.Warping;
 
 
@@ -44,6 +45,7 @@ public class RegisteredComponents {
 		registeredComponents.add(Warping.class);
 		registeredComponents.add(GammaCorrection.class);
 		registeredComponents.add(LinearRGBCorrection.class);
+		registeredComponents.add(Stroboscope.class);
 	}
 	
 	static public List<Class> getRegisteredComponents(){
