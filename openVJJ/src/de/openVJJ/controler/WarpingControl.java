@@ -37,6 +37,7 @@ public class WarpingControl extends ImageViweFrame{
 		super(warping);
 		onClickToggelFullscreen = false;
 		sizeByFrame = false;
+		deactivateWindowClose = false;
 		startWatching();
 		frame.setTitle("Warp-Control");
 		frame.setResizable(false);

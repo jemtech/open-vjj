@@ -43,6 +43,7 @@ public class ImageViweFrame implements ImageListener{
 	protected int windowHeight= 600;
 	protected boolean sizeByFrame = true;
 	protected boolean onClickToggelFullscreen = true;
+	protected boolean deactivateWindowClose = true;
 	
 	public ImageViweFrame(){
 	}
@@ -60,6 +61,9 @@ public class ImageViweFrame implements ImageListener{
 	public void startWatching(){
 		starting = true;
 		frame = new MyFrame();
+		if(deactivateWindowClose){
+			frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		}
 		if(imagePublisher != null){
 			imagePublisher.addListener(this);
 			frame.addWindowListener(new MyWindowListener(this, imagePublisher));
