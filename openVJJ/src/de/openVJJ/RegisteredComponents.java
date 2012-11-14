@@ -5,7 +5,9 @@ import java.util.List;
 
 import de.openVJJ.ImageListener.ImageViweFrame;
 import de.openVJJ.ImageListener.Recorder;
+import de.openVJJ.imagePublisher.CrossFader;
 import de.openVJJ.imagePublisher.IPCam_250E_IGuard;
+import de.openVJJ.imagePublisher.MultiPlace;
 import de.openVJJ.imagePublisher.XuggleVideoFileInput;
 import de.openVJJ.processor.EdgeBlender;
 import de.openVJJ.processor.GammaCorrection;
@@ -46,6 +48,8 @@ public class RegisteredComponents {
 		registeredComponents.add(GammaCorrection.class);
 		registeredComponents.add(LinearRGBCorrection.class);
 		registeredComponents.add(Stroboscope.class);
+		registeredComponents.add(CrossFader.class);
+		registeredComponents.add(MultiPlace.class);
 	}
 	
 	static public List<Class> getRegisteredComponents(){
