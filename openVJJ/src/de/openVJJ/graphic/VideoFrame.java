@@ -28,6 +28,7 @@ import javax.swing.ImageIcon;
 
 public class VideoFrame {
 	int rgbImageArray[][][];
+	public int transValue[] = null;
 	public VideoFrame(int width, int height){
 		rgbImageArray = new int[width][height][3];
 	}
@@ -76,7 +77,13 @@ public class VideoFrame {
 	}
 	
 	public int[] getRGB(int x, int y){
-		return rgbImageArray[x][y];
+		int pixel[] = rgbImageArray[x][y];
+		if(transValue !=  null && pixel != null){
+			if(pixel[0] == transValue[0] && pixel[1] == transValue[1] && pixel[2] == transValue[2]){
+				return null;
+			}
+		}
+		return pixel;
 	}
 	public void setRGB(int x, int y, int[] rgb){
 		rgbImageArray[x][y] = rgb;

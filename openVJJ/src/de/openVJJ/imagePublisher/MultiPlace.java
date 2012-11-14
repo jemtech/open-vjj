@@ -40,8 +40,9 @@ import de.openVJJ.graphic.VideoFrame;
 
 public class MultiPlace extends ImagePublisher{
 	List<Placement> placementList;
-	int width;
-	int height;
+	int width = 640;
+	int height = 480;
+	int frameRate = 15;
 	
 	
 	private void addPlacement(Placement placement){
@@ -54,6 +55,65 @@ public class MultiPlace extends ImagePublisher{
 	}
 	
 
+	public VideoFrame calculateImage(){
+		if(placementList == null || placementList.isEmpty()){
+			return null;
+		}
+		VideoFrame outFrame = new VideoFrame(width, height);
+		
+		for(int x =0; x<width; x++){
+			for(int y=0; y<height; y++){
+				for(Placement placement : placementList){
+					int[] pixel = placement.getPixelAt(x, y);
+					if(pixel != null){
+						outFrame.setRGB(x, y, pixel);
+					}
+				}
+			}
+		}
+		return outFrame;
+	}
+	
+	OutGenerator myOutGenerator;
+	@Override
+	public synchronized void addListener(ImageListener imageListener) {
+		super.addListener(imageListener);
+		if(myOutGenerator == null){
+			myOutGenerator = new OutGenerator();
+			(new Thread(myOutGenerator)).start();
+		}
+	}
+	
+	@Override
+	public synchronized void removeListener(ImageListener imageListener) {
+		super.removeListener(imageListener);
+		if(getImageListener().size()<1){
+			myOutGenerator.stop();
+		}
+	}
+	
+	private class OutGenerator implements Runnable{
+		private boolean run = true;
+		public void stop(){
+			run = false;
+		}
+		@Override
+		public void run() {
+			while(run){
+				long start = System.currentTimeMillis();
+				publishImage(calculateImage());
+				long waitTime = (1000/frameRate) - (System.currentTimeMillis() - start);
+				if(waitTime > 0){
+					try {
+						Thread.sleep(waitTime);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+	}
+	
 	JFrame controllerFrame;
 	@Override
 	public void openConfigPanel() {
@@ -84,6 +144,9 @@ public class MultiPlace extends ImagePublisher{
 		gridBagConstraints.gridx = 0;
 		gridBagConstraints.gridy = lineNr;
 		controllerFrame.add(addFrameButton, gridBagConstraints);
+
+		controllerFrame.setVisible(true);
+		controllerFrame.pack();
 	}
 	
 	private JPanel getPlacementLine(Placement placement){
@@ -150,6 +213,21 @@ public class MultiPlace extends ImagePublisher{
 			imagePublisher = null;
 		}
 
+		int[] getPixelAt(int x, int y){
+			if(videoFrame == null){
+				return null;
+			}
+			x = x-this.x;
+			y = y-this.y;
+			if(x < 0 || y < 0){
+				return null;
+			}
+			if(x < videoFrame.getWidth() && y < videoFrame.getHeight()){
+				return videoFrame.getRGB(x, y);
+			}
+			return null;
+		}
+		
 		@Override
 		public void openConfigPanel() {
 			// TODO Auto-generated method stub
@@ -159,6 +237,7 @@ public class MultiPlace extends ImagePublisher{
 		@Override
 		public void newImageReceived(VideoFrame videoFrame) {
 			this.videoFrame = videoFrame;
+			this.videoFrame.transValue = new int[]{0,0,0};
 		}
 		
 	}
