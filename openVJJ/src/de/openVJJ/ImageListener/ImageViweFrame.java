@@ -46,6 +46,7 @@ public class ImageViweFrame implements ImageListener{
 	protected boolean deactivateWindowClose = true;
 	
 	public ImageViweFrame(){
+		
 	}
 	
 	public  ImageViweFrame(ImagePublisher imagePublisher){
@@ -232,6 +233,20 @@ public class ImageViweFrame implements ImageListener{
 	@Override
 	public void openConfigPanel() {
 		
+	}
+	
+	public void remove(){
+		
+			if(imagePublisher != null){
+				synchronized (imagePublisher) {
+					imagePublisher.removeListener(this);
+				}
+			}
+			if(frame != null){
+				frame.setVisible(false);
+				frame.dispose();
+				frame = null;
+			}
 	}
 	
 	public class MyFrame extends JFrame{

@@ -166,6 +166,7 @@ public class EdgeBlender extends ImageProcessor{
 	public void openConfigPanel() {
 		
 	}
+	
 
 
 }

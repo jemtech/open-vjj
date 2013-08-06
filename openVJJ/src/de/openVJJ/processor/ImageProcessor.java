@@ -31,4 +31,10 @@ public abstract class ImageProcessor extends ImagePublisher implements ImageList
 	}
 	
 	public abstract VideoFrame processImage(VideoFrame videoFrame);
+	
+
+	@Override
+	public void remove() {
+		shutdownListener();
+	}
 }

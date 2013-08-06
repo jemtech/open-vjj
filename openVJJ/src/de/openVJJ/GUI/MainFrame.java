@@ -1,5 +1,6 @@
 package de.openVJJ.GUI;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -56,6 +57,7 @@ public class MainFrame extends JFrame{
 			}
 		});
 		componentsMenue.add(menuItem);
+		
 		menuItem = new JMenuItem("add Component");
 		menuItem.addActionListener(new ActionListener() {
 			@Override
@@ -64,8 +66,20 @@ public class MainFrame extends JFrame{
 			}
 		});
 		componentsMenue.add(menuItem);
+		
+		menuItem = new JMenuItem("remove Component");
+		menuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				showRemoveComponent();
+			}
+		});
+		componentsMenue.add(menuItem);
 	}
 	private void refresh(){
+		if(contentPanel != null){
+			contentPanel.repaint();
+		}
 		this.validate();
 	}
 	
@@ -78,7 +92,7 @@ public class MainFrame extends JFrame{
 	
 	public void showComponets(){
 		contentPanel.removeAll();
-		ShowComponets showComponets = new ShowComponets();
+		ShowComponets showComponets = new ShowComponets(/*0,Color.lightGray*/);
 		showComponets.addShowComponetsListener(new ShowComponets.ShowComponetsListener() {
 			
 			@Override
@@ -87,6 +101,24 @@ public class MainFrame extends JFrame{
 			}
 		});
 		contentPanel.add(showComponets);
+		//contentPanel.setBackground(Color.lightGray);
+		refresh();
+	}
+	
+
+	public void showRemoveComponent(){
+		contentPanel.removeAll();
+		ShowComponets showComponets = new ShowComponets(/*0,Color.lightGray*/);
+		showComponets.addShowComponetsListener(new ShowComponets.ShowComponetsListener() {
+			
+			@Override
+			public void componentClicked(VJJComponent vjjComponent) {
+				InputComponents.remove(vjjComponent);
+				showRemoveComponent();
+			}
+		});
+		contentPanel.add(showComponets);
+		//contentPanel.setBackground(Color.lightGray);
 		refresh();
 	}
 

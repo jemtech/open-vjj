@@ -221,6 +221,12 @@ public class CrossFader extends ImagePublisher {
 					frameA = videoFrame;
 					
 				}
+
+				@Override
+				public void remove() {
+					// TODO Auto-generated method stub
+					
+				}
 			});
 		}
 	}
@@ -242,6 +248,12 @@ public class CrossFader extends ImagePublisher {
 				@Override
 				public void newImageReceived(VideoFrame videoFrame) {
 					frameB = videoFrame;
+					
+				}
+
+				@Override
+				public void remove() {
+					// TODO Auto-generated method stub
 					
 				}
 			});
@@ -281,6 +293,14 @@ public class CrossFader extends ImagePublisher {
 			}
 		}
 		
+	}
+	
+	@Override
+	public void remove() {
+		setInputA(null);
+		setInputB(null);
+		myOutGenerator.stop();
+		shutdownListener();
 	}
 
 }

@@ -1,5 +1,6 @@
 package de.openVJJ.GUI;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -39,15 +40,23 @@ public class ShowComponets extends JPanel {
 	private List<ShowComponetsListener> componetsListeners;
 	public static final int MODUS_DISABLE_NOT_PUBLISHERS = 1;
 	int modus = 0;
+	private Color bg;
 	public ShowComponets(){
-		setLayout(new GridBagLayout());
-		buidStructure();
+		this(0);
 	}
 	
 	public ShowComponets(int modus){
+		this(modus, null);
+	}
+	
+	public ShowComponets(int modus, Color bg){
 		this.modus = modus;
 		setLayout(new GridBagLayout());
 		buidStructure();
+		this.bg = bg;
+		if(bg != null){
+			setBackground(bg);
+		}
 	}
 	
 	public void addShowComponetsListener(ShowComponetsListener componetsListener){
@@ -95,6 +104,9 @@ public class ShowComponets extends JPanel {
 			
 			JPanel componetPanel = new JPanel();
 			componetPanel.setLayout(new GridBagLayout());
+			if(bg != null){
+				componetPanel.setBackground(bg);
+			}
 			GridBagConstraints gridBagConstraints =  new GridBagConstraints();
 			gridBagConstraints.anchor = GridBagConstraints.WEST;
 			for(ImageListener imageListener : imageListeners){

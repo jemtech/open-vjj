@@ -41,4 +41,48 @@ public class InputComponents {
 	public static List<ImagePublisher> getImagePublisher(){
 		return imagePublishers;
 	}
+	
+	public static void remove(VJJComponent vjjComponent){
+		if(imagePublishers == null || vjjComponent == null){
+			return;
+		}
+		synchronized (imagePublishers){
+			if(ImageListener.class.isInstance(vjjComponent)){
+				System.out.println("To remove is a Listener");
+				ImageListener imageListener = (ImageListener) vjjComponent;
+				for(ImagePublisher imagePublisher : imagePublishers){
+					ImagePublisher publisher = recursiveFindPreviusComponet(imagePublisher, imageListener);
+					if(publisher != null){
+						System.out.println("Found publisher " + publisher + " remove listener");
+						publisher.removeListener(imageListener);
+					}
+				}
+			}else{
+				System.out.println("To remove is a Publisher");
+				if(imagePublishers.remove(vjjComponent)){
+					System.out.println("Found publisher remove from list");
+				}else{
+					System.out.println("Could not remove publisher from list");
+				}
+			}
+			vjjComponent.remove();
+		}
+	}
+	
+	private static ImagePublisher recursiveFindPreviusComponet(ImagePublisher toSearchInimagePublisher, VJJComponent toFindePrevVjjComponent){
+		List<ImageListener> listenerList = toSearchInimagePublisher.getImageListenerList();
+		if(listenerList == null){
+			return null;
+		}
+		for(ImageListener imageListener : listenerList ){
+			if(imageListener == toFindePrevVjjComponent){
+				System.out.println("found component " + imageListener +  "return its Publisher " + toSearchInimagePublisher);
+				return toSearchInimagePublisher;
+			}
+			if(ImagePublisher.class.isInstance(imageListener)){
+				return recursiveFindPreviusComponet((ImagePublisher)imageListener, toFindePrevVjjComponent);
+			}
+		}
+		return null;
+	}
 }

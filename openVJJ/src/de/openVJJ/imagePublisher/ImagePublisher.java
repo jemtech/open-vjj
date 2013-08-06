@@ -41,12 +41,31 @@ public abstract class ImagePublisher implements VJJComponent{
 	
 	synchronized public void removeListener(ImageListener imageListener) {
 		if(this.imageListener != null){
-			this.imageListener.remove(imageListener);
+			if(!this.imageListener.remove(imageListener)){
+				System.err.println("could not find Listener to remove:" + imageListener);
+				System.out.println("Listener List:");
+				for(ImageListener listener : this.imageListener){
+					System.out.println(listener);
+					
+				}
+			}
 		}
 	}
 	
 	public List<ImageListener> getImageListenerList(){
 		return imageListener;
+	}
+	
+	protected void shutdownListener(){
+		if(imageListener != null){
+			synchronized (imageListener) {
+				for(ImageListener listener : imageListener){
+					listener.remove();
+				}
+				imageListener.clear();
+				imageListener = null;
+			}
+		}
 	}
 	
 	public void publishImage(VideoFrame videoFrame){

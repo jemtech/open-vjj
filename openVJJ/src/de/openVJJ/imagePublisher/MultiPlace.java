@@ -239,6 +239,12 @@ public class MultiPlace extends ImagePublisher{
 			this.videoFrame = videoFrame;
 			this.videoFrame.transValue = new int[]{0,0,0};
 		}
+
+		@Override
+		public void remove() {
+			// TODO Auto-generated method stub
+			
+		}
 		
 	}
 	
@@ -251,6 +257,13 @@ public class MultiPlace extends ImagePublisher{
 		selectFrameToAdd.add(showComponets);
 		selectFrameToAdd.setVisible(true);
 		selectFrameToAdd.pack();
+	}
+	
+	@Override
+	public void remove() {
+		myOutGenerator.stop();
+		shutdownListener();
+		
 	}
 	
 	private class MyShowComponetsListener implements ShowComponetsListener{

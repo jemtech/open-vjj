@@ -2,6 +2,7 @@ package de.openVJJ.ImageListener;
 
 import de.openVJJ.VJJComponent;
 import de.openVJJ.graphic.VideoFrame;
+import de.openVJJ.imagePublisher.ImagePublisher;
 
 /*
  * Copyright (C) 2012  Jan-Erik Matthies

@@ -144,6 +144,13 @@ public class XuggleVideoFileInput extends ImagePublisher {
 		
 		
 	}
+	
+	@Override
+	public void remove() {
+		stopReading();
+		shutdownListener();
+		
+	}
 
 	@Override
 	public void openConfigPanel() {
