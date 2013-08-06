@@ -5,6 +5,7 @@ import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -17,6 +18,8 @@ import java.util.concurrent.Executors;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
+import javax.imageio.stream.MemoryCacheImageOutputStream;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -251,9 +254,10 @@ public class MJPEGServer implements ImageListener{
 			if(!connectionOK){
 				return;
 			}
-			imageWriter.setOutput(out);
+	        ImageOutputStream imgOut = new MemoryCacheImageOutputStream(out);
+			imageWriter.setOutput(imgOut);
 			try {
-				out.writeBytes("Content-type: image/gif\n\n");
+				out.writeBytes("Content-type: image/jpeg\n\n");
 				imageWriter.write(bufferedImage);
 				out.writeBytes("--" + BOUNDARY + "\n");
 				out.flush();
