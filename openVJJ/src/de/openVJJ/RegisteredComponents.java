@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.openVJJ.ImageListener.ImageViweFrame;
+import de.openVJJ.ImageListener.MJPEGServer;
 import de.openVJJ.ImageListener.Recorder;
 import de.openVJJ.imagePublisher.CrossFader;
 import de.openVJJ.imagePublisher.IPCam_250E_IGuard;
@@ -50,6 +51,7 @@ public class RegisteredComponents {
 		registeredComponents.add(Stroboscope.class);
 		registeredComponents.add(CrossFader.class);
 		registeredComponents.add(MultiPlace.class);
+		registeredComponents.add(MJPEGServer.class);
 	}
 	
 	static public List<Class> getRegisteredComponents(){
