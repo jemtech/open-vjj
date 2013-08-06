@@ -65,9 +65,23 @@ public class IPCam_250E_IGuard extends ImagePublisher implements Runnable{
 			receivingThread.start();
 		}
 	}
+	private void shutdown(){
+		receiveImages = false;
+		int waitingForShutdown = 0;
+		while (running && waitingForShutdown < 100){
+			try {
+				Thread.sleep(100);
+				waitingForShutdown += 1;
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 
+	private boolean running = false;
 	@Override
 	public void run() {
+		running = true;
 		DatagramSocket dSocket = null;
 		boolean notConnected = true;
 		int tryCount = 0;
@@ -95,6 +109,7 @@ public class IPCam_250E_IGuard extends ImagePublisher implements Runnable{
 				dSocket = null;
 			}
 		}
+			
 			while (receiveImages && dSocket != null && dSocket.isBound()){
 				try {
 					if((getImageListener() == null) || getImageListener().isEmpty()){
@@ -104,6 +119,7 @@ public class IPCam_250E_IGuard extends ImagePublisher implements Runnable{
 							dSocket.close();
 						}
 						dSocket = null;
+						running = false;
 						return;
 					}
 					if(DEBUG)System.out.println(getImageListener().size());
@@ -121,6 +137,7 @@ public class IPCam_250E_IGuard extends ImagePublisher implements Runnable{
 				dSocket.close();
 			}
 			dSocket = null;
+			running = false;
 			return;
 	}
 	
@@ -328,6 +345,10 @@ public class IPCam_250E_IGuard extends ImagePublisher implements Runnable{
 				controllerFrame.setVisible(false);
 				controllerFrame.dispose();
 				controllerFrame = null;
+				if(running){
+					shutdown();
+					startReciving();
+				}
 			}
 		});
 		controllerFrame.add(saveButton, gridBagConstraints);
