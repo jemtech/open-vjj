@@ -1,13 +1,22 @@
 package de.openVJJ.imagePublisher;
 
 
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
 
 import de.openVJJ.ImageListener.ImageListener;
 import de.openVJJ.graphic.VideoFrame;
@@ -45,6 +54,8 @@ public class IPCam_250E_IGuard extends ImagePublisher implements Runnable{
 	}
 	
 	public IPCam_250E_IGuard(){
+		this.networkAddress = "000.000.000.000";
+		this.port = DEFAULT_CAM_PORT;
 	}
 	
 	private Thread receivingThread = null;
@@ -280,9 +291,49 @@ public class IPCam_250E_IGuard extends ImagePublisher implements Runnable{
 		
 	}
 
+	JFrame controllerFrame;
 	@Override
 	public void openConfigPanel() {
+		controllerFrame = new JFrame();
+		controllerFrame.setTitle("Gamma RGB");
+		controllerFrame.setLayout(new GridBagLayout());
+		GridBagConstraints gridBagConstraints =  new GridBagConstraints();
 		
+		JLabel ipLabel = new JLabel("IP-Adress");
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 0;
+		controllerFrame.add(ipLabel, gridBagConstraints);
+		
+		final JTextField ipJTextField = new JTextField(networkAddress, 10);
+		gridBagConstraints.gridx = 1;
+		controllerFrame.add(ipJTextField, gridBagConstraints);
+		
+		JLabel portLabel = new JLabel("Port");
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 1;
+		controllerFrame.add(portLabel, gridBagConstraints);
+		
+		final JTextField portJTextField = new JTextField(String.valueOf(port), 10);
+		gridBagConstraints.gridx = 1;
+		controllerFrame.add(portJTextField, gridBagConstraints);
+
+		JButton saveButton = new JButton("Set");
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 2;
+		saveButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				networkAddress = ipJTextField.getText();
+				port = Integer.parseInt(portJTextField.getText());
+				controllerFrame.setVisible(false);
+				controllerFrame.dispose();
+				controllerFrame = null;
+			}
+		});
+		controllerFrame.add(saveButton, gridBagConstraints);
+
+		controllerFrame.setVisible(true);
+		controllerFrame.pack();
 	}
 	
 
