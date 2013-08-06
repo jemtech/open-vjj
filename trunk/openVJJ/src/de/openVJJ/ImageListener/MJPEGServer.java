@@ -17,7 +17,7 @@ import javax.imageio.ImageWriter;
 import de.openVJJ.graphic.VideoFrame;
 
 /*
- * Copyright (C) 2012  Jan-Erik Matthies
+ * Copyright (C) 2013  Jan-Erik Matthies
  *
  * This program is free software;
  * you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation;
