@@ -77,6 +77,7 @@ public class AddComponent extends JPanel {
 		} catch (IllegalAccessException e1) {
 			e1.printStackTrace();
 		}
+		
 		if(ImageListener.class.isInstance(componetInstance)){
 			selectToAddTo((ImageListener) componetInstance);
 		}else if(ImagePublisher.class.isInstance(componetInstance)){

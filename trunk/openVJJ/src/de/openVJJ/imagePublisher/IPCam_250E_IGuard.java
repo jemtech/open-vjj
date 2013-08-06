@@ -272,6 +272,13 @@ public class IPCam_250E_IGuard extends ImagePublisher implements Runnable{
 		return allData;
 		
 	}
+	
+	@Override
+	public void remove() {
+		receiveImages = false;
+		shutdownListener();
+		
+	}
 
 	@Override
 	public void openConfigPanel() {

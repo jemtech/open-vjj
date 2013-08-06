@@ -112,6 +112,11 @@ public class Recorder implements ImageListener {
 		
 		writer.encodeVideo(0, videoFrame.getImage(), now-startTime, TimeUnit.NANOSECONDS);
 	}
+	
+
+	public void remove(){
+		endRecording();
+	}
 
 	@Override
 	public void openConfigPanel() {

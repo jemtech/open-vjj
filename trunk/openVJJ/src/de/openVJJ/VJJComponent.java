@@ -1,7 +1,5 @@
 package de.openVJJ;
 
-import javax.swing.JPanel;
-
 /*
  * Copyright (C) 2012  Jan-Erik Matthies
  *
@@ -20,4 +18,5 @@ import javax.swing.JPanel;
 
 public interface VJJComponent {
 	public void openConfigPanel();
+	public void remove();
 }
