@@ -46,13 +46,13 @@ public class ShowComponets extends JPanel {
 	}
 	
 	public ShowComponets(int modus){
-		this(modus, null);
+		this(modus, null, null);
 	}
 	
-	public ShowComponets(int modus, Color bg){
+	public ShowComponets(int modus, Color bg, VJJComponent stopAt){
 		this.modus = modus;
 		setLayout(new GridBagLayout());
-		buidStructure();
+		buidStructure(stopAt);
 		this.bg = bg;
 		if(bg != null){
 			setBackground(bg);
@@ -66,7 +66,7 @@ public class ShowComponets extends JPanel {
 		componetsListeners.add(componetsListener);
 	}
 	
-	private void buidStructure(){
+	private void buidStructure(VJJComponent stopAt){
 		List<ImagePublisher> imagePublishers = InputComponents.getImagePublisher();
 		if(imagePublishers == null){
 			return;
@@ -79,10 +79,15 @@ public class ShowComponets extends JPanel {
 				gridBagConstraints.gridy =i;
 				gridBagConstraints.gridx =0;
 				JButton button = new JButton(imagePublisher.getClass().getSimpleName());
+				boolean deaktivateButtons = (imagePublisher == stopAt);
+				if(deaktivateButtons){
+					button.setEnabled(false);
+					
+				}
 				button.addActionListener(new ButtonListener(imagePublisher));
 				this.add(button, gridBagConstraints);
 				gridBagConstraints.gridx =1;
-				Component result = doPublisherRecursion(imagePublisher);
+				Component result = doPublisherRecursion(imagePublisher, stopAt, deaktivateButtons);
 				if(result!= null){
 						this.add(result,gridBagConstraints);
 				}
@@ -91,7 +96,7 @@ public class ShowComponets extends JPanel {
 		}
 	}
 	
-	private Component doPublisherRecursion(ImagePublisher imagePublisher){
+	private Component doPublisherRecursion(ImagePublisher imagePublisher, VJJComponent stopAt, boolean deaktivate){
 		List<ImageListener> imageListeners =  imagePublisher.getImageListenerList();
 		if(imageListeners == null){
 			return null;
@@ -110,13 +115,20 @@ public class ShowComponets extends JPanel {
 			GridBagConstraints gridBagConstraints =  new GridBagConstraints();
 			gridBagConstraints.anchor = GridBagConstraints.WEST;
 			for(ImageListener imageListener : imageListeners){
+				boolean deaktivateThis = deaktivate;
+				if(imageListener == stopAt){
+					deaktivateThis =true;
+				}
 				gridBagConstraints.gridy = i;
 				gridBagConstraints.gridx = 0;
 				JButton componetButton = new JButton(imageListener.getClass().getSimpleName());
+				if(deaktivateThis){
+					componetButton.setEnabled(false);
+				}
 				componetButton.addActionListener(new ButtonListener(imageListener));
 				componetPanel.add(componetButton, gridBagConstraints);
 				if(ImagePublisher.class.isInstance(imageListener)){
-					Component component = doPublisherRecursion((ImagePublisher) imageListener);
+					Component component = doPublisherRecursion((ImagePublisher) imageListener, stopAt, deaktivateThis);
 					if(component != null){
 						gridBagConstraints.gridx = 1;
 						componetPanel.add(component, gridBagConstraints);
@@ -133,7 +145,8 @@ public class ShowComponets extends JPanel {
 		}
 	}
 	
-	public interface ShowComponetsListener{
+	public static interface ShowComponetsListener{
+
 		public void componentClicked(VJJComponent vjjComponent);
 	}
 	

@@ -13,6 +13,9 @@ import javax.swing.JPanel;
 
 import de.openVJJ.InputComponents;
 import de.openVJJ.VJJComponent;
+import de.openVJJ.GUI.ShowComponets.ShowComponetsListener;
+import de.openVJJ.ImageListener.ImageListener;
+import de.openVJJ.imagePublisher.ImagePublisher;
 
 /*
  * Copyright (C) 2012  Jan-Erik Matthies
@@ -75,6 +78,15 @@ public class MainFrame extends JFrame{
 			}
 		});
 		componentsMenue.add(menuItem);
+
+		menuItem = new JMenuItem("reattach Component");
+		menuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				showReatachComponent();
+			}
+		});
+		componentsMenue.add(menuItem);
 	}
 	private void refresh(){
 		if(contentPanel != null){
@@ -120,6 +132,46 @@ public class MainFrame extends JFrame{
 		contentPanel.add(showComponets);
 		//contentPanel.setBackground(Color.lightGray);
 		refresh();
+	}
+	
+	public void showReatachComponent(){
+
+		contentPanel.removeAll();
+		ShowComponets showComponets = new ShowComponets(/*0,Color.lightGray*/);
+		showComponets.addShowComponetsListener(new ShowComponets.ShowComponetsListener() {
+			
+			@Override
+			public void componentClicked(VJJComponent vjjComponent) {
+				contentPanel.removeAll();
+				ShowComponets showComponets = new ShowComponets(0, null, vjjComponent);
+				showComponets.addShowComponetsListener(new MyReatachShowComponetsListener(vjjComponent) {
+					
+					@Override
+					public void componentClicked(VJJComponent vjjComponent) {
+						if(ImageListener.class.isInstance(passthrou) && ImagePublisher.class.isInstance(vjjComponent)){
+							InputComponents.reattach((ImageListener)passthrou, (ImagePublisher) vjjComponent);
+						}
+						showReatachComponent();
+					}
+				});
+				contentPanel.add(showComponets);
+				//contentPanel.setBackground(Color.lightGray);
+				refresh();
+			}
+		});
+		contentPanel.add(showComponets);
+		//contentPanel.setBackground(Color.lightGray);
+		refresh();
+	}
+	
+	private abstract class MyReatachShowComponetsListener implements ShowComponetsListener{
+
+		Object passthrou;
+		
+		public MyReatachShowComponetsListener(Object passthrou){
+			this.passthrou = passthrou;
+		}
+		
 	}
 
 }
