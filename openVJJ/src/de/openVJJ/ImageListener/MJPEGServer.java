@@ -1,5 +1,9 @@
 package de.openVJJ.ImageListener;
 
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -13,6 +17,10 @@ import java.util.concurrent.Executors;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriter;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
 
 import de.openVJJ.graphic.VideoFrame;
 
@@ -58,20 +66,70 @@ public class MJPEGServer implements ImageListener{
 		}
 	}
 	
+	JFrame controllerFrame;
 	@Override
 	public void openConfigPanel() {
-		// TODO Auto-generated method stub
+		if(server == null){
+			server = new HTTPServer();
+		}
+		controllerFrame = new JFrame();
+		controllerFrame.setTitle("Gamma RGB");
+		controllerFrame.setLayout(new GridBagLayout());
+		GridBagConstraints gridBagConstraints =  new GridBagConstraints();
 		
+		JLabel portLabel = new JLabel("Port");
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 0;
+		controllerFrame.add(portLabel, gridBagConstraints);
+		
+		final JTextField portJTextField = new JTextField(String.valueOf(server.port), 10);
+		gridBagConstraints.gridx = 1;
+		controllerFrame.add(portJTextField, gridBagConstraints);
+
+		JButton saveButton = new JButton("Set");
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 1;
+		saveButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				server.port = Integer.parseInt(portJTextField.getText());
+				controllerFrame.setVisible(false);
+				controllerFrame.dispose();
+				controllerFrame = null;
+				server.shutdown();
+				try {
+					serverThread.join();
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
+				serverThread = new Thread(server);
+				serverThread.start();
+			}
+		});
+		controllerFrame.add(saveButton, gridBagConstraints);
+
+		controllerFrame.setVisible(true);
+		controllerFrame.pack();
 	}
 
 	@Override
 	public void remove() {
-		// TODO Auto-generated method stub
+		shuttdown = true;
+		if(server != null){
+			server.shutdown();
+		}
+		if(clientList != null){
+			clientList.clear();
+		}
 		
 	}
 
+	boolean shuttdown = false;
 	@Override
 	public void newImageReceived(VideoFrame videoFrame) {
+		if(shuttdown){
+			return;
+		}
 		if(clientList == null){
 			return;
 		}
@@ -84,7 +142,7 @@ public class MJPEGServer implements ImageListener{
 	
 	private class HTTPServer implements Runnable{
 
-		public final int DEFAULT_PORT = 123998;
+		public final int DEFAULT_PORT = 3998;
 		private int port = DEFAULT_PORT;
 		
 		
@@ -93,23 +151,35 @@ public class MJPEGServer implements ImageListener{
 			runServer();
 		}
 		
+		public void shutdown(){
+			runServer = false;
+			try {
+				serverSocket.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		private boolean runServer = true;
+		private ServerSocket serverSocket = null;
 		private void runServer(){
-			ServerSocket serverSocket = null;
+			serverSocket = null;
 			int portshift = 0;
 			while(serverSocket == null && portshift <1000){
 				try {
-					serverSocket = new ServerSocket(port + portshift);
+					serverSocket = new ServerSocket(port);
 				} catch (IOException e) {
 					e.printStackTrace();
 					serverSocket = null;
 					portshift++;
+					port++;
 				}
 			}
 			if(serverSocket == null){
 				return;
 			}
+			System.out.println("Serverstarted at port:" + port );
 			ExecutorService executor = Executors.newCachedThreadPool();
-			while (true) {
+			while (runServer) {
 				Socket clientSocket;
 				try {
 					clientSocket = serverSocket.accept();
@@ -120,6 +190,11 @@ public class MJPEGServer implements ImageListener{
 				HTTPTransmitter client = new HTTPTransmitter(clientSocket);
 				executor.execute(client);
 				addClient(client);
+			}
+			try {
+				serverSocket.close();
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
 		}
 		
