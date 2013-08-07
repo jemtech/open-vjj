@@ -244,16 +244,16 @@ public class IPCam_250E_IGuard extends ImagePublisher implements Runnable{
 		int totalSize =0;
 		while(true){
 			byte[] bytes= receiveBytes(dSocket);
-			String idString = new String(bytes, 0, 2);
+			//String idString = new String(bytes, 0, 2);
 			String offsetString = new String(bytes, 2, 6);
 			byte[] rest = getArrayPart(8, bytes.length-1, bytes);
 			int offset = Integer.valueOf(offsetString);
-			int id = Integer.valueOf(idString);
+			//int id = Integer.valueOf(idString);
 			byte[] dataArray;
 			if(offset==0){
 				String sizeString = new String(rest, 0, 8);
-				String datetimeString = new String(rest, 8, 8);
-				String moreString = new String(rest, 16, 13);
+				//String datetimeString = new String(rest, 8, 8);
+				//String moreString = new String(rest, 16, 13);
 				totalSize = Integer.valueOf(sizeString);
 				dataArray = getArrayPart(29, rest.length-1, rest);
 				allData = dataArray;

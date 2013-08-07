@@ -36,9 +36,9 @@ import de.openVJJ.processor.Warping;
 
 
 public class RegisteredComponents {
-	static List<Class> registeredComponents;
+	static List<Class<? extends VJJComponent>> registeredComponents;
 	static{
-		registeredComponents = new ArrayList<Class>();
+		registeredComponents = new ArrayList<Class<? extends VJJComponent>>();
 		registeredComponents.add(XuggleVideoFileInput.class);
 		registeredComponents.add(IPCam_250E_IGuard.class);
 		registeredComponents.add(ImageViweFrame.class);
@@ -54,7 +54,7 @@ public class RegisteredComponents {
 		registeredComponents.add(MJPEGServer.class);
 	}
 	
-	static public List<Class> getRegisteredComponents(){
+	static public List<Class<? extends VJJComponent>> getRegisteredComponents(){
 		return registeredComponents;
 	}
 }

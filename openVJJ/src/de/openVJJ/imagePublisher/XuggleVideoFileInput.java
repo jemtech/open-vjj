@@ -4,7 +4,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 
 import javax.swing.JFileChooser;
-import javax.swing.JPanel;
 
 import com.xuggle.mediatool.IMediaReader;
 import com.xuggle.mediatool.MediaListenerAdapter;

@@ -2,10 +2,6 @@ package de.openVJJ;
 
 
 import de.openVJJ.GUI.MainFrame;
-import de.openVJJ.controler.WarpingControl;
-import de.openVJJ.imagePublisher.XuggleVideoFileInput;
-import de.openVJJ.processor.Resulution;
-import de.openVJJ.processor.Warping;
 
 
 /*
