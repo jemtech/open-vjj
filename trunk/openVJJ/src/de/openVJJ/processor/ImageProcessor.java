@@ -1,7 +1,5 @@
 package de.openVJJ.processor;
 
-import java.awt.Image;
-
 import de.openVJJ.VJJComponent;
 import de.openVJJ.ImageListener.ImageListener;
 import de.openVJJ.graphic.VideoFrame;

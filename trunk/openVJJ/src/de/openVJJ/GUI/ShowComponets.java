@@ -11,7 +11,6 @@ import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
-import javax.swing.JTable;
 
 import de.openVJJ.InputComponents;
 import de.openVJJ.VJJComponent;
@@ -37,6 +36,10 @@ import de.openVJJ.imagePublisher.ImagePublisher;
 
 
 public class ShowComponets extends JPanel {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private List<ShowComponetsListener> componetsListeners;
 	public static final int MODUS_DISABLE_NOT_PUBLISHERS = 1;
 	int modus = 0;

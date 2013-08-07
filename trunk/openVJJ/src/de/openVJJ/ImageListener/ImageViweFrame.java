@@ -250,6 +250,11 @@ public class ImageViweFrame implements ImageListener{
 	}
 	
 	public class MyFrame extends JFrame{
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
 		@Override
 		public void validate() {
 			super.validate();

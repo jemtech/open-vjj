@@ -32,17 +32,21 @@ import de.openVJJ.imagePublisher.ImagePublisher;
  */
 
 public class AddComponent extends JPanel {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	public AddComponent(){
 		createComponetSelector();
 	}
 	
-	List<Class> componets;
+	List<Class<? extends VJJComponent>> componets;
 	JComboBox comboBox;
 	private void createComponetSelector(){
 		comboBox = new JComboBox();
 		comboBox.addItem("please choose");
 		componets = RegisteredComponents.getRegisteredComponents();
-		for(Class componet : componets){
+		for(Class<? extends VJJComponent> componet : componets){
 			comboBox.addItem(new ComboBoxComponentItem(componet));
 		}
 		comboBox.setEditable(false);
@@ -68,7 +72,7 @@ public class AddComponent extends JPanel {
 		}
 		selectedItem = boxComponentItem;
 		System.out.println(boxComponentItem);
-		Class<VJJComponent> componet = selectedItem.getComponetClass();
+		Class<? extends VJJComponent> componet = selectedItem.getComponetClass();
 		Object componetInstance = null;
 		try {
 			componetInstance = componet.newInstance();
@@ -113,8 +117,8 @@ public class AddComponent extends JPanel {
 	}
 	
 	public class ComboBoxComponentItem{
-		Class<VJJComponent> componet;
-		public ComboBoxComponentItem(Class<VJJComponent> componet){
+		Class<? extends VJJComponent> componet;
+		public ComboBoxComponentItem(Class<? extends VJJComponent> componet){
 			this.componet = componet;
 		}
 		
@@ -123,7 +127,7 @@ public class AddComponent extends JPanel {
 			return componet.getSimpleName();
 		}
 		
-		public Class<VJJComponent> getComponetClass(){
+		public Class<? extends VJJComponent> getComponetClass(){
 			return componet;
 		}
 	}

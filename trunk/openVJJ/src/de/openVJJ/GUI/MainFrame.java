@@ -1,10 +1,8 @@
 package de.openVJJ.GUI;
 
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.sound.sampled.ReverbType;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -35,6 +33,10 @@ import de.openVJJ.imagePublisher.ImagePublisher;
 
 public class MainFrame extends JFrame{
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	public MainFrame() {
 		setTitle("open-VJJ");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
