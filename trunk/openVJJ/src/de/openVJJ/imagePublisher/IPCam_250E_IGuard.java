@@ -312,7 +312,7 @@ public class IPCam_250E_IGuard extends ImagePublisher implements Runnable{
 	@Override
 	public void openConfigPanel() {
 		controllerFrame = new JFrame();
-		controllerFrame.setTitle("Gamma RGB");
+		controllerFrame.setTitle("IP and Port config");
 		controllerFrame.setLayout(new GridBagLayout());
 		GridBagConstraints gridBagConstraints =  new GridBagConstraints();
 		
