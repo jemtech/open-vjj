@@ -44,7 +44,8 @@ import de.openVJJ.graphic.VideoFrame;
 
 public class MJPEGServer implements ImageListener{
 
-
+	public final static int DEFAULT_PORT = 3998;
+	
 	private List<HTTPTransmitter> clientList;
 	private HTTPServer server;
 	private Thread serverThread;
@@ -75,7 +76,7 @@ public class MJPEGServer implements ImageListener{
 			server = new HTTPServer();
 		}
 		controllerFrame = new JFrame();
-		controllerFrame.setTitle("Gamma RGB");
+		controllerFrame.setTitle("Server port config");
 		controllerFrame.setLayout(new GridBagLayout());
 		GridBagConstraints gridBagConstraints =  new GridBagConstraints();
 		
@@ -144,7 +145,6 @@ public class MJPEGServer implements ImageListener{
 	
 	private class HTTPServer implements Runnable{
 
-		public final int DEFAULT_PORT = 3998;
 		private int port = DEFAULT_PORT;
 		
 		
