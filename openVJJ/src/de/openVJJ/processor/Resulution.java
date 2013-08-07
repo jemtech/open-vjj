@@ -1,5 +1,15 @@
 package de.openVJJ.processor;
 
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+
 import de.openVJJ.graphic.VideoFrame;
 
 /*
@@ -31,9 +41,50 @@ public class Resulution extends ImageProcessor {
 		return videoFrame;
 	}
 
+	JFrame controllerFrame;
 	@Override
 	public void openConfigPanel() {
+
+		controllerFrame = new JFrame();
+		controllerFrame.setTitle("Video size");
+		controllerFrame.setLayout(new GridBagLayout());
+		GridBagConstraints gridBagConstraints =  new GridBagConstraints();
 		
+		JLabel widthLabel = new JLabel("Width");
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 0;
+		controllerFrame.add(widthLabel, gridBagConstraints);
+		
+		final JTextField widthJTextField = new JTextField(String.valueOf(width), 5);
+		gridBagConstraints.gridx = 1;
+		controllerFrame.add(widthJTextField, gridBagConstraints);
+		
+		JLabel heightLabel = new JLabel("Height");
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 1;
+		controllerFrame.add(heightLabel, gridBagConstraints);
+		
+		final JTextField heightJTextField = new JTextField(String.valueOf(height), 5);
+		gridBagConstraints.gridx = 1;
+		controllerFrame.add(heightJTextField, gridBagConstraints);
+
+		JButton saveButton = new JButton("Set");
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 2;
+		saveButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				width = Integer.parseInt(widthJTextField.getText());
+				height = Integer.parseInt(heightJTextField.getText());
+				controllerFrame.setVisible(false);
+				controllerFrame.dispose();
+				controllerFrame = null;
+			}
+		});
+		controllerFrame.add(saveButton, gridBagConstraints);
+
+		controllerFrame.setVisible(true);
+		controllerFrame.pack();
 	}
 
 
