@@ -12,8 +12,11 @@ import de.openVJJ.imagePublisher.MultiPlace;
 import de.openVJJ.imagePublisher.XuggleVideoFileInput;
 import de.openVJJ.processor.EdgeBlender;
 import de.openVJJ.processor.GammaCorrection;
+import de.openVJJ.processor.GaussFilter;
 import de.openVJJ.processor.LinearRGBCorrection;
+import de.openVJJ.processor.ObjectFromLine;
 import de.openVJJ.processor.Resulution;
+import de.openVJJ.processor.Sorbel;
 import de.openVJJ.processor.Stroboscope;
 import de.openVJJ.processor.Warping;
 
@@ -52,6 +55,9 @@ public class RegisteredComponents {
 		registeredComponents.add(CrossFader.class);
 		registeredComponents.add(MultiPlace.class);
 		registeredComponents.add(MJPEGServer.class);
+		registeredComponents.add(Sorbel.class);
+		registeredComponents.add(ObjectFromLine.class);
+		registeredComponents.add(GaussFilter.class);
 	}
 	
 	static public List<Class<? extends VJJComponent>> getRegisteredComponents(){
