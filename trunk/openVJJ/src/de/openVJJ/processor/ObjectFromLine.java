@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import org.jdom2.Element;
+
 import de.openVJJ.graphic.VideoFrame;
 
 /*
@@ -244,6 +246,18 @@ public class ObjectFromLine extends ImageProcessor {
 		public Point naiborRight(){
 			return new Point(x+1, y);
 		}
+	}
+
+	@Override
+	public void getConfig(Element element) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setConfig(Element element) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

@@ -9,6 +9,8 @@ import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.jdom2.Element;
+
 import de.openVJJ.graphic.VideoFrame;
 
 public class GammaCorrection extends ImageProcessor {
@@ -136,6 +138,29 @@ public class GammaCorrection extends ImageProcessor {
 		controllerFrame.setVisible(true);
 		controllerFrame.pack();
 		
+	}
+
+	@Override
+	public void getConfig(Element element) {
+		element.setAttribute("gammaR", String.valueOf(gammaR));
+		element.setAttribute("gammaG", String.valueOf(gammaG));
+		element.setAttribute("gammaB", String.valueOf(gammaB));
+	}
+
+	@Override
+	public void setConfig(Element element) {
+		String gammaR = element.getAttribute("gammaR").getValue();
+		if(gammaR != null){
+			this.gammaR = Double.parseDouble(gammaR);
+		}
+		String gammaG = element.getAttribute("gammaG").getValue();
+		if(gammaG != null){
+			this.gammaG = Double.parseDouble(gammaG);
+		}
+		String gammaB = element.getAttribute("gammaB").getValue();
+		if(gammaB != null){
+			this.gammaB = Double.parseDouble(gammaB);
+		}
 	}
 
 }

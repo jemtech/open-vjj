@@ -1,5 +1,8 @@
 package de.openVJJ.processor;
 
+
+import org.jdom2.Element;
+
 import de.openVJJ.graphic.VideoFrame;
 
 public class GaussFilter extends ImageProcessor {
@@ -53,5 +56,17 @@ public class GaussFilter extends ImageProcessor {
 			}
 		}
 		return videoFrameRes;
+	}
+
+	@Override
+	public void getConfig(Element element) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setConfig(Element element) {
+		// TODO Auto-generated method stub
+		
 	}
 }

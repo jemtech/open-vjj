@@ -11,6 +11,8 @@ import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.jdom2.Element;
+
 import de.openVJJ.VJJComponent;
 import de.openVJJ.GUI.ShowComponets;
 import de.openVJJ.GUI.ShowComponets.ShowComponetsListener;
@@ -227,6 +229,18 @@ public class CrossFader extends ImagePublisher {
 					// TODO Auto-generated method stub
 					
 				}
+
+				@Override
+				public void getConfig(Element element) {
+					// TODO Auto-generated method stub
+					
+				}
+
+				@Override
+				public void setConfig(Element element) {
+					// TODO Auto-generated method stub
+					
+				}
 			});
 		}
 	}
@@ -253,6 +267,18 @@ public class CrossFader extends ImagePublisher {
 
 				@Override
 				public void remove() {
+					// TODO Auto-generated method stub
+					
+				}
+
+				@Override
+				public void getConfig(Element element) {
+					// TODO Auto-generated method stub
+					
+				}
+
+				@Override
+				public void setConfig(Element element) {
 					// TODO Auto-generated method stub
 					
 				}
@@ -301,6 +327,18 @@ public class CrossFader extends ImagePublisher {
 		setInputB(null);
 		myOutGenerator.stop();
 		shutdownListener();
+	}
+
+	@Override
+	public void getConfig(Element element) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setConfig(Element element) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

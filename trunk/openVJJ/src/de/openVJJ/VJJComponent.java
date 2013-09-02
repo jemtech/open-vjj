@@ -1,5 +1,7 @@
 package de.openVJJ;
 
+import org.jdom2.Element;
+
 /*
  * Copyright (C) 2012  Jan-Erik Matthies
  *
@@ -19,4 +21,14 @@ package de.openVJJ;
 public interface VJJComponent {
 	public void openConfigPanel();
 	public void remove();
+	/**
+	 * for saving configuration
+	 * @return XML Element
+	 */
+	public void getConfig(Element element);
+	/**
+	 * for restoring from saved configuration
+	 * @param element XML Element
+	 */
+	public void setConfig(Element element);
 }

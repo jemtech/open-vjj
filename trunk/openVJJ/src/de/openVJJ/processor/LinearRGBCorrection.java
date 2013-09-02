@@ -9,6 +9,8 @@ import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.jdom2.Element;
+
 import de.openVJJ.graphic.VideoFrame;
 
 public class LinearRGBCorrection extends ImageProcessor {
@@ -133,6 +135,29 @@ public class LinearRGBCorrection extends ImageProcessor {
 		controllerFrame.setVisible(true);
 		controllerFrame.pack();
 		
+	}
+
+	@Override
+	public void getConfig(Element element) {
+		element.setAttribute("mulR", String.valueOf(mulR));
+		element.setAttribute("mulG", String.valueOf(mulG));
+		element.setAttribute("mulB", String.valueOf(mulB));
+	}
+
+	@Override
+	public void setConfig(Element element) {
+		String mulR = element.getAttribute("mulR").getValue();
+		if(mulR != null){
+			this.mulR = Double.parseDouble(mulR);
+		}
+		String mulG = element.getAttribute("mulG").getValue();
+		if(mulG != null){
+			this.mulG = Double.parseDouble(mulG);
+		}
+		String mulB = element.getAttribute("mulB").getValue();
+		if(mulB != null){
+			this.mulB = Double.parseDouble(mulB);
+		}
 	}
 
 }

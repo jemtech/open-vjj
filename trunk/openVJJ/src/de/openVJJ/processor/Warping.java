@@ -2,6 +2,7 @@ package de.openVJJ.processor;
 
 import java.util.Arrays;
 
+import org.jdom2.Element;
 
 import de.openVJJ.controler.WarpingControl;
 import de.openVJJ.graphic.VideoFrame;
@@ -205,6 +206,49 @@ public class Warping extends ImageProcessor {
 	@Override
 	public void openConfigPanel() {
 		new WarpingControl(this);
+	}
+
+	@Override
+	public void getConfig(Element element) {
+		element.setAttribute("pointTLx", String.valueOf(pointTL.x));
+		element.setAttribute("pointTLy", String.valueOf(pointTL.y));
+		element.setAttribute("pointBLx", String.valueOf(pointBL.x));
+		element.setAttribute("pointBLy", String.valueOf(pointBL.y));
+		element.setAttribute("pointTRx", String.valueOf(pointTR.x));
+		element.setAttribute("pointTRy", String.valueOf(pointTR.y));
+		element.setAttribute("pointBRx", String.valueOf(pointBR.x));
+		element.setAttribute("pointBRy", String.valueOf(pointBR.y));
+	}
+
+	@Override
+	public void setConfig(Element element) {
+		String pointTLx = element.getAttribute("pointTLx").getValue();
+		String pointTLy = element.getAttribute("pointTLy").getValue();
+		String pointBLx = element.getAttribute("pointBLx").getValue();
+		String pointBLy = element.getAttribute("pointBLy").getValue();
+		String pointTRx = element.getAttribute("pointTRx").getValue();
+		String pointTRy = element.getAttribute("pointTRy").getValue();
+		String pointBRx = element.getAttribute("pointBRx").getValue();
+		String pointBRy = element.getAttribute("pointBRy").getValue();
+		
+		if(pointTLx != null && pointTLy != null && pointBLx != null && pointBLy != null && pointTRx != null && pointTRy != null && pointBRx != null && pointBRy != null){
+			int pointTLxInt = Integer.parseInt(pointTLx);
+			int pointTLyInt = Integer.parseInt(pointTLy);
+			Point pointTL = new Point(pointTLxInt, pointTLyInt);
+			
+			int pointBLxInt = Integer.parseInt(pointBLx);
+			int pointBLyInt = Integer.parseInt(pointBLy);
+			Point pointBL = new Point(pointBLxInt, pointBLyInt);
+			
+			int pointTRxInt = Integer.parseInt(pointTRx);
+			int pointTRyInt = Integer.parseInt(pointTRy);
+			Point pointTR = new Point(pointTRxInt, pointTRyInt);
+			
+			int pointBRxInt = Integer.parseInt(pointBRx);
+			int pointBRyInt = Integer.parseInt(pointBRy);
+			Point pointBR = new Point(pointBRxInt, pointBRyInt);
+			setWarp(pointTL, pointTR, pointBR, pointBL);
+		}
 	}
 
 	

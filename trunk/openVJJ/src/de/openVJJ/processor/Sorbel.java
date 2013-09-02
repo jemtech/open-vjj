@@ -1,5 +1,8 @@
 package de.openVJJ.processor;
 
+
+import org.jdom2.Element;
+
 import de.openVJJ.graphic.VideoFrame;
 
 /*
@@ -84,6 +87,18 @@ public class Sorbel extends ImageProcessor {
 		}
 		rgb[1] += Math.abs(value / 100);
 		result.setColor(x, y, rgb);
+	}
+
+	@Override
+	public void getConfig(Element element) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setConfig(Element element) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
