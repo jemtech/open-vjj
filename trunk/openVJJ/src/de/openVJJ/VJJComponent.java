@@ -23,7 +23,7 @@ public interface VJJComponent {
 	public void remove();
 	/**
 	 * for saving configuration
-	 * @return XML Element
+	 * @param element to save configuration to.
 	 */
 	public void getConfig(Element element);
 	/**
