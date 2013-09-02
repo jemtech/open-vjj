@@ -100,6 +100,9 @@ public class Warping extends ImageProcessor {
 	}
 	
 	private void refrefshMatrix(){
+		if(imageWidth < 1 || imageHeight < 1){
+			return;
+		}
 		double[] resultx = new double[]{(pointTR.x-pointTL.x)/(double)imageWidth ,pointTL.x, (pointBL.x-pointTL.x)/(double)imageHeight, (((pointTR.x-pointTL.x)/(double)imageWidth-(pointBR.x-pointBL.x)/(double)imageWidth)/imageHeight)};
 		double[] resulty = new double[]{(pointTR.y-pointTL.y)/(double)imageWidth ,pointTL.y, (pointBL.y-pointTL.y)/(double)imageHeight, (((pointTL.y-pointBL.y)/(double)imageHeight-(pointTR.y-pointBR.y)/(double)imageHeight)/imageWidth)};
 		generateMatrix(resultx, resulty);
