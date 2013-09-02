@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import org.jdom2.Element;
+
 import de.openVJJ.ImageListener.MJPEGServer;
 
 /*
@@ -108,6 +110,18 @@ public class MJPEGClient extends ImagePublisher {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+
+	@Override
+	public void getConfig(Element element) {
+		// TODO Auto-generated
+		
+	}
+
+	@Override
+	public void setConfig(Element element) {
+		// TODO Auto-generated
 	}
 
 }

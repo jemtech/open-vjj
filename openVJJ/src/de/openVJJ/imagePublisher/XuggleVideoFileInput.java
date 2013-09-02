@@ -5,6 +5,8 @@ import java.io.File;
 
 import javax.swing.JFileChooser;
 
+import org.jdom2.Element;
+
 import com.xuggle.mediatool.IMediaReader;
 import com.xuggle.mediatool.MediaListenerAdapter;
 import com.xuggle.mediatool.ToolFactory;
@@ -154,6 +156,22 @@ public class XuggleVideoFileInput extends ImagePublisher {
 	@Override
 	public void openConfigPanel() {
 		fileChooser();
+	}
+	
+
+	@Override
+	public void getConfig(Element element) {
+		if(inputFileName != null){
+			element.setAttribute("inputFileName", inputFileName);
+		}
+	}
+
+	@Override
+	public void setConfig(Element element) {
+		String inputFileName = element.getAttribute("inputFileName").getValue();
+		if(inputFileName != null){
+			setInputFileName(inputFileName);
+		}
 	}
 
 }

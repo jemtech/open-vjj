@@ -2,7 +2,9 @@ package de.openVJJ.GUI;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -10,6 +12,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 
 import de.openVJJ.InputComponents;
+import de.openVJJ.RegisteredComponents;
 import de.openVJJ.VJJComponent;
 import de.openVJJ.GUI.ShowComponets.ShowComponetsListener;
 import de.openVJJ.ImageListener.ImageListener;
@@ -86,6 +89,17 @@ public class MainFrame extends JFrame{
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				showReatachComponent();
+			}
+		});
+		componentsMenue.add(menuItem);
+		
+
+
+		menuItem = new JMenuItem("Save");
+		menuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				saveProject();
 			}
 		});
 		componentsMenue.add(menuItem);
@@ -174,6 +188,30 @@ public class MainFrame extends JFrame{
 			this.passthrou = passthrou;
 		}
 		
+	}
+	
+
+	private void saveProject(){
+		String path = fileChooser();
+		if(path == null){
+			System.err.println("no File to save selected");
+			return;
+		}
+		InputComponents.save(path);
+	}
+	
+	public String fileChooser(){
+		JFileChooser chooser = new JFileChooser();
+		chooser.showOpenDialog(null);
+		File selectedFile = chooser.getSelectedFile();
+		if(selectedFile == null){
+			return null;
+		}
+		String path = selectedFile.getPath();
+		if(path == null){
+			return null;
+		}
+		return path;
 	}
 
 }

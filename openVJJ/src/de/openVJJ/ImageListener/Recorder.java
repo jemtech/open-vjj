@@ -2,6 +2,8 @@ package de.openVJJ.ImageListener;
 
 import java.util.concurrent.TimeUnit;
 
+import org.jdom2.Element;
+
 import com.xuggle.mediatool.IMediaWriter;
 import com.xuggle.mediatool.ToolFactory;
 
@@ -105,6 +107,18 @@ public class Recorder implements ImageListener {
 
 	@Override
 	public void openConfigPanel() {
+		
+	}
+
+	@Override
+	public void getConfig(Element element) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setConfig(Element element) {
+		// TODO Auto-generated method stub
 		
 	}
 

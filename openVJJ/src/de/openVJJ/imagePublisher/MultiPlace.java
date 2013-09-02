@@ -15,6 +15,8 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.jdom2.Element;
+
 import de.openVJJ.VJJComponent;
 import de.openVJJ.GUI.ShowComponets;
 import de.openVJJ.GUI.ShowComponets.ShowComponetsListener;
@@ -245,6 +247,18 @@ public class MultiPlace extends ImagePublisher{
 			// TODO Auto-generated method stub
 			
 		}
+
+		@Override
+		public void getConfig(Element element) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void setConfig(Element element) {
+			// TODO Auto-generated method stub
+			
+		}
 		
 	}
 	
@@ -280,6 +294,19 @@ public class MultiPlace extends ImagePublisher{
 				openConfigPanel();
 			}
 		}
+		
+	}
+
+	@Override
+	public void getConfig(Element element) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	public void setConfig(Element element) {
+		// TODO Auto-generated method stub
 		
 	}
 }

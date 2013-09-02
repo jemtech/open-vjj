@@ -1,5 +1,7 @@
 package de.openVJJ.processor;
 
+import org.jdom2.Element;
+
 import de.openVJJ.graphic.VideoFrame;
 
 public class Stroboscope extends ImageProcessor {
@@ -56,6 +58,18 @@ public class Stroboscope extends ImageProcessor {
 	public void openConfigPanel() {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public void getConfig(Element element) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setConfig(Element element) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

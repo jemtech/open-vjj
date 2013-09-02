@@ -24,6 +24,8 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 
+import org.jdom2.Element;
+
 import de.openVJJ.graphic.VideoFrame;
 
 /*
@@ -271,6 +273,19 @@ public class MJPEGServer implements ImageListener{
 				}
 				removeClient(this);
 			}
+		}
+	}
+
+	@Override
+	public void getConfig(Element element) {
+		element.setAttribute("server.port", String.valueOf(server.port));
+	}
+
+	@Override
+	public void setConfig(Element element) {
+		String serverPort = element.getAttribute("server.port").getValue();
+		if(serverPort != null){
+			server.port = Integer.parseInt(serverPort);
 		}
 	}
 }

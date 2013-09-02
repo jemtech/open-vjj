@@ -1,7 +1,13 @@
 package de.openVJJ;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.output.XMLOutputter;
 
 import de.openVJJ.ImageListener.ImageListener;
 import de.openVJJ.imagePublisher.ImagePublisher;
@@ -106,5 +112,45 @@ public class InputComponents {
 			}
 		}
 		return null;
+	}
+	
+	public static void save(String fileName){
+		Element rootElement = new Element("VJJProject");
+		Element compnetsElement = new Element("Components");
+		for(ImagePublisher imagePublisher : imagePublishers){
+			compnetsElement.addContent(componetToXML(imagePublisher));
+		}
+		rootElement.addContent(compnetsElement);
+		try {
+			FileWriter fileWriter = new FileWriter(fileName);
+			new XMLOutputter().output(new Document(rootElement), fileWriter);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private static Element componetToXML(VJJComponent component){
+		Element element = new Element("Component");
+		
+		element.setAttribute("ClassName", component.getClass().getName());
+		
+		Element componentSetup = new Element("ComponentSetup");
+		component.getConfig(componentSetup);
+		element.addContent(componentSetup);
+		
+		if(ImagePublisher.class.isInstance(component)){
+			ImagePublisher imagePublisher = (ImagePublisher)component;
+			Element compnetsElement = new Element("Components");
+			for(ImageListener imageListener : imagePublisher.getImageListenerList()){
+				compnetsElement.addContent(componetToXML(imageListener));
+			}
+			element.addContent(compnetsElement);
+		}
+		
+		return element;
+	}
+	
+	public static void load(String fileName){
+		
 	}
 }

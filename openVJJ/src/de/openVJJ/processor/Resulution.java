@@ -10,6 +10,8 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 
+import org.jdom2.Element;
+
 import de.openVJJ.graphic.VideoFrame;
 
 /*
@@ -85,6 +87,25 @@ public class Resulution extends ImageProcessor {
 
 		controllerFrame.setVisible(true);
 		controllerFrame.pack();
+	}
+
+
+	@Override
+	public void getConfig(Element element) {
+		element.setAttribute("width", String.valueOf(width));
+		element.setAttribute("height", String.valueOf(height));
+	}
+
+	@Override
+	public void setConfig(Element element) {
+		String width = element.getAttribute("width").getValue();
+		if(width != null){
+			this.width = Integer.parseInt(width);
+		}
+		String height = element.getAttribute("height").getValue();
+		if(height != null){
+			this.height =Integer.parseInt(height);
+		}
 	}
 
 

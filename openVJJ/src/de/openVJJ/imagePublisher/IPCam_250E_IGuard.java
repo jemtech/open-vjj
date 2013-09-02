@@ -18,6 +18,8 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 
+import org.jdom2.Element;
+
 import de.openVJJ.ImageListener.ImageListener;
 import de.openVJJ.graphic.VideoFrame;
 
@@ -355,6 +357,25 @@ public class IPCam_250E_IGuard extends ImagePublisher implements Runnable{
 
 		controllerFrame.setVisible(true);
 		controllerFrame.pack();
+	}
+
+	@Override
+	public void getConfig(Element element) {
+		element.setAttribute("networkAddress", networkAddress);
+		element.setAttribute("port", String.valueOf(port));
+		
+	}
+
+	@Override
+	public void setConfig(Element element) {
+		String port = element.getAttribute("port").getValue();
+		if(port != null){
+			this.port = Integer.parseInt(port);
+		}
+		String networkAddress = element.getAttribute("networkAddress").getValue();
+		if(networkAddress!= null){
+			this.networkAddress = networkAddress;
+		}
 	}
 	
 

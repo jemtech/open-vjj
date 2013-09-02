@@ -15,6 +15,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 
+import org.jdom2.Element;
+
 import de.openVJJ.graphic.VideoFrame;
 import de.openVJJ.imagePublisher.ImagePublisher;
 
@@ -261,5 +263,14 @@ public class ImageViweFrame implements ImageListener{
 			windowWidth = getWidth();
 			windowHeight = getHeight();
 		}
+	}
+
+	@Override
+	public void getConfig(Element element) {
+		
+	}
+
+	@Override
+	public void setConfig(Element element) {
 	}
 }
