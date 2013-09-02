@@ -93,13 +93,21 @@ public class MainFrame extends JFrame{
 		});
 		componentsMenue.add(menuItem);
 		
-
-
 		menuItem = new JMenuItem("Save");
 		menuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				saveProject();
+			}
+		});
+		componentsMenue.add(menuItem);
+		
+		menuItem = new JMenuItem("Load");
+		menuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				loadProject();
+				showComponets();
 			}
 		});
 		componentsMenue.add(menuItem);
@@ -198,6 +206,15 @@ public class MainFrame extends JFrame{
 			return;
 		}
 		InputComponents.save(path);
+	}
+	
+	private void loadProject(){
+		String path = fileChooser();
+		if(path == null){
+			System.err.println("no File to load selected");
+			return;
+		}
+		InputComponents.load(path);
 	}
 	
 	public String fileChooser(){

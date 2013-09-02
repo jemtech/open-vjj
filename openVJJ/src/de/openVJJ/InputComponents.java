@@ -7,6 +7,8 @@ import java.util.List;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.XMLOutputter;
 
 import de.openVJJ.ImageListener.ImageListener;
@@ -114,9 +116,16 @@ public class InputComponents {
 		return null;
 	}
 	
+	public static final String ROOT_ELEMET_NAME = "VJJProject";
+	public static final String COMPONENTS_ELEMENT_NAME = "Components";
+	public static final String COMPONENT_ELEMENT_NAME = "Component";
+	public static final String COMPONENT_SETUP_ELEMENT_NAME = "ComponentSetup";
+	
+	public static final String CLASS_NAME_ATTRIBUTE_NAME = "ClassName";
+	
 	public static void save(String fileName){
-		Element rootElement = new Element("VJJProject");
-		Element compnetsElement = new Element("Components");
+		Element rootElement = new Element(ROOT_ELEMET_NAME);
+		Element compnetsElement = new Element(COMPONENTS_ELEMENT_NAME);
 		for(ImagePublisher imagePublisher : imagePublishers){
 			compnetsElement.addContent(componetToXML(imagePublisher));
 		}
@@ -130,17 +139,17 @@ public class InputComponents {
 	}
 	
 	private static Element componetToXML(VJJComponent component){
-		Element element = new Element("Component");
+		Element element = new Element(COMPONENT_ELEMENT_NAME);
 		
-		element.setAttribute("ClassName", component.getClass().getName());
+		element.setAttribute(CLASS_NAME_ATTRIBUTE_NAME, component.getClass().getName());
 		
-		Element componentSetup = new Element("ComponentSetup");
+		Element componentSetup = new Element(COMPONENT_SETUP_ELEMENT_NAME);
 		component.getConfig(componentSetup);
 		element.addContent(componentSetup);
 		
 		if(ImagePublisher.class.isInstance(component)){
 			ImagePublisher imagePublisher = (ImagePublisher)component;
-			Element compnetsElement = new Element("Components");
+			Element compnetsElement = new Element(COMPONENTS_ELEMENT_NAME);
 			for(ImageListener imageListener : imagePublisher.getImageListenerList()){
 				compnetsElement.addContent(componetToXML(imageListener));
 			}
@@ -151,6 +160,63 @@ public class InputComponents {
 	}
 	
 	public static void load(String fileName){
-		
+		try {
+			Document document = new SAXBuilder().build( fileName );
+			Element rootElement = document.getRootElement();
+			if(rootElement.getName() != ROOT_ELEMET_NAME){
+				System.err.println("is notan Open-VJJ Project");
+				return;
+			}
+			Element components = rootElement.getChild(COMPONENTS_ELEMENT_NAME);
+			List<Element> elements = components.getChildren(COMPONENT_ELEMENT_NAME);
+			for(Element rootComponente : elements){
+				addComponent((ImagePublisher)loadComponent(rootComponente));
+			}
+		} catch (JDOMException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	private static VJJComponent loadComponent(Element element){
+		String className = element.getAttribute(CLASS_NAME_ATTRIBUTE_NAME).getValue();
+		try {
+			Class<?> c = Class.forName(className);
+			Object classInstance = c.newInstance();
+			if(VJJComponent.class.isInstance(classInstance)){
+				VJJComponent vjjComponent = (VJJComponent) classInstance;
+				Element componentSetup = element.getChild(COMPONENT_SETUP_ELEMENT_NAME);
+				if(componentSetup != null){
+					vjjComponent.setConfig(componentSetup);
+				}
+				if(ImagePublisher.class.isInstance(vjjComponent)){
+					ImagePublisher imagePublisher = (ImagePublisher) classInstance;
+					Element components = element.getChild(COMPONENTS_ELEMENT_NAME);
+					if(components != null){
+						List<Element> elements = components.getChildren(COMPONENT_ELEMENT_NAME);
+						for(Element subComponentElement : elements){
+							ImageListener imageListener = (ImageListener)loadComponent(subComponentElement);
+							if(imageListener == null){
+								continue;
+							}
+							addComponent(imageListener, imagePublisher);
+						}
+					}
+				}
+				return vjjComponent; 
+			}
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InstantiationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 }
