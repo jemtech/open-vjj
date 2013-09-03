@@ -14,7 +14,7 @@ import javax.swing.JPanel;
 import de.openVJJ.InputComponents;
 import de.openVJJ.RegisteredComponents;
 import de.openVJJ.VJJComponent;
-import de.openVJJ.GUI.ShowComponets.ShowComponetsListener;
+import de.openVJJ.GUI.ShowComponents.ShowComponetsListener;
 import de.openVJJ.ImageListener.ImageListener;
 import de.openVJJ.imagePublisher.ImagePublisher;
 
@@ -132,8 +132,8 @@ public class MainFrame extends JFrame{
 	
 	public void showComponets(){
 		contentPanel.removeAll();
-		ShowComponets showComponets = new ShowComponets(/*0,Color.lightGray*/);
-		showComponets.addShowComponetsListener(new ShowComponets.ShowComponetsListener() {
+		ShowComponents showComponets = new ShowComponents(/*0,Color.lightGray*/);
+		showComponets.addShowComponetsListener(new ShowComponents.ShowComponetsListener() {
 			
 			@Override
 			public void componentClicked(VJJComponent vjjComponent) {
@@ -148,8 +148,8 @@ public class MainFrame extends JFrame{
 
 	public void showRemoveComponent(){
 		contentPanel.removeAll();
-		ShowComponets showComponets = new ShowComponets(/*0,Color.lightGray*/);
-		showComponets.addShowComponetsListener(new ShowComponets.ShowComponetsListener() {
+		ShowComponents showComponets = new ShowComponents(/*0,Color.lightGray*/);
+		showComponets.addShowComponetsListener(new ShowComponents.ShowComponetsListener() {
 			
 			@Override
 			public void componentClicked(VJJComponent vjjComponent) {
@@ -165,13 +165,13 @@ public class MainFrame extends JFrame{
 	public void showReatachComponent(){
 
 		contentPanel.removeAll();
-		ShowComponets showComponets = new ShowComponets(/*0,Color.lightGray*/);
-		showComponets.addShowComponetsListener(new ShowComponets.ShowComponetsListener() {
+		ShowComponents showComponets = new ShowComponents(/*0,Color.lightGray*/);
+		showComponets.addShowComponetsListener(new ShowComponents.ShowComponetsListener() {
 			
 			@Override
 			public void componentClicked(VJJComponent vjjComponent) {
 				contentPanel.removeAll();
-				ShowComponets showComponets = new ShowComponets(0, null, vjjComponent);
+				ShowComponents showComponets = new ShowComponents(0, null, vjjComponent);
 				showComponets.addShowComponetsListener(new MyReatachShowComponetsListener(vjjComponent) {
 					
 					@Override

@@ -30,7 +30,7 @@ import de.openVJJ.graphic.VideoFrame;
  * if not, see <http://www.gnu.org/licenses/>.  
  */
 
-public class Resulution extends ImageProcessor {
+public class Resolution extends ImageProcessor {
 	int width = 800;
 	int height = 600;
 

@@ -35,7 +35,7 @@ import de.openVJJ.imagePublisher.ImagePublisher;
  */
 
 
-public class ShowComponets extends JPanel {
+public class ShowComponents extends JPanel {
 	/**
 	 * 
 	 */
@@ -44,15 +44,15 @@ public class ShowComponets extends JPanel {
 	public static final int MODUS_DISABLE_NOT_PUBLISHERS = 1;
 	int modus = 0;
 	private Color bg;
-	public ShowComponets(){
+	public ShowComponents(){
 		this(0);
 	}
 	
-	public ShowComponets(int modus){
+	public ShowComponents(int modus){
 		this(modus, null, null);
 	}
 	
-	public ShowComponets(int modus, Color bg, VJJComponent stopAt){
+	public ShowComponents(int modus, Color bg, VJJComponent stopAt){
 		this.modus = modus;
 		setLayout(new GridBagLayout());
 		buidStructure(stopAt);
@@ -64,7 +64,7 @@ public class ShowComponets extends JPanel {
 	
 	public void addShowComponetsListener(ShowComponetsListener componetsListener){
 		if(componetsListeners == null){
-			componetsListeners = new ArrayList<ShowComponets.ShowComponetsListener>();
+			componetsListeners = new ArrayList<ShowComponents.ShowComponetsListener>();
 		}
 		componetsListeners.add(componetsListener);
 	}
