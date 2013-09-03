@@ -55,9 +55,32 @@ public class MainFrame extends JFrame{
 	private void buildMenue(){
 		menuBar = new JMenuBar();
 		this.setJMenuBar(menuBar);
+
+		JMenu projectMenue = new JMenu("Project");
+		menuBar.add(projectMenue);
+		
+		JMenuItem menuItem = new JMenuItem("Save");
+		menuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				saveProject();
+			}
+		});
+		projectMenue.add(menuItem);
+		
+		menuItem = new JMenuItem("Load");
+		menuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				loadProject();
+				showComponets();
+			}
+		});
+		projectMenue.add(menuItem);
+		
 		JMenu componentsMenue = new JMenu("Components");
 		menuBar.add(componentsMenue);
-		JMenuItem menuItem = new JMenuItem("show Components");
+		menuItem = new JMenuItem("show Components");
 		menuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -89,25 +112,6 @@ public class MainFrame extends JFrame{
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				showReatachComponent();
-			}
-		});
-		componentsMenue.add(menuItem);
-		
-		menuItem = new JMenuItem("Save");
-		menuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				saveProject();
-			}
-		});
-		componentsMenue.add(menuItem);
-		
-		menuItem = new JMenuItem("Load");
-		menuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				loadProject();
-				showComponets();
 			}
 		});
 		componentsMenue.add(menuItem);
