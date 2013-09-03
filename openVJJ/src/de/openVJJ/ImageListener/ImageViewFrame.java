@@ -36,7 +36,7 @@ import de.openVJJ.imagePublisher.ImagePublisher;
  * if not, see <http://www.gnu.org/licenses/>.  
  */
 
-public class ImageViweFrame implements ImageListener{
+public class ImageViewFrame implements ImageListener{
 	JLabel oldLable = null;
 	protected MyFrame frame = null;
 	ImagePublisher imagePublisher;
@@ -47,15 +47,15 @@ public class ImageViweFrame implements ImageListener{
 	protected boolean onClickToggelFullscreen = true;
 	protected boolean deactivateWindowClose = true;
 	
-	public ImageViweFrame(){
+	public ImageViewFrame(){
 		
 	}
 	
-	public  ImageViweFrame(ImagePublisher imagePublisher){
+	public  ImageViewFrame(ImagePublisher imagePublisher){
 		this.imagePublisher = imagePublisher;
 	}
 	
-	public  ImageViweFrame(ImagePublisher imagePublisher, int width, int height){
+	public  ImageViewFrame(ImagePublisher imagePublisher, int width, int height){
 		this.imagePublisher = imagePublisher;
 		windowWidth = width;
 		windowHeight = height;

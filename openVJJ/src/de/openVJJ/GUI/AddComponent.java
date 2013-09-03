@@ -11,7 +11,7 @@ import javax.swing.JPanel;
 import de.openVJJ.InputComponents;
 import de.openVJJ.RegisteredComponents;
 import de.openVJJ.VJJComponent;
-import de.openVJJ.GUI.ShowComponets.ShowComponetsListener;
+import de.openVJJ.GUI.ShowComponents.ShowComponetsListener;
 import de.openVJJ.ImageListener.ImageListener;
 import de.openVJJ.imagePublisher.ImagePublisher;
 
@@ -94,7 +94,7 @@ public class AddComponent extends JPanel {
 	JFrame selectToAddToFrame = null;
 	private void selectToAddTo(ImageListener imageListener){
 		selectToAddToFrame = new JFrame();
-		ShowComponets showComponets = new ShowComponets(ShowComponets.MODUS_DISABLE_NOT_PUBLISHERS);
+		ShowComponents showComponets = new ShowComponents(ShowComponents.MODUS_DISABLE_NOT_PUBLISHERS);
 		showComponets.addShowComponetsListener(new MyShowComponetsListener(imageListener));
 		selectToAddToFrame.add(showComponets);
 		selectToAddToFrame.setVisible(true);

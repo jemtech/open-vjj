@@ -8,7 +8,7 @@ import java.awt.event.MouseListener;
 
 import javax.swing.JLabel;
 
-import de.openVJJ.ImageListener.ImageViweFrame;
+import de.openVJJ.ImageListener.ImageViewFrame;
 import de.openVJJ.graphic.VideoFrame;
 import de.openVJJ.processor.Warping;
 import de.openVJJ.processor.Warping.Point;
@@ -29,7 +29,7 @@ import de.openVJJ.processor.Warping.Point;
  * if not, see <http://www.gnu.org/licenses/>.  
  */
 
-public class WarpingControl extends ImageViweFrame{
+public class WarpingControl extends ImageViewFrame{
 	JLabel borderLable;
 	protected Warping warper;
 	Point[] points;

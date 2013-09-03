@@ -14,8 +14,8 @@ import javax.swing.event.ChangeListener;
 import org.jdom2.Element;
 
 import de.openVJJ.VJJComponent;
-import de.openVJJ.GUI.ShowComponets;
-import de.openVJJ.GUI.ShowComponets.ShowComponetsListener;
+import de.openVJJ.GUI.ShowComponents;
+import de.openVJJ.GUI.ShowComponents.ShowComponetsListener;
 import de.openVJJ.ImageListener.ImageListener;
 import de.openVJJ.graphic.VideoFrame;
 
@@ -292,7 +292,7 @@ public class CrossFader extends ImagePublisher {
 	
 	private void selectToAddTo(int channel){
 		selectToAddToFrame = new JFrame();
-		ShowComponets showComponets = new ShowComponets(ShowComponets.MODUS_DISABLE_NOT_PUBLISHERS);
+		ShowComponents showComponets = new ShowComponents(ShowComponents.MODUS_DISABLE_NOT_PUBLISHERS);
 		showComponets.addShowComponetsListener(new MyShowComponetsListener(channel));
 		selectToAddToFrame.add(showComponets);
 		selectToAddToFrame.setVisible(true);
