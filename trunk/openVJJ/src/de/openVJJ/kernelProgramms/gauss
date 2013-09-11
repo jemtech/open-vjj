@@ -1,0 +1,66 @@
+kernel void gauss(global const float* in, global  float* out, const int width, const int height){
+	int xGID = get_global_id(0);
+	int yGID = get_global_id(1);
+	
+	if(xGID >= width){
+		return;
+	}
+	if(yGID >= height){
+		return;
+	}
+	int borderLost = 0;
+	float temp = 0;
+	if(xGID >= 0){
+		int pos = ((xGID-1)*height)+yGID;
+		if(yGID > 0){
+			temp = temp + in[pos-1];
+		}else{
+			borderLost = borderLost + 1;
+		}
+		temp = temp + (in[pos]*2);
+		if(yGID < height-1){
+			temp = temp + in[pos+1];
+		}else{
+			borderLost = borderLost + 1;
+		}
+	}else{
+		borderLost = borderLost + 4;
+	}
+	
+	
+	if(xGID < width - 1){
+		int pos = ((xGID+1)*height)+yGID;
+		if(yGID > 0){
+			temp = temp + in[pos-1];
+		}else{
+			borderLost = borderLost + 1;
+		}
+		temp = temp + (in[pos]*2);
+		if(yGID < height-1){
+			temp = temp + in[pos+1];
+		}else{
+			borderLost = borderLost + 1;
+		}
+	}else{
+		borderLost = borderLost + 4;
+	}
+	
+	int pos = (xGID * height)+yGID;
+	if(yGID > 0){
+		temp = temp + (in[pos-1]*2);
+	}else{
+		borderLost = borderLost + 2;
+	}
+	if(yGID < height-1){
+		temp = temp + (in[pos+1]*2);
+	}else{
+		borderLost = borderLost + 2;
+	}
+	temp = (temp + (in[pos]*(4+borderLost))) / 16;
+	
+	if(pos > (height-1) * (width - 1)){
+		return;
+	}
+	
+	out[pos] = temp;
+}

@@ -115,8 +115,25 @@ public class MainFrame extends JFrame{
 			}
 		});
 		componentsMenue.add(menuItem);
+		
+		JMenu gpuMenue = new JMenu("GPU");
+		menuBar.add(gpuMenue);
+		if(InputComponents.useGPU){
+			menuItem = new JMenuItem("Deactivate");
+		}else{
+			menuItem = new JMenuItem("Activate");
+		}
+		menuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				InputComponents.useGPU = !InputComponents.useGPU;
+				refresh();
+			}
+		});
+		gpuMenue.add(menuItem);
 	}
 	private void refresh(){
+		buildMenue();
 		if(contentPanel != null){
 			contentPanel.repaint();
 		}

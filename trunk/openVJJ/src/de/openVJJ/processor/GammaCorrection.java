@@ -2,6 +2,8 @@ package de.openVJJ.processor;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.io.IOException;
+import java.nio.FloatBuffer;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -11,18 +13,30 @@ import javax.swing.event.ChangeListener;
 
 import org.jdom2.Element;
 
+import com.jogamp.opencl.CLBuffer;
+import com.jogamp.opencl.CLCommandQueue;
+import com.jogamp.opencl.CLKernel;
+import com.jogamp.opencl.CLProgram;
+
+import de.openVJJ.InputComponents;
+import de.openVJJ.openGJTest;
 import de.openVJJ.graphic.VideoFrame;
 
 public class GammaCorrection extends ImageProcessor {
 	double gammaR = 1;
 	double gammaG = 1;
 	double gammaB = 1;
+	
 	@Override
 	public VideoFrame processImage(VideoFrame videoFrame) {
 		if(videoFrame == null){
 			return null;
 		}
-		return calculateGammaCorrection(videoFrame);
+		if(InputComponents.useGPU){
+			return calculateGammaCorrectionGPU(videoFrame);
+		}else{
+			return calculateGammaCorrection(videoFrame);
+		}
 	}
 	
 	private VideoFrame calculateGammaCorrection(VideoFrame videoFrame){
@@ -162,5 +176,86 @@ public class GammaCorrection extends ImageProcessor {
 			this.gammaB = Double.parseDouble(gammaB);
 		}
 	}
+	
+	private CLProgram program;
+	//private CLKernel kernel;
+	boolean gpuReady = false;
+	boolean gpuIniting = false;
+	private void initGPU(){
+		if(gpuIniting){
+			return;
+		}
+		gpuIniting = true;
+		try {
+			program = InputComponents.getCLContext().createProgram(openGJTest.class.getResourceAsStream("kernelProgramms/gamma")).build();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		gpuReady = true;
+		gpuIniting = false;
+	}
+	
+	private CLKernel getKernel(){
+		return program.createCLKernel("gamma");
+	}
+	
+	private void shutdownGPU(){
+		if(program != null){
+			program.release();
+		}
+	}
+	
+	private VideoFrame calculateGammaCorrectionGPU(VideoFrame videoFrame){
+		/*if((gammaR == 1) && (gammaG == 1) && (gammaB == 1)){
+			return videoFrame;
+		}*/
+		if(!gpuReady){
+			initGPU();
+		}
+		if(!gpuReady){
+			return videoFrame;
+		}
 
+		float rCorr = (float) Math.pow(255.0, (gammaR-1)*-1);
+		float gCorr = (float) Math.pow(255.0, (gammaG-1)*-1);
+		float bCorr = (float) Math.pow(255.0, (gammaB-1)*-1);
+		
+		int pixelCount = videoFrame.getPixelCount();
+
+		int localWorkSize = InputComponents.getLocalWorkSize();
+		int globalWorkSize = InputComponents.getGlobalWorkSize(pixelCount);
+
+		VideoFrame resultVideoFrame = new VideoFrame(videoFrame.getWidth(), videoFrame.getHeight());
+		calculateOnGPU(videoFrame.getRedCLBuffer(), resultVideoFrame.getRedCLBuffer(), (float)gammaR, rCorr, 255, pixelCount, globalWorkSize, localWorkSize);
+
+		calculateOnGPU(videoFrame.getGreenCLBuffer(), resultVideoFrame.getGreenCLBuffer(), (float)gammaG, gCorr, 255, pixelCount, globalWorkSize, localWorkSize);
+
+		calculateOnGPU(videoFrame.getBlueCLBuffer(), resultVideoFrame.getBlueCLBuffer(), (float)gammaB, bCorr, 255, pixelCount, globalWorkSize, localWorkSize);
+		
+		return resultVideoFrame;
+	}
+	
+	private synchronized void calculateOnGPU(CLBuffer<FloatBuffer> in, CLBuffer<FloatBuffer> out, float gamma, float corr, float maxCol, int pixcount, int globalWorkSize, int localWorkSize){
+		CLKernel kernel = getKernel();
+		kernel.putArg(in);
+		kernel.putArg(out);
+		kernel.putArg(gamma);
+		kernel.putArg(corr);
+		kernel.putArg(maxCol);
+		kernel.putArg(pixcount);
+		CLCommandQueue clCommandQueue = InputComponents.getCLCommandQueue();
+		synchronized (clCommandQueue) {
+			clCommandQueue.putWriteBuffer(in, false);
+			clCommandQueue.put1DRangeKernel(kernel, 0, globalWorkSize, localWorkSize);
+			clCommandQueue.putReadBuffer(out, true);
+			clCommandQueue.finish();
+		}
+		kernel.release();
+	}
+	
+	@Override
+	public void remove() {
+		super.remove();
+		shutdownGPU();
+	}
 }

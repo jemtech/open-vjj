@@ -1,9 +1,13 @@
 package de.openVJJ.imagePublisher;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import de.openVJJ.VJJComponent;
 import de.openVJJ.ImageListener.ImageListener;
@@ -84,10 +88,40 @@ public abstract class ImagePublisher implements VJJComponent{
 	        if(imageListener.size()==1 && !forceThread){
 	        	imageListener.get(0).newImageReceived(videoFrame);
 		    }
+	        Updater updater = new Updater(videoFrame);
+	        executor.execute(updater);
+	        /*
 			for(ImageListener imageListenerElement : imageListener){
 				ListenerUpdater listenerUpdater = new ListenerUpdater(imageListenerElement, videoFrame);
 				executor.execute(listenerUpdater);
 			}
+			*/
+		}
+	}
+	
+	private class Updater implements Runnable{
+		VideoFrame videoFrame;
+		public Updater(VideoFrame videoFrame){
+			this.videoFrame = videoFrame;
+		}
+		@Override
+		public void run() {
+			Collection<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
+			
+			for(ImageListener imageListenerElement : imageListener){
+				ListenerUpdater listenerUpdater = new ListenerUpdater(imageListenerElement, videoFrame);
+				tasks.add(Executors.callable(listenerUpdater));
+			}
+			try {
+				for(Future<?> future : executor.invokeAll(tasks)){
+					future.get();
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} catch (ExecutionException e) {
+				e.printStackTrace();
+			}
+			
 		}
 	}
 	
