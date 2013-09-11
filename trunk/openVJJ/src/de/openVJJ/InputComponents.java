@@ -284,7 +284,7 @@ public class InputComponents {
 	}
 	
 	public static int getLocalWorkSize(){
-		return Math.min(getCLDevice().getMaxWorkGroupSize(), 128);
+		return Math.min(getCLDevice().getMaxWorkGroupSize(), 256);
 	}
 
 	public static int getLocalWorkSize2D(){
