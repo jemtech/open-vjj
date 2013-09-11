@@ -1,0 +1,16 @@
+kernel void gamma(global const float* in, global float* out, const float gamma, const float corr, const float maxVal, int numElements){
+	int iGID = get_global_id(0);
+	
+	if(iGID >= numElements){
+		return;
+	}
+	float val = in[iGID] / 255.0;
+	//float temp = pow( in[iGID], gamma) * corr;
+	float temp = pow( val, gamma);
+	temp = temp * 255.0;
+	//float temp = pow( in[iGID], gamma);
+	if(temp > maxVal){
+		temp = maxVal;
+	}
+	out[iGID] = temp;
+}

@@ -239,7 +239,7 @@ public class MultiPlace extends ImagePublisher{
 		@Override
 		public void newImageReceived(VideoFrame videoFrame) {
 			this.videoFrame = videoFrame;
-			this.videoFrame.transValue = new int[]{0,0,0};
+			//this.videoFrame.transValue = new int[]{0,0,0};
 		}
 
 		@Override

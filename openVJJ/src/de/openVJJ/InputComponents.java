@@ -2,14 +2,20 @@ package de.openVJJ;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jdom2.Attribute;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.XMLOutputter;
+
+import com.jogamp.opencl.CLCommandQueue;
+import com.jogamp.opencl.CLContext;
+import com.jogamp.opencl.CLDevice;
 
 import de.openVJJ.ImageListener.ImageListener;
 import de.openVJJ.imagePublisher.ImagePublisher;
@@ -33,6 +39,8 @@ import de.openVJJ.imagePublisher.ImagePublisher;
 
 
 public class InputComponents {
+	public static boolean useGPU = true;
+	
 	static List<ImagePublisher> imagePublishers;
 	
 	public static void addComponent(ImagePublisher imagePublisher){
@@ -120,11 +128,16 @@ public class InputComponents {
 	public static final String COMPONENTS_ELEMENT_NAME = "Components";
 	public static final String COMPONENT_ELEMENT_NAME = "Component";
 	public static final String COMPONENT_SETUP_ELEMENT_NAME = "ComponentSetup";
+	public static final String GPU_ELEMENT_NAME = "GPU";
 	
 	public static final String CLASS_NAME_ATTRIBUTE_NAME = "ClassName";
+	public static final String GPU_ACTIV_ATTRIBUTE_NAME = "activ";
 	
 	public static void save(String fileName){
 		Element rootElement = new Element(ROOT_ELEMET_NAME);
+		Element gpuElement = new Element(GPU_ELEMENT_NAME);
+		gpuElement.setAttribute("activ", String.valueOf(useGPU));
+		rootElement.addContent(gpuElement);
 		Element compnetsElement = new Element(COMPONENTS_ELEMENT_NAME);
 		for(ImagePublisher imagePublisher : imagePublishers){
 			compnetsElement.addContent(componetToXML(imagePublisher));
@@ -167,6 +180,14 @@ public class InputComponents {
 				System.err.println("is notan Open-VJJ Project");
 				return;
 			}
+			Element gpuElement = rootElement.getChild(GPU_ELEMENT_NAME);
+			if(gpuElement != null){
+				Attribute gpuActiv = gpuElement.getAttribute(GPU_ACTIV_ATTRIBUTE_NAME);
+				if(gpuActiv != null){
+					useGPU = gpuActiv.getBooleanValue();
+				}
+			}
+			removeAll();
 			Element components = rootElement.getChild(COMPONENTS_ELEMENT_NAME);
 			List<Element> elements = components.getChildren(COMPONENT_ELEMENT_NAME);
 			for(Element rootComponente : elements){
@@ -218,5 +239,114 @@ public class InputComponents {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	private static CLContext context;
+	private static CLDevice device;
+	private static CLCommandQueue queue;
+	private static boolean gpuReady = false;
+	private synchronized static void initGPU(){
+		if(gpuReady){
+			return;
+		}
+		System.out.println("Start init gpu");
+		context = CLContext.create();
+		device = context.getMaxFlopsDevice();
+		System.out.println("Divice name: " + device.getName() + " device type: " + device.getType());
+		queue = device.createCommandQueue();
+		System.out.println("Finish init gpu");
+		gpuReady = true;
+	}
+	
+	private static void shutdownGPU(){
+		context.release();
+	}
+	
+	public synchronized static CLContext getCLContext(){
+		if(context == null){
+			initGPU();
+		}
+		return context;
+	}
+	
+	public synchronized static CLDevice getCLDevice(){
+		if(device == null){
+			initGPU();
+		}
+		return device;
+	}
+	
+	public synchronized static CLCommandQueue getCLCommandQueue(){
+		if(queue == null){
+			initGPU();
+		}
+		return queue;
+	}
+	
+	public static int getLocalWorkSize(){
+		return Math.min(getCLDevice().getMaxWorkGroupSize(), 128);
+	}
+
+	public static int getLocalWorkSize2D(){
+		return Math.min(getCLDevice().getMaxWorkGroupSize(), 16);
+	}
+	
+	public static int getGlobalWorkSize(int pixelCount){
+		return roundUp(getLocalWorkSize(), pixelCount);
+	}
+	
+	public static int getGlobalWorkSizeX(int width){
+		return roundUp(getLocalWorkSize(), width);
+	}
+	
+	public static int getGlobalWorkSizeY(int height){
+		return roundUp(getLocalWorkSize(), height);
+	}
+
+	private static int roundUp(int groupSize, int globalSize){
+		int r = globalSize % groupSize;
+		if(r == 0){
+			return globalSize;
+		}else{
+			return globalSize + groupSize - r;
+		}
+	}
+	
+	private static void removeAll(){
+		if(imagePublishers != null){
+			for(ImagePublisher imagePublisher : imagePublishers){
+				imagePublisher.remove();
+			}
+		}
+		imagePublishers = null;
+	}
+	
+	@Override
+	protected void finalize() throws Throwable {
+		removeAll();
+		shutdownGPU();
+		super.finalize();
+	}
+	
+	static Cleaner cleaner = new Cleaner();
+	private static class Cleaner implements Runnable{
+		public Cleaner() {
+			Thread thread = new Thread(this);
+			thread.start();
+		}
+
+		@Override
+		public void run() {
+			while(true){
+				System.gc();
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+		
 	}
 }

@@ -1,14 +1,28 @@
 package de.openVJJ.processor;
 
 
+import java.io.IOException;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+
 import org.jdom2.Element;
 
+import com.jogamp.opencl.CLBuffer;
+import com.jogamp.opencl.CLCommandQueue;
+import com.jogamp.opencl.CLKernel;
+import com.jogamp.opencl.CLProgram;
+
+import de.openVJJ.InputComponents;
+import de.openVJJ.openGJTest;
 import de.openVJJ.graphic.VideoFrame;
 
 public class GaussFilter extends ImageProcessor {
 
 	@Override
 	public VideoFrame processImage(VideoFrame videoFrame) {
+		if(InputComponents.useGPU){
+			return filterFrameGPU(videoFrame);
+		}
 		return filterFrame(videoFrame);
 	}
 
@@ -56,6 +70,82 @@ public class GaussFilter extends ImageProcessor {
 			}
 		}
 		return videoFrameRes;
+	}
+	
+	private CLProgram program;
+	//private CLKernel kernel;
+	boolean gpuReady = false;
+	boolean gpuIniting = false;
+	private void initGPU(){
+		if(gpuIniting){
+			return;
+		}
+		gpuIniting = true;
+		try {
+			program = InputComponents.getCLContext().createProgram(openGJTest.class.getResourceAsStream("kernelProgramms/gauss")).build();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		//kernel = program.createCLKernel("gauss");
+		gpuReady = true;
+		gpuIniting = false;
+	}
+
+	private CLKernel getKernel(){
+		return program.createCLKernel("gauss");
+	}
+	
+	private void shutdownGPU(){
+		if(program != null){
+			program.release();
+		}
+	}
+	
+	private VideoFrame filterFrameGPU(VideoFrame videoFrame){
+		if(!gpuReady){
+			initGPU();
+		}
+		if(!gpuReady){
+			return videoFrame;
+		}
+		
+		int width = videoFrame.getWidth();
+		int height = videoFrame.getHeight();
+
+		int localWorkSize = InputComponents.getLocalWorkSize2D();
+		int globalWorkSizeX = InputComponents.getGlobalWorkSizeX(width);
+		int globalWorkSizeY = InputComponents.getGlobalWorkSizeY(height);
+
+		VideoFrame resultVideoFrame = new VideoFrame(videoFrame.getWidth(), videoFrame.getHeight());
+		
+		calculateOnGPU(videoFrame.getRedCLBuffer(), resultVideoFrame.getRedCLBuffer(), width, height, globalWorkSizeX, localWorkSize, globalWorkSizeY, localWorkSize);
+		calculateOnGPU(videoFrame.getGreenCLBuffer(), resultVideoFrame.getGreenCLBuffer(), width, height, globalWorkSizeX, localWorkSize, globalWorkSizeY, localWorkSize);
+		calculateOnGPU(videoFrame.getBlueCLBuffer(), resultVideoFrame.getBlueCLBuffer(), width, height, globalWorkSizeX, localWorkSize, globalWorkSizeY, localWorkSize);
+		
+		return resultVideoFrame;
+	}
+	
+	private synchronized void calculateOnGPU(CLBuffer<FloatBuffer> in, CLBuffer<FloatBuffer> out, int width, int height, int globalWorkSizeX, int localWorkSizeX, int globalWorkSizeY, int localWorkSizeY){
+		CLKernel kernel = getKernel();
+		//kernel.rewind();
+		kernel.putArg(in);
+		kernel.putArg(out);
+		kernel.putArg(width);
+		kernel.putArg(height);
+		CLCommandQueue clCommandQueue = InputComponents.getCLCommandQueue();
+		synchronized (clCommandQueue) {
+			clCommandQueue.putWriteBuffer(in, false);
+			clCommandQueue.put2DRangeKernel(kernel, 0, 0, globalWorkSizeX, globalWorkSizeY, localWorkSizeX, localWorkSizeY);
+			clCommandQueue.putReadBuffer(out, true);
+			clCommandQueue.finish();
+		}
+		kernel.release();
+	}
+	
+	@Override
+	public void remove() {
+		super.remove();
+		shutdownGPU();
 	}
 
 	@Override

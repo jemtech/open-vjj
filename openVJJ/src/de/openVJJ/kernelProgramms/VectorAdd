@@ -1,0 +1,9 @@
+kernel void VectorAdd(global const float* a, global const float* b, global float* c, int numElements){
+	int iGID = get_global_id(0);
+	
+	if(iGID >= numElements){
+		return;
+	}
+	
+	c[iGID] = a[iGID] + b[iGID];
+}
