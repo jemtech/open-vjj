@@ -5,6 +5,7 @@ import java.awt.GridBagLayout;
 import java.util.ArrayList;
 
 import javax.sql.rowset.spi.SyncResolver;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JSlider;
@@ -36,7 +37,6 @@ public class BackroundAbsorber extends ImageProcessor {
 	ImageChangeStack changeStack = null;
 	
 	public BackroundAbsorber(){
-		System.out.println("new Absober");
 	}
 	
 	@Override
@@ -59,7 +59,11 @@ public class BackroundAbsorber extends ImageProcessor {
 		
 		int[][][] diffs = analyseImage(videoFrame.getIntArray());
 		VideoFrame outFrame = new VideoFrame(diffs.length, diffs[0].length);
-		outFrame.setIntArray(diffs);
+		if(backround){
+			outFrame.setIntArray(changeStack.tempImage);
+		}else{
+			outFrame.setIntArray(diffs);
+		}
 		
 		System.out.println("Absober finish image");
 		return outFrame;
@@ -74,6 +78,7 @@ public class BackroundAbsorber extends ImageProcessor {
 	}
 
 	JFrame controllerFrame;
+	boolean backround = false;
 	@Override
 	public void openConfigPanel() {
 		controllerFrame = new JFrame();
@@ -102,10 +107,24 @@ public class BackroundAbsorber extends ImageProcessor {
 		});
 		gridBagConstraints.gridx = 1;
 		controllerFrame.add(rSlider, gridBagConstraints);
+		
+		JCheckBox chinButton = new JCheckBox("Backround");
+	    chinButton.setSelected(backround);
+	    chinButton.addChangeListener(new ChangeListener() {
+			
+			@Override
+			public void stateChanged(ChangeEvent arg0) {
+				backround = ((JCheckBox) arg0.getSource()).isSelected();
+			}
+		});
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 1;
+		controllerFrame.add(chinButton, gridBagConstraints);
 
 		controllerFrame.setVisible(true);
 		controllerFrame.pack();
 	}
+	
 	
 
 	int maxDiff=10;
