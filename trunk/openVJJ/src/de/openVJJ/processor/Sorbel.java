@@ -1,6 +1,8 @@
 package de.openVJJ.processor;
 
 
+import java.util.ArrayList;
+
 import org.jdom2.Element;
 
 import de.openVJJ.graphic.VideoFrame;
@@ -100,5 +102,54 @@ public class Sorbel extends ImageProcessor {
 		// TODO Auto-generated method stub
 		
 	}
+	
+	public SorbelResult calculateSorbelResult(VideoFrame videoFrame){
+		SorbelResult result = new SorbelResult();
+		int width = videoFrame.getWidth();
+		int height = videoFrame.getHeight();
+		for(int col = 0; col < 3; col++ ){
+			int[][] resultx = new int[width][height];
+			int[][] resulty = new int[width][height];
+			for(int x = 1; x < width-1; x++ ){
+				for(int y = 1; y < height-1; y++){
+					int xRes = videoFrame.getRGB(x-1, y-1)[col]*-3;
+					xRes += videoFrame.getRGB(x-1, y)[col]*-10;
+					xRes += videoFrame.getRGB(x-1, y+1)[col]*-3;
+					xRes += videoFrame.getRGB(x+1, y-1)[col]*3;
+					xRes += videoFrame.getRGB(x+1, y)[col]*10;
+					xRes += videoFrame.getRGB(x+1, y+1)[col]*3;
+					resultx[x][y] = xRes;
+					
+	
+					int yRes = videoFrame.getRGB(x-1, y-1)[col]*3;
+					yRes += videoFrame.getRGB(x, y-1)[col]*10;
+					yRes += videoFrame.getRGB(x+1, y-1)[col]*3;
+					yRes += videoFrame.getRGB(x-1, y+1)[col]*-3;
+					yRes += videoFrame.getRGB(x, y+1)[col]*-10;
+					yRes += videoFrame.getRGB(x+1, y+1)[col]*-3;
+					resulty[x][y] = yRes;
+				}
+			}
+			result.add(resultx, resulty);
+		}
+		return result;
+	}
 
+	public class SorbelResult{
+		ArrayList<int[][]> resultsPerChanelX = new ArrayList<int[][]>();
+		ArrayList<int[][]> resultsPerChanelY = new ArrayList<int[][]>();
+		
+		public void add(int[][] resultx, int[][] resulty){
+			resultsPerChanelX.add(resultx);
+			resultsPerChanelY.add(resulty);
+		}
+		
+		public int[][] getXbyChanel(int chanal){
+			return resultsPerChanelX.get(chanal);
+		}
+		
+		public int[][] getYbyChanel(int chanal){
+			return resultsPerChanelY.get(chanal);
+		}
+	}
 }
