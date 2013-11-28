@@ -98,6 +98,14 @@ public class VideoFrame {
 		return rgbImageArray = new int[width][height][3];
 	}
 	
+	public synchronized void setIntArray(int[][][] pixels){
+		rgbImageArray = pixels;
+		bufferedImage = null;
+		rCLBuffer = null;
+		gCLBuffer = null;
+		bCLBuffer = null;
+	}
+	
 	private void gpuBufferToArray(){
 		FloatBuffer gpuBufferR = rCLBuffer.getBuffer();
 		gpuBufferR.rewind();

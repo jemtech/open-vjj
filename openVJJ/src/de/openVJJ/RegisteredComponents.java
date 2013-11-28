@@ -10,9 +10,11 @@ import de.openVJJ.imagePublisher.CrossFader;
 import de.openVJJ.imagePublisher.IPCam_250E_IGuard;
 import de.openVJJ.imagePublisher.MultiPlace;
 import de.openVJJ.imagePublisher.XuggleVideoFileInput;
+import de.openVJJ.processor.BackroundAbsorber;
 import de.openVJJ.processor.EdgeBlender;
 import de.openVJJ.processor.GammaCorrection;
 import de.openVJJ.processor.GaussFilter;
+import de.openVJJ.processor.ImageAnalyser;
 import de.openVJJ.processor.LinearRGBCorrection;
 import de.openVJJ.processor.ObjectFromLine;
 import de.openVJJ.processor.Resolution;
@@ -58,6 +60,8 @@ public class RegisteredComponents {
 		registeredComponents.add(Sorbel.class);
 		registeredComponents.add(ObjectFromLine.class);
 		registeredComponents.add(GaussFilter.class);
+		registeredComponents.add(BackroundAbsorber.class);
+		registeredComponents.add(ImageAnalyser.class);
 	}
 	
 	static public List<Class<? extends VJJComponent>> getRegisteredComponents(){
