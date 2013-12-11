@@ -2,9 +2,12 @@ package de.openVJJ.processor;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
 import javax.sql.rowset.spi.SyncResolver;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -53,8 +56,9 @@ public class BackroundAbsorber extends ImageProcessor {
 
 	@Override
 	public VideoFrame processImage(VideoFrame videoFrame) {
-		System.out.println("Absober start image");
-		
+		if(initing){
+			return videoFrame;
+		}
 		checkStack(videoFrame);
 		
 		int[][][] diffs = analyseImage(videoFrame.getIntArray());
@@ -65,16 +69,18 @@ public class BackroundAbsorber extends ImageProcessor {
 			outFrame.setIntArray(diffs);
 		}
 		
-		System.out.println("Absober finish image");
 		return outFrame;
 	}
 	
+	boolean reinit = false;
+	boolean initing = false;
 	private synchronized void checkStack(VideoFrame videoFrame){
-		if(changeStack == null){
-			System.out.println("Absober new Stack");
+		initing = true;
+		if(changeStack == null || reinit){
+			reinit = false;
 			changeStack = new ImageChangeStack(videoFrame);
-			System.out.println("Absober Stack fine");
 		}
+		initing = false;
 	}
 
 	JFrame controllerFrame;
@@ -120,6 +126,18 @@ public class BackroundAbsorber extends ImageProcessor {
 		gridBagConstraints.gridx = 0;
 		gridBagConstraints.gridy = 1;
 		controllerFrame.add(chinButton, gridBagConstraints);
+		
+		JButton reinitButton = new JButton("reinit BG");
+		reinitButton.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				reinit = true;
+			}
+		});
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 2;
+		controllerFrame.add(reinitButton, gridBagConstraints);
 
 		controllerFrame.setVisible(true);
 		controllerFrame.pack();
