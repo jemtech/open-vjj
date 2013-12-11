@@ -1,5 +1,7 @@
 package de.openVJJ.processor;
 
+import java.util.ArrayList;
+
 import org.jdom2.Element;
 
 import de.openVJJ.graphic.VideoFrame;
@@ -40,6 +42,13 @@ public class ImageAnalyser extends ImageProcessor {
 	@Override
 	public VideoFrame processImage(VideoFrame videoFrame) {
 		SorbelResult sorbelResult =  sorbel.calculateSorbelResult(videoFrame);
+		int[][] combindetX = combindColors(sorbelResult.resultsPerChanelX);
+		Point point = getStrongest(combindetX);
+		
+		for(int cykle = 0; cykle < 5 ; cykle++){
+			
+		}
+		int[][] combindetY = combindColors(sorbelResult.resultsPerChanelY);
 		return null;
 	}
 
@@ -47,6 +56,83 @@ public class ImageAnalyser extends ImageProcessor {
 	public void openConfigPanel() {
 		// TODO Auto-generated method stub
 
+	}
+	
+	private int[][] combindColors(ArrayList<int[][]> resultsPerChanel){
+		int index = 0;
+		int chanelCount = resultsPerChanel.size();
+		int[][] chanelResult = resultsPerChanel.get(index);
+		int[][] combind = chanelResult;
+		index++;
+		int xMax = combind.length;
+		int yMax = combind[0].length;
+		while(index < chanelCount){
+			chanelResult = resultsPerChanel.get(index);
+			for(int x = 0; x < xMax; x++){
+				for(int y = 0; y < yMax; y++){
+					combind[x][y] += chanelResult[x][y];
+				}
+			}
+			index++;
+		}
+		return combind;
+	}
+	/*
+	private void processX(){
+		
+	}
+	
+	private void processY(){
+		
+	}*/
+	
+	private Point getStrongest(int[][] sorbelresult){
+		Point point = new Point();
+		int ValMax = -1;
+		
+		int xMax = sorbelresult.length;
+		int yMax = sorbelresult[0].length;
+		for(int x = 0; x < xMax; x++){
+			for(int y = 0; y < yMax; y++){
+				int res = sorbelresult[x][y];
+				if(res > ValMax){
+					ValMax = res;
+					point.x = x;
+					point.y = y;
+				}
+			}
+		}
+		return point;
+	}
+	
+	private void combinedLineU(Point position, int dirction, int[][] sorbel){
+		if(position.x == 0){
+			return;
+		}
+	}
+	
+	private void combinedLineD(Point position, int dirction){
+		
+	}
+
+	private void combinedLineL(Point position, int dirction){
+		
+	}
+
+	private void combinedLineR(Point position, int dirction){
+		
+	}
+	
+	private class Line{
+		ArrayList<Point> points = new ArrayList<Point>();
+		
+		public void addPoint(Point point){
+			points.add(point);
+		}
+	}
+	private class Point{
+		int x;
+		int y;
 	}
 
 }
