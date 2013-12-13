@@ -3,7 +3,9 @@ package de.openVJJ.processor;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.util.ArrayList;
+import java.util.HashSet;
 
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JSlider;
@@ -49,6 +51,7 @@ public class ImageAnalyser extends ImageProcessor {
 
 	private boolean showOriginal = true;
 	private boolean showDetectedLines = true;
+	private boolean showCombindedLines = true;
 	@Override
 	public VideoFrame processImage(VideoFrame videoFrame) {
 		SorbelResult sorbelResult =  sorbel.calculateSorbelResult(videoFrame);
@@ -62,7 +65,18 @@ public class ImageAnalyser extends ImageProcessor {
 			paintLinesR(linesX, out);
 			paintLinesB(linesY, out);
 		}
+		ArrayList<Line> combinded = combindeLines(linesX, linesY);
+		if(showCombindedLines){
+			paintLinesG(combinded, out);
+		}
+		System.out.println(combinded.size());
 		return out;
+	}
+	
+	private void paintLinesG(ArrayList<Line> lines, VideoFrame out){
+		for(Line line : lines){
+			paintLineRand(line, out);
+		}
 	}
 	
 	private void paintLinesR(ArrayList<Line> lines, VideoFrame out){
@@ -88,6 +102,13 @@ public class ImageAnalyser extends ImageProcessor {
 	private void paintLineB(Line line, VideoFrame out){
 		for(Point point : line.points){
 			out.setColor(point.x, point.y, colorB);
+		}
+	}
+	
+	private void paintLineRand(Line line, VideoFrame out){
+		int[] colorG = new int[]{(int)(Math.random()*255),(int)(Math.random()*255),(int)(Math.random()*255)};
+		for(Point point : line.points){
+			out.setColor(point.x, point.y, colorG);
 		}
 	}
 
@@ -137,6 +158,32 @@ public class ImageAnalyser extends ImageProcessor {
 		gridBagConstraints.gridx = 1;
 		controllerFrame.add(gSlider, gridBagConstraints);
 
+		JCheckBox showOriginalButton = new JCheckBox("Show Original");
+		showOriginalButton.setSelected(showOriginal);
+		showOriginalButton.addChangeListener(new ChangeListener() {
+			
+			@Override
+			public void stateChanged(ChangeEvent arg0) {
+				showOriginal = ((JCheckBox) arg0.getSource()).isSelected();
+			}
+		});
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 2;
+		controllerFrame.add(showOriginalButton, gridBagConstraints);
+
+		JCheckBox showDetectedLinesButton = new JCheckBox("Show detected lines");
+		showDetectedLinesButton.setSelected(showDetectedLines);
+		showDetectedLinesButton.addChangeListener(new ChangeListener() {
+			
+			@Override
+			public void stateChanged(ChangeEvent arg0) {
+				showDetectedLines = ((JCheckBox) arg0.getSource()).isSelected();
+			}
+		});
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 3;
+		controllerFrame.add(showDetectedLinesButton, gridBagConstraints);
+
 		controllerFrame.setVisible(true);
 		controllerFrame.pack();
 	}
@@ -171,6 +218,9 @@ public class ImageAnalyser extends ImageProcessor {
 		ArrayList<Line> lines = new ArrayList<Line>();
 		for(int cykle = 0; cykle < lineLimit ; cykle++){
 			Point point = getStrongest(combindetX);
+			if(point == null){
+				break;
+			}
 			deactivatePoint(combindetX, point);
 			Line line = new Line();
 			line.addPoint(point);
@@ -190,6 +240,9 @@ public class ImageAnalyser extends ImageProcessor {
 		ArrayList<Line> lines = new ArrayList<Line>();
 		for(int cykle = 0; cykle < lineLimit ; cykle++){
 			Point point = getStrongest(combindetY);
+			if(point == null){
+				break;
+			}
 			deactivatePoint(combindetY, point);
 			Line line = new Line();
 			line.addPoint(point);
@@ -225,6 +278,9 @@ public class ImageAnalyser extends ImageProcessor {
 					point.y = y;
 				}
 			}
+		}
+		if(ValMax<histery){
+			return null;
 		}
 		return point;
 	}
@@ -277,6 +333,9 @@ public class ImageAnalyser extends ImageProcessor {
 		if(sorbel[watch.x][watch.y]<last){
 			last = sorbel[watch.x][watch.y];
 			sorbel[watch.x][watch.y] = USED_POINT;
+			if(last<histery){
+				return;
+			}
 			thinlineL(watch, sorbel, yMin, last);
 		}
 	}
@@ -292,6 +351,9 @@ public class ImageAnalyser extends ImageProcessor {
 		if(sorbel[watch.x][watch.y]<last){
 			last = sorbel[watch.x][watch.y];
 			sorbel[watch.x][watch.y] = USED_POINT;
+			if(last<histery){
+				return;
+			}
 			thinlineR(watch, sorbel, yMax, last);
 		}
 	}
@@ -379,6 +441,9 @@ public class ImageAnalyser extends ImageProcessor {
 		if(sorbel[watch.x][watch.y]<last){
 			last = sorbel[watch.x][watch.y];
 			sorbel[watch.x][watch.y] = USED_POINT;
+			if(last<histery){
+				return;
+			}
 			thinlineU(watch, sorbel, xMin, last);
 		}
 	}
@@ -394,6 +459,9 @@ public class ImageAnalyser extends ImageProcessor {
 		if(sorbel[watch.x][watch.y]<last){
 			last = sorbel[watch.x][watch.y];
 			sorbel[watch.x][watch.y] = USED_POINT;
+			if(last<histery){
+				return;
+			}
 			thinlineD(watch, sorbel, xMax, last);
 		}
 	}
@@ -436,16 +504,101 @@ public class ImageAnalyser extends ImageProcessor {
 		
 	}
 	
+	private ArrayList<Line> combindeLines(ArrayList<Line> linesX, ArrayList<Line> linesY){
+		ArrayList<Line> combindedLines = new ArrayList<Line>();
+		ArrayList<Line> linesYCopy = new ArrayList<Line>(linesY);
+		for(Line lineX : linesX){
+			
+			ArrayList<Line> linesYMatch = new ArrayList<Line>();
+			for(Line line : linesYCopy){
+				if(lineX.crossing(line)){
+					linesYMatch.add(line);
+				}
+			}
+			ArrayList<Line> combidedMatch = new ArrayList<Line>();
+			for(Line line : combindedLines){
+				if(lineX.crossing(line)){
+					combidedMatch.add(line);
+				}
+			}
+			
+			if(linesYMatch.isEmpty() && combidedMatch.isEmpty()){
+				continue;
+			}
+			
+			for(Line line : linesYMatch){
+				lineX.uniqeAdd(line);
+				linesYCopy.remove(line);
+			}
+			
+			for(Line line : combidedMatch){
+				lineX.uniqeAdd(line);
+				combindedLines.remove(line);
+			}
+			
+			combindedLines.add(lineX);
+			
+		}
+		return combindedLines;
+	}
+	
 	private class Line{
 		ArrayList<Point> points = new ArrayList<Point>();
 		
 		public void addPoint(Point point){
 			points.add(point);
 		}
+		
+		public boolean contains(Point point){
+			for(Point listPoint : points){
+					if(point.equals(listPoint)){
+						return true;
+					}
+			}
+			return false;
+		}
+		
+		public void uniqeAdd(Line line){
+			for(Point point : line.points){
+				uniqeAdd(point);
+			}
+		}
+		
+		public void uniqeAdd(Point point){
+			if(contains(point)){
+				return;
+			}
+			addPoint(point);
+		}
+		
+		public boolean crossing(Line line){
+			for(Point point : points){
+				for(Point pointC : line.points){
+					if(point.equals(pointC)){
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+		
+		
 	}
 	private class Point{
 		int x;
 		int y;
+		
+		@Override
+		public boolean equals(Object obj) {
+			if(obj.getClass().equals(Point.class)){
+				return equals((Point) obj);
+			}
+			return super.equals(obj);
+		}
+		
+		public boolean equals(Point point) {
+			return (x == point.x && y == point.y);
+		}
 	}
 
 }
