@@ -118,7 +118,7 @@ public class Sorbel extends ImageProcessor {
 					xRes += videoFrame.getRGB(x+1, y-1)[col]*3;
 					xRes += videoFrame.getRGB(x+1, y)[col]*10;
 					xRes += videoFrame.getRGB(x+1, y+1)[col]*3;
-					resultx[x][y] = xRes;
+					resultx[x][y] =  Math.abs(xRes);
 					
 	
 					int yRes = videoFrame.getRGB(x-1, y-1)[col]*3;
@@ -127,7 +127,7 @@ public class Sorbel extends ImageProcessor {
 					yRes += videoFrame.getRGB(x-1, y+1)[col]*-3;
 					yRes += videoFrame.getRGB(x, y+1)[col]*-10;
 					yRes += videoFrame.getRGB(x+1, y+1)[col]*-3;
-					resulty[x][y] = yRes;
+					resulty[x][y] =  Math.abs(yRes);
 				}
 			}
 			result.add(resultx, resulty);
