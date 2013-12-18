@@ -5,17 +5,48 @@ import java.util.List;
 
 public class ComplexLine {
 	
-	LinePoint start;
+	private ComplexLinePoint start;
 	
-	public void addPoint(LinePoint point){
-		points.add(point);
+	private boolean addPoint(ComplexLinePoint point){
+		List<ComplexLinePoint> neighbours = searchNeighbour(point);
+		if(neighbours.size()<1){
+			return false;
+		}
+		for(ComplexLinePoint neighbour : neighbours){
+			if(!ComplexLinePoint.link(point, neighbour)){
+				System.err.println("Dublicate neighbour: " + point.x + " " + point.y);
+			}
+		}
+		return true;
 	}
 	
-	public boolean contains(LinePoint point){
-		return contains(start, point);
+	public List<ComplexLinePoint> searchNeighbour(ComplexLinePoint point){
+		List<ComplexLinePoint> neighbours = new ArrayList<ComplexLinePoint>();
+		getNeighbour(start, point, neighbours);
+		start.unsetSearched();
+		return neighbours;
 	}
 	
-	private static boolean contains(LinePoint list, LinePoint point){
+	private static void getNeighbour(ComplexLinePoint list, ComplexLinePoint point, List<ComplexLinePoint> neighbours){
+		if(list.hadSearched){
+			return;
+		}
+		list.hadSearched = true;
+		if(list.isNeighbour(point)){
+			neighbours.add(list);
+		}
+		for(ComplexLinePoint neighbour : list.neighbours){
+			getNeighbour(neighbour, point, neighbours);
+		}
+	}
+	
+	public boolean contains(ComplexLinePoint point){
+		boolean contains = contains(start, point);
+		start.unsetSearched();
+		return contains;
+	}
+	
+	private static boolean contains(ComplexLinePoint list, ComplexLinePoint point){
 		if(list.hadSearched){
 			return false;
 		}
@@ -23,7 +54,7 @@ public class ComplexLine {
 		if(list.equals(point)){
 			return true;
 		}
-		for(LinePoint neighbour : list.neighbours){
+		for(ComplexLinePoint neighbour : list.neighbours){
 			if(contains(neighbour, point)){
 				return true;
 			}
@@ -31,19 +62,12 @@ public class ComplexLine {
 		return false;
 	}
 	
-	/*
-	public void uniqeAdd(ComplexLine line){
-		for(Point point : line.points){
-			uniqeAdd(point);
-		}
-	}
-	*/
-	
-	public void uniqeAdd(LinePoint point){
+	public boolean uniqeAdd(ComplexLinePoint point){
 		if(contains(point)){
-			return;
+			return false;
 		}
 		addPoint(point);
+		return true;
 	}
 	
 	public boolean crossing(ComplexLine line){
@@ -52,13 +76,13 @@ public class ComplexLine {
 		return crossing;
 	}
 	
-	public boolean crossing(LinePoint point){
+	private boolean crossing(ComplexLinePoint point){
 		if(point.hadSearched){
 			return false;
 		}
 		contains(point);
 		point.hadSearched = true;
-		for(LinePoint neighbour : point.neighbours){
+		for(ComplexLinePoint neighbour : point.neighbours){
 			if(crossing(neighbour)){
 				return true;
 			}
@@ -67,37 +91,5 @@ public class ComplexLine {
 	}
 	
 	
-	private class LinePoint{
-		int x;
-		int y;
-		
-		boolean hadSearched = false;
-		public void unsetSearched(){
-			if(!hadSearched){
-				return;
-			}
-			hadSearched = false;
-			for(LinePoint neighbour : neighbours){
-				neighbour.unsetSearched();
-			}
-		}
-		
-		List<LinePoint> neighbours = new ArrayList<LinePoint>();
-
-		public boolean equals(LinePoint point) {
-			return (x == point.x && y == point.y);
-		}
-		
-		public boolean isNeighbour(LinePoint point) {
-			for(int ys = -1; ys < 2; y++){
-				for(int xs = -1; xs < 2; x++){
-					if(x + xs == point.x && y + xs == point.y){
-						return true;
-					}
-				}
-			}
-			return false;
-		}
-		
-	}
+	
 }
