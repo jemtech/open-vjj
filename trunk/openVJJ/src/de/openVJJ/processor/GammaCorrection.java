@@ -262,7 +262,8 @@ public class GammaCorrection extends ImageProcessor {
 		CLCommandQueue clCommandQueue = InputComponents.getCLCommandQueue();
 		synchronized (clCommandQueue) {
 			clCommandQueue.putWriteBuffer(in, false);
-			clCommandQueue.put1DRangeKernel(kernel, 0, globalWorkSize, localWorkSize);
+			//clCommandQueue.put1DRangeKernel(kernel, 0, globalWorkSize, localWorkSize);
+			clCommandQueue.put1DRangeKernel(kernel, 0, pixcount, 0); //auto calc by driver
 			clCommandQueue.putReadBuffer(out, true);
 			clCommandQueue.finish();
 		}
