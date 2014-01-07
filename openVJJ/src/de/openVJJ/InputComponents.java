@@ -2,7 +2,6 @@ package de.openVJJ;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -241,76 +240,6 @@ public class InputComponents {
 		return null;
 	}
 
-	private static CLContext context;
-	private static CLDevice device;
-	private static CLCommandQueue queue;
-	private static boolean gpuReady = false;
-	private synchronized static void initGPU(){
-		if(gpuReady){
-			return;
-		}
-		System.out.println("Start init gpu");
-		context = CLContext.create();
-		device = context.getMaxFlopsDevice();
-		System.out.println("Divice name: " + device.getName() + " device type: " + device.getType());
-		queue = device.createCommandQueue();
-		System.out.println("Finish init gpu");
-		gpuReady = true;
-	}
-	
-	private static void shutdownGPU(){
-		context.release();
-	}
-	
-	public synchronized static CLContext getCLContext(){
-		if(context == null){
-			initGPU();
-		}
-		return context;
-	}
-	
-	public synchronized static CLDevice getCLDevice(){
-		if(device == null){
-			initGPU();
-		}
-		return device;
-	}
-	
-	public synchronized static CLCommandQueue getCLCommandQueue(){
-		if(queue == null){
-			initGPU();
-		}
-		return queue;
-	}
-	
-	public static int getLocalWorkSize(){
-		return Math.min(getCLDevice().getMaxWorkGroupSize(), 256);
-	}
-
-	public static int getLocalWorkSize2D(){
-		return Math.min(getCLDevice().getMaxWorkGroupSize(), 16);
-	}
-	
-	public static int getGlobalWorkSize(int pixelCount){
-		return roundUp(getLocalWorkSize(), pixelCount);
-	}
-	
-	public static int getGlobalWorkSizeX(int width){
-		return roundUp(getLocalWorkSize(), width);
-	}
-	
-	public static int getGlobalWorkSizeY(int height){
-		return roundUp(getLocalWorkSize(), height);
-	}
-
-	private static int roundUp(int groupSize, int globalSize){
-		int r = globalSize % groupSize;
-		if(r == 0){
-			return globalSize;
-		}else{
-			return globalSize + groupSize - r;
-		}
-	}
 	
 	private static void removeAll(){
 		if(imagePublishers != null){
@@ -324,7 +253,6 @@ public class InputComponents {
 	@Override
 	protected void finalize() throws Throwable {
 		removeAll();
-		shutdownGPU();
 		super.finalize();
 	}
 	

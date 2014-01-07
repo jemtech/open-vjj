@@ -15,6 +15,7 @@ import javax.swing.ImageIcon;
 import com.jogamp.opencl.CLBuffer;
 import com.jogamp.opencl.CLMemory.Mem;
 
+import de.openVJJ.GPUComponent;
 import de.openVJJ.InputComponents;
 
 /*
@@ -214,65 +215,65 @@ public class VideoFrame {
 		return getHeight() * getWidth();
 	}
 	
-	public synchronized CLBuffer<FloatBuffer> getRedCLBuffer(){
+	public synchronized CLBuffer<FloatBuffer> getRedCLBuffer(GPUComponent gpuComponent){
 		if(rCLBuffer != null){
 			return rCLBuffer;
 		}
 		if(rgbImageArray != null){
-			pixelToRGBBuffer();
+			pixelToRGBBuffer(gpuComponent);
 			return rCLBuffer;
 		}
 		if(bufferedImage != null){
-			imageToRGBBuffer();
+			imageToRGBBuffer(gpuComponent);
 			return rCLBuffer;
 		}
-		initCLBuffer();
+		initCLBuffer(gpuComponent);
 		return rCLBuffer;
 	}
 
-	public synchronized CLBuffer<FloatBuffer> getGreenCLBuffer(){
+	public synchronized CLBuffer<FloatBuffer> getGreenCLBuffer(GPUComponent gpuComponent){
 		if(gCLBuffer != null){
 			return gCLBuffer;
 		}
 		if(rgbImageArray != null){
-			pixelToRGBBuffer();
+			pixelToRGBBuffer(gpuComponent);
 			return gCLBuffer;
 		}
 		if(bufferedImage != null){
-			imageToRGBBuffer();
+			imageToRGBBuffer(gpuComponent);
 			return gCLBuffer;
 		}
-		initCLBuffer();
+		initCLBuffer(gpuComponent);
 		return gCLBuffer;
 	}
 
-	public synchronized CLBuffer<FloatBuffer> getBlueCLBuffer(){
+	public synchronized CLBuffer<FloatBuffer> getBlueCLBuffer(GPUComponent gpuComponent){
 		if(bCLBuffer != null){
 			return bCLBuffer;
 		}
 		if(rgbImageArray != null){
-			pixelToRGBBuffer();
+			pixelToRGBBuffer(gpuComponent);
 			return bCLBuffer;
 		}
 		if(bufferedImage != null){
-			imageToRGBBuffer();
+			imageToRGBBuffer(gpuComponent);
 			return bCLBuffer;
 		}
-		initCLBuffer();
+		initCLBuffer(gpuComponent);
 		return bCLBuffer;
 	}
 	
-	private void initCLBuffer(){
-		int globalWorkSize = InputComponents.getGlobalWorkSize(getPixelCount());
-		rCLBuffer = InputComponents.getCLContext().createFloatBuffer(globalWorkSize, Mem.READ_WRITE);
-		gCLBuffer = InputComponents.getCLContext().createFloatBuffer(globalWorkSize, Mem.READ_WRITE);
-		bCLBuffer = InputComponents.getCLContext().createFloatBuffer(globalWorkSize, Mem.READ_WRITE);
+	private void initCLBuffer(GPUComponent gpuComponent){
+		int globalWorkSize = gpuComponent.getGlobalWorkSize(getPixelCount());
+		rCLBuffer = gpuComponent.getCLContext().createFloatBuffer(globalWorkSize, Mem.READ_WRITE);
+		gCLBuffer = gpuComponent.getCLContext().createFloatBuffer(globalWorkSize, Mem.READ_WRITE);
+		bCLBuffer = gpuComponent.getCLContext().createFloatBuffer(globalWorkSize, Mem.READ_WRITE);
 	}
 	
-	private void pixelToRGBBuffer(){
+	private void pixelToRGBBuffer(GPUComponent gpuComponent){
 		int xMax = getWidth();
 		int yMax = getHeight();
-		initCLBuffer();
+		initCLBuffer(gpuComponent);
 		FloatBuffer rBuffer = rCLBuffer.getBuffer();
 		FloatBuffer gBuffer = gCLBuffer.getBuffer();
 		FloatBuffer bBuffer = bCLBuffer.getBuffer();
@@ -291,8 +292,8 @@ public class VideoFrame {
 		bBuffer.rewind();
 	}
 	
-	private void imageToRGBBuffer(){
-		initCLBuffer();
+	private void imageToRGBBuffer(GPUComponent gpuComponent){
+		initCLBuffer(gpuComponent);
 		FloatBuffer rBuffer = rCLBuffer.getBuffer();
 		FloatBuffer gBuffer = gCLBuffer.getBuffer();
 		FloatBuffer bBuffer = bCLBuffer.getBuffer();
@@ -477,6 +478,8 @@ public class VideoFrame {
 			}
 			xN++;
 		}
+		this.width = width;
+		this.height = height;
 		rgbImageArray = newRgbImageArray;
 	}
 	

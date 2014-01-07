@@ -203,7 +203,7 @@ public class GammaCorrection extends ImageProcessor {
 		}
 		gpuIniting = true;
 		try {
-			program = InputComponents.getCLContext().createProgram(openGJTest.class.getResourceAsStream("kernelProgramms/gamma")).build();
+			program = getCLContext().createProgram(openGJTest.class.getResourceAsStream("kernelProgramms/gamma")).build();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -238,15 +238,15 @@ public class GammaCorrection extends ImageProcessor {
 		
 		int pixelCount = videoFrame.getPixelCount();
 
-		int localWorkSize = InputComponents.getLocalWorkSize();
-		int globalWorkSize = InputComponents.getGlobalWorkSize(pixelCount);
+		int localWorkSize = getLocalWorkSize();
+		int globalWorkSize = getGlobalWorkSize(pixelCount);
 
 		VideoFrame resultVideoFrame = new VideoFrame(videoFrame.getWidth(), videoFrame.getHeight());
-		calculateOnGPU(videoFrame.getRedCLBuffer(), resultVideoFrame.getRedCLBuffer(), (float)gammaR, rCorr, 255, pixelCount, globalWorkSize, localWorkSize);
+		calculateOnGPU(videoFrame.getRedCLBuffer(this), resultVideoFrame.getRedCLBuffer(this), (float)gammaR, rCorr, 255, pixelCount, globalWorkSize, localWorkSize);
 
-		calculateOnGPU(videoFrame.getGreenCLBuffer(), resultVideoFrame.getGreenCLBuffer(), (float)gammaG, gCorr, 255, pixelCount, globalWorkSize, localWorkSize);
+		calculateOnGPU(videoFrame.getGreenCLBuffer(this), resultVideoFrame.getGreenCLBuffer(this), (float)gammaG, gCorr, 255, pixelCount, globalWorkSize, localWorkSize);
 
-		calculateOnGPU(videoFrame.getBlueCLBuffer(), resultVideoFrame.getBlueCLBuffer(), (float)gammaB, bCorr, 255, pixelCount, globalWorkSize, localWorkSize);
+		calculateOnGPU(videoFrame.getBlueCLBuffer(this), resultVideoFrame.getBlueCLBuffer(this), (float)gammaB, bCorr, 255, pixelCount, globalWorkSize, localWorkSize);
 		
 		return resultVideoFrame;
 	}
@@ -259,7 +259,7 @@ public class GammaCorrection extends ImageProcessor {
 		kernel.putArg(corr);
 		kernel.putArg(maxCol);
 		kernel.putArg(pixcount);
-		CLCommandQueue clCommandQueue = InputComponents.getCLCommandQueue();
+		CLCommandQueue clCommandQueue = getCLCommandQueue();
 		synchronized (clCommandQueue) {
 			clCommandQueue.putWriteBuffer(in, false);
 			//clCommandQueue.put1DRangeKernel(kernel, 0, globalWorkSize, localWorkSize);

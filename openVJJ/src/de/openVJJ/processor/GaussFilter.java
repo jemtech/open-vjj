@@ -98,7 +98,7 @@ public class GaussFilter extends ImageProcessor {
 		}
 		gpuIniting = true;
 		try {
-			program = InputComponents.getCLContext().createProgram(openGJTest.class.getResourceAsStream("kernelProgramms/gauss")).build();
+			program = getCLContext().createProgram(openGJTest.class.getResourceAsStream("kernelProgramms/gauss")).build();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -128,15 +128,15 @@ public class GaussFilter extends ImageProcessor {
 		int width = videoFrame.getWidth();
 		int height = videoFrame.getHeight();
 
-		int localWorkSize = InputComponents.getLocalWorkSize2D();
-		int globalWorkSizeX = InputComponents.getGlobalWorkSizeX(width);
-		int globalWorkSizeY = InputComponents.getGlobalWorkSizeY(height);
+		int localWorkSize = getLocalWorkSize2D();
+		int globalWorkSizeX = getGlobalWorkSizeX(width);
+		int globalWorkSizeY = getGlobalWorkSizeY(height);
 
 		VideoFrame resultVideoFrame = new VideoFrame(videoFrame.getWidth(), videoFrame.getHeight());
 		
-		calculateOnGPU(videoFrame.getRedCLBuffer(), resultVideoFrame.getRedCLBuffer(), width, height, globalWorkSizeX, localWorkSize, globalWorkSizeY, localWorkSize);
-		calculateOnGPU(videoFrame.getGreenCLBuffer(), resultVideoFrame.getGreenCLBuffer(), width, height, globalWorkSizeX, localWorkSize, globalWorkSizeY, localWorkSize);
-		calculateOnGPU(videoFrame.getBlueCLBuffer(), resultVideoFrame.getBlueCLBuffer(), width, height, globalWorkSizeX, localWorkSize, globalWorkSizeY, localWorkSize);
+		calculateOnGPU(videoFrame.getRedCLBuffer(this), resultVideoFrame.getRedCLBuffer(this), width, height, globalWorkSizeX, localWorkSize, globalWorkSizeY, localWorkSize);
+		calculateOnGPU(videoFrame.getGreenCLBuffer(this), resultVideoFrame.getGreenCLBuffer(this), width, height, globalWorkSizeX, localWorkSize, globalWorkSizeY, localWorkSize);
+		calculateOnGPU(videoFrame.getBlueCLBuffer(this), resultVideoFrame.getBlueCLBuffer(this), width, height, globalWorkSizeX, localWorkSize, globalWorkSizeY, localWorkSize);
 		
 		return resultVideoFrame;
 	}
@@ -148,7 +148,7 @@ public class GaussFilter extends ImageProcessor {
 		kernel.putArg(out);
 		kernel.putArg(width);
 		kernel.putArg(height);
-		CLCommandQueue clCommandQueue = InputComponents.getCLCommandQueue();
+		CLCommandQueue clCommandQueue = getCLCommandQueue();
 		synchronized (clCommandQueue) {
 			clCommandQueue.putWriteBuffer(in, false);
 			clCommandQueue.put2DRangeKernel(kernel, 0, 0, globalWorkSizeX, globalWorkSizeY, localWorkSizeX, localWorkSizeY);

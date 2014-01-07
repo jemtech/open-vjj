@@ -31,4 +31,5 @@ public interface VJJComponent {
 	 * @param element XML Element
 	 */
 	public void setConfig(Element element);
+	
 }
