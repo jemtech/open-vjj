@@ -9,6 +9,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import de.openVJJ.GPUComponent;
 import de.openVJJ.VJJComponent;
 import de.openVJJ.ImageListener.ImageListener;
 import de.openVJJ.graphic.VideoFrame;
@@ -29,7 +30,7 @@ import de.openVJJ.graphic.VideoFrame;
  * if not, see <http://www.gnu.org/licenses/>.  
  */
 
-public abstract class ImagePublisher implements VJJComponent{
+public abstract class ImagePublisher extends GPUComponent implements VJJComponent{
 	private List<ImageListener> imageListener = null;
 	
 	synchronized protected List<ImageListener> getImageListener(){
