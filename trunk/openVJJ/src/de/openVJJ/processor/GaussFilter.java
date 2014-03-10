@@ -151,7 +151,8 @@ public class GaussFilter extends ImageProcessor {
 		CLCommandQueue clCommandQueue = getCLCommandQueue();
 		synchronized (clCommandQueue) {
 			clCommandQueue.putWriteBuffer(in, false);
-			clCommandQueue.put2DRangeKernel(kernel, 0, 0, globalWorkSizeX, globalWorkSizeY, localWorkSizeX, localWorkSizeY);
+			//clCommandQueue.put2DRangeKernel(kernel, 0, 0, globalWorkSizeX, globalWorkSizeY, localWorkSizeX, localWorkSizeY);
+			clCommandQueue.put2DRangeKernel(kernel, 0, 0, width, height, 0, 0);//auto calc by driver
 			clCommandQueue.putReadBuffer(out, true);
 			clCommandQueue.finish();
 		}

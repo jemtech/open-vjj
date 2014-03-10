@@ -88,6 +88,7 @@ public abstract class ImagePublisher extends GPUComponent implements VJJComponen
 	        }
 	        if(imageListener.size()==1 && !forceThread){
 	        	imageListener.get(0).newImageReceived(videoFrame);
+	        	return;
 		    }
 	        Updater updater = new Updater(videoFrame);
 	        executor.execute(updater);

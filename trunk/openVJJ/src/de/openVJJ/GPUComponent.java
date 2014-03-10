@@ -8,10 +8,10 @@ public class GPUComponent {
 
 
 	static private CLContext context = null;
-	private CLDevice device;
-	private CLCommandQueue queue;
-	private boolean gpuReady = false;
-	private synchronized void initGPU(){
+	static private CLDevice device;
+	static private CLCommandQueue queue;
+	static private boolean gpuReady = false;
+	private static synchronized void initGPU(){
 		if(gpuReady){
 			return;
 		}
@@ -25,7 +25,6 @@ public class GPUComponent {
 		System.out.println("Finish init gpu");
 		gpuReady = true;
 		
-		
 	}
 	
 	private void shutdownGPU(){
@@ -33,7 +32,7 @@ public class GPUComponent {
 		queue.release();
 	}
 	
-	public CLContext getCLContext(){
+	public synchronized CLContext getCLContext(){
 		if(context == null){
 			initGPU();
 		}
