@@ -1,3 +1,5 @@
+// Copyright (C) 2012-2014  Jan-Erik Matthies
+// kernel for summe
 kernel void VectorAdd(global const float* a, global const float* b, global float* c, int numElements){
 	int iGID = get_global_id(0);
 	
