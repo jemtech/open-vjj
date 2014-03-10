@@ -1,10 +1,19 @@
 package de.openVJJ.processor;
 
 
+import java.io.IOException;
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
 import org.jdom2.Element;
 
+import com.jogamp.opencl.CLBuffer;
+import com.jogamp.opencl.CLCommandQueue;
+import com.jogamp.opencl.CLKernel;
+import com.jogamp.opencl.CLProgram;
+
+import de.openVJJ.InputComponents;
+import de.openVJJ.openGJTest;
 import de.openVJJ.graphic.VideoFrame;
 
 /*
@@ -29,6 +38,9 @@ public class Sorbel extends ImageProcessor {
 	
 	@Override
 	public VideoFrame processImage(VideoFrame videoFrame) {
+		if(InputComponents.useGPU){
+			return calculateSorbelGPU(videoFrame);
+		}
 		VideoFrame videoFrameRes = calculateSorbel(videoFrame);
 		return videoFrameRes;
 	}
@@ -89,6 +101,80 @@ public class Sorbel extends ImageProcessor {
 		}
 		rgb[1] += Math.abs(value / 100);
 		result.setColor(x, y, rgb);
+	}
+	
+	private VideoFrame calculateSorbelGPU(VideoFrame videoFrame){
+		if(!gpuReady){
+			initGPU();
+		}
+		if(!gpuReady){
+			return videoFrame;
+		}
+		CLKernel kernel = getRGBKernel();
+		
+		int width = videoFrame.getWidth();
+		int height = videoFrame.getHeight();
+		
+		VideoFrame resultVideoFrame = new VideoFrame(width, height);
+		
+		CLBuffer<FloatBuffer> rIn = videoFrame.getRedCLBuffer(this);
+		CLBuffer<FloatBuffer> gIn = videoFrame.getGreenCLBuffer(this);
+		CLBuffer<FloatBuffer> bIn = videoFrame.getBlueCLBuffer(this);
+		
+		CLBuffer<FloatBuffer> rOut = resultVideoFrame.getRedCLBuffer(this);
+		CLBuffer<FloatBuffer> gOut = resultVideoFrame.getGreenCLBuffer(this);
+		CLBuffer<FloatBuffer> bOut = resultVideoFrame.getBlueCLBuffer(this);
+		
+		kernel.putArg(rIn);
+		kernel.putArg(gIn);
+		kernel.putArg(bIn);
+		kernel.putArg(rOut);
+		kernel.putArg(gOut);
+		kernel.putArg(bOut);
+		kernel.putArg(width);
+		kernel.putArg(height);
+		CLCommandQueue clCommandQueue = getCLCommandQueue();
+		synchronized (clCommandQueue) {
+			clCommandQueue.putWriteBuffer(rIn, false);
+			clCommandQueue.putWriteBuffer(gIn, false);
+			clCommandQueue.putWriteBuffer(bIn, false);
+			//clCommandQueue.put2DRangeKernel(kernel, 0, 0, globalWorkSizeX, globalWorkSizeY, localWorkSizeX, localWorkSizeY);
+			clCommandQueue.put2DRangeKernel(kernel, 0, 0, width, height, 0, 0);//auto calc by driver
+			clCommandQueue.putReadBuffer(rOut, true);
+			clCommandQueue.putReadBuffer(gOut, true);
+			clCommandQueue.putReadBuffer(bOut, true);
+			clCommandQueue.finish();
+		}
+		kernel.release();
+		return resultVideoFrame;
+	}
+	
+	private CLProgram program;
+	//private CLKernel kernel;
+	boolean gpuReady = false;
+	boolean gpuIniting = false;
+	private void initGPU(){
+		if(gpuIniting){
+			return;
+		}
+		gpuIniting = true;
+		try {
+			program = getCLContext().createProgram(openGJTest.class.getResourceAsStream("kernelProgramms/sorbel")).build();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		gpuReady = true;
+		gpuIniting = false;
+	}
+
+	private CLKernel getRGBKernel(){
+		return program.createCLKernel("sorbelRGB");
+	}
+	
+	private void shutdownGPU(){
+		if(program != null){
+			program.release();
+		}
 	}
 
 	@Override
