@@ -47,3 +47,111 @@ kernel void sorbel(global const float* in, global float* outx, global float* out
 	outx[pos] = xRes;
 	outy[pos] = yRes;
 }
+
+kernel void sorbelRGB(global const float* redin, global const float* greenin, global const float* bluein, global float* redout, global float* greenout, global float* blueout, const int width, const int height){
+
+	int xGID = get_global_id(0);
+	int yGID = get_global_id(1);
+	
+	if(xGID >= width-1){
+		return;
+	}
+	if(yGID >= height-1){
+		return;
+	}
+	
+	if(xGID <= 0){
+		return;
+	}
+	if(yGID <= 0){
+		return;
+	}
+	
+	float tempx = 0;
+	int pos = ((xGID-1)*height)+yGID-1;
+	tempx = redin[pos]*-3;
+	tempx = tempx + greenin[pos]*-3;
+	tempx = tempx + bluein[pos]*-3;
+	
+	pos = pos +1;
+	tempx = tempx + redin[pos]*-10;
+	tempx = tempx + greenin[pos]*-10;
+	tempx = tempx + bluein[pos]*-10;
+	
+	pos = pos +1;
+	tempx = tempx + redin[pos]*-3;
+	tempx = tempx + greenin[pos]*-3;
+	tempx = tempx + bluein[pos]*-3;
+	
+	pos = pos + height + height - 2;
+	
+	tempx = tempx + redin[pos]*3;
+	tempx = tempx + greenin[pos]*3;
+	tempx = tempx + bluein[pos]*3;
+	
+	pos = pos +1;
+	tempx = tempx + redin[pos]*10;
+	tempx = tempx + greenin[pos]*10;
+	tempx = tempx + bluein[pos]*10;
+	
+	pos = pos +1;
+	tempx = tempx + redin[pos]*3;
+	tempx = tempx + greenin[pos]*3;
+	tempx = tempx + bluein[pos]*3;
+	
+	
+	float tempy = 0;
+	pos = ((xGID-1)*height)+yGID-1;
+	tempy = redin[pos]*-3;
+	tempy = tempy + greenin[pos]*-3;
+	tempy = tempy + bluein[pos]*-3;
+	
+	pos = pos + height;
+	tempy = tempy + redin[pos]*-10;
+	tempy = tempy + greenin[pos]*-10;
+	tempy = tempy + bluein[pos]*-10;
+	
+	pos = pos + height;
+	tempy = tempy + redin[pos]*-3;
+	tempy = tempy + greenin[pos]*-3;
+	tempy = tempy + bluein[pos]*-3;
+	
+	pos = pos - height - height + 2;
+	
+	tempy = tempy + redin[pos]*3;
+	tempy = tempy + greenin[pos]*3;
+	tempy = tempy + bluein[pos]*3;
+	
+	pos = pos + height;
+	tempy = tempy + redin[pos]*10;
+	tempy = tempy + greenin[pos]*10;
+	tempy = tempy + bluein[pos]*10;
+	
+	pos = pos + height;
+	tempy = tempy + redin[pos]*3;
+	tempy = tempy + greenin[pos]*3;
+	tempy = tempy + bluein[pos]*3;
+	
+	pos = ((xGID)*height)+yGID;
+	
+	float tempxy = tempx + tempy;
+	
+	tempxy = tempxy / 96;
+	if(tempxy <= 0){
+		tempxy = tempxy * (-1);
+	}
+	blueout[pos] = tempxy;
+	
+	tempx = tempx / 48;
+	if(tempx <= 0){
+		tempx = tempx * (-1);
+	}
+	redout[pos] = tempx;
+	
+	tempy = tempy / 48;
+	if(tempy <= 0){
+		tempy = tempy * (-1);
+	}
+	greenout[pos] = tempy;
+	
+}
