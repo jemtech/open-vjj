@@ -1,0 +1,49 @@
+// Copyright (C) 2012-2014  Jan-Erik Matthies
+// kernel for sorbel
+kernel void sorbel(global const float* in, global float* outx, global float* outy, const int width, const int height){
+	int xGID = get_global_id(0);
+	int yGID = get_global_id(1);
+	
+	if(xGID > width - 1){
+		if(xGID >= width){
+			return;
+		}
+		if(yGID >= height){
+			return;
+		}
+		out[(xGID * height)+yGID] = 0;
+	}
+	
+	if(yGID > height - 1){
+		if(yGID >= height){
+			return;
+		}
+		out[(xGID * height)+yGID] = 0;
+	}
+	
+	int pos = ((xGID-1)*height)+yGID;
+	
+	float xRes = in[pos-1]  * -3;
+	xRes = xRes + in[pos]   * -10;
+	xRes = xRes + in[pos+1] * -3;
+	
+	float yRes = in[pos-1]  * 3;
+	yRes = yRes + in[pos+1] * -3;
+	
+	pos = pos + (2*height);
+	
+	xRes = xRes + in[pos-1] * 3;
+	xRes = xRes + in[pos]   * 10;
+	xRes = xRes + in[pos+1] * 3;
+	
+	yRes = yRes + in[pos-1] * 3;
+	yRes = yRes + in[pos+1] * -3;
+				
+	pos = pos - height;
+	
+	yRes = yRes + in[pos-1] * 10;
+	yRes = yRes + in[pos+1] * -10;
+	
+	outx[pos] = xRes;
+	outy[pos] = yRes;
+}
