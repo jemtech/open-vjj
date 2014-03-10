@@ -11,14 +11,16 @@ kernel void sorbel(global const float* in, global float* outx, global float* out
 		if(yGID >= height){
 			return;
 		}
-		out[(xGID * height)+yGID] = 0;
+		outx[(xGID * height)+yGID] = 0;
+		outy[(xGID * height)+yGID] = 0;
 	}
 	
 	if(yGID > height - 1){
 		if(yGID >= height){
 			return;
 		}
-		out[(xGID * height)+yGID] = 0;
+		outx[(xGID * height)+yGID] = 0;
+		outy[(xGID * height)+yGID] = 0;
 	}
 	
 	int pos = ((xGID-1)*height)+yGID;
@@ -54,16 +56,40 @@ kernel void sorbelRGB(global const float* redin, global const float* greenin, gl
 	int yGID = get_global_id(1);
 	
 	if(xGID >= width-1){
+		if(xGID == width-1){
+			int pos = ((xGID)*height)+yGID;
+			redout[pos] = 0;
+			greenout[pos] = 0;
+			blueout[pos] = 0;
+		}
 		return;
 	}
 	if(yGID >= height-1){
+		if(yGID == height-1){
+			int pos = ((xGID)*height)+yGID;
+			redout[pos] = 0;
+			greenout[pos] = 0;
+			blueout[pos] = 0;
+		}
 		return;
 	}
 	
 	if(xGID <= 0){
+		if(xGID == 0){
+			int pos = ((xGID)*height)+yGID;
+			redout[pos] = 0;
+			greenout[pos] = 0;
+			blueout[pos] = 0;
+		}
 		return;
 	}
 	if(yGID <= 0){
+		if(yGID == 0){
+			int pos = ((xGID)*height)+yGID;
+			redout[pos] = 0;
+			greenout[pos] = 0;
+			blueout[pos] = 0;
+		}
 		return;
 	}
 	
