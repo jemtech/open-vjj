@@ -12,9 +12,6 @@ import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.XMLOutputter;
 
-import com.jogamp.opencl.CLCommandQueue;
-import com.jogamp.opencl.CLContext;
-import com.jogamp.opencl.CLDevice;
 
 import de.openVJJ.ImageListener.ImageListener;
 import de.openVJJ.imagePublisher.ImagePublisher;
