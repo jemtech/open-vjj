@@ -24,7 +24,6 @@ public class GPUComponent {
 		queue = device.createCommandQueue();
 		System.out.println("Finish init gpu");
 		gpuReady = true;
-		
 	}
 	
 	private void shutdownGPU(){
