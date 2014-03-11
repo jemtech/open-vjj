@@ -6,5 +6,5 @@ kernel void diff(global const float* minuend, global const float* subtrahend, gl
 	if(iGID >= numElements){
 		return;
 	}
-	out[iGID] = minuend - subtrahend;
+	out[iGID] = minuend[iGID] - subtrahend[iGID];
 }
