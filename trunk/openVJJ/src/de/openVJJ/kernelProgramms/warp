@@ -1,0 +1,23 @@
+// Copyright (C) 2012-2014  Jan-Erik Matthies
+// kernel for warping
+kernel void warp(global const float* in, global const float* matrix, global float* out,  const int width, const int height){
+	int xGID = get_global_id(0);
+	int yGID = get_global_id(1);
+	
+	if(xGID >= width){
+		return;
+	}
+	if(yGID >= height){
+		return;
+	}
+	int matrixPos = (xGID * height*3) + (yGID * 3);
+	int pos = (xGID * height) + yGID;
+	
+	if(matrix[matrixPos] == 1){
+		int valPos = matrix[matrixPos + 1] * height + matrix[matrixPos + 2];
+		
+		out[pos] = in[valPos];
+	}else{
+		out[pos] = 0;
+	}
+}

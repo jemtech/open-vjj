@@ -1,9 +1,20 @@
 package de.openVJJ.processor;
 
+import java.io.IOException;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.Arrays;
 
 import org.jdom2.Element;
 
+import com.jogamp.opencl.CLBuffer;
+import com.jogamp.opencl.CLCommandQueue;
+import com.jogamp.opencl.CLKernel;
+import com.jogamp.opencl.CLProgram;
+import com.jogamp.opencl.CLMemory.Mem;
+
+import de.openVJJ.InputComponents;
+import de.openVJJ.openGJTest;
 import de.openVJJ.controler.WarpingControl;
 import de.openVJJ.graphic.VideoFrame;
 
@@ -108,12 +119,23 @@ public class Warping extends ImageProcessor {
 		generateMatrix(resultx, resulty);
 	}
 	
+
+	private CLBuffer<FloatBuffer> matrixBuffer = null;
 	private void generateMatrix(double[] fX, double[] fY){
-		if(speed<FAST){
+		FloatBuffer intBuffer = null;
+		CLBuffer<FloatBuffer> matrixBufferTemp = null;
+		if(InputComponents.useGPU){
+			if(!gpuReady){
+				initGPU();
+			}
+			matrixBufferTemp = getCLContext().createFloatBuffer(getGlobalWorkSize(imageWidth*imageHeight*3),  Mem.READ_ONLY);
+			intBuffer = matrixBufferTemp.getBuffer();
+		}else if(speed<FAST){
 			imageMatrix = new Point[imageWidth][imageHeight][];
 		}else{
 			fastImageMatrix = new int[imageWidth][imageHeight][3];
 		}
+		
 		for(double x=0; x<imageWidth; x++){
 			for(double y=0; y<imageHeight; y++){
 				int xPos = (int) (x*(fX[0] - (fX[3]*y )) + fX[1] + y*fX[2] ); 
@@ -122,6 +144,15 @@ public class Warping extends ImageProcessor {
 					continue;
 				}
 				try{
+					if(InputComponents.useGPU){
+						int pos = (xPos*imageHeight*3) + (yPos*3);
+						if(intBuffer.get(pos) != 1){
+							intBuffer.put(pos, 1);
+							intBuffer.put(pos+1, (int)x);
+							intBuffer.put(pos+2, (int)y);
+						}
+						continue;
+					}
 					if(speed>NORMAL){
 						if(fastImageMatrix[xPos][yPos][2] != 1){
 							fastImageMatrix[xPos][yPos][2] = 1;//for isSet
@@ -145,9 +176,94 @@ public class Warping extends ImageProcessor {
 				}
 			}
 		}
+		if(InputComponents.useGPU){
+			if(matrixBuffer != null){
+				matrixBuffer.release();
+			}
+			matrixBuffer = matrixBufferTemp;
+		}
+	}
+	
+	private CLProgram program;
+	//private CLKernel kernel;
+	boolean gpuReady = false;
+	boolean gpuIniting = false;
+	private void initGPU(){
+		if(gpuIniting){
+			return;
+		}
+		gpuIniting = true;
+		try {
+			program = getCLContext().createProgram(openGJTest.class.getResourceAsStream("kernelProgramms/warp")).build();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		gpuReady = true;
+		gpuIniting = false;
+	}
+
+	private CLKernel getKernel(){
+		return program.createCLKernel("warp");
+	}
+	
+	private void shutdownGPU(){
+		if(program != null){
+			program.release();
+		}
+	}
+	
+	private void warpeChannel(CLBuffer<FloatBuffer> in, CLBuffer<FloatBuffer> out,  int width, int height){
+		CLKernel kernel = getKernel();
+		
+		kernel.putArg(in);
+		kernel.putArg(matrixBuffer);
+		kernel.putArg(out);
+		kernel.putArg(width);
+		kernel.putArg(height);
+		CLCommandQueue clCommandQueue = getCLCommandQueue();
+		synchronized (clCommandQueue) {
+			//clCommandQueue.putWriteBuffer(in, false);
+			clCommandQueue.putWriteBuffer(matrixBuffer, false);
+			clCommandQueue.put2DRangeKernel(kernel, 0, 0, width, height, 0, 0);
+			clCommandQueue.putReadBuffer(out, true);
+			clCommandQueue.finish();
+		}
+		kernel.release();
 	}
 	
 	private VideoFrame warpe(VideoFrame videoFrame){
+		
+		if(InputComponents.useGPU){
+			if(!gpuReady){
+				initGPU();
+			}
+			if(!gpuReady || matrixBuffer == null){
+				return videoFrame;
+			}
+			
+			
+			
+			int width = videoFrame.getWidth();
+			int height = videoFrame.getHeight();
+			
+			VideoFrame resultVideoFrame = new VideoFrame(width, height);
+			
+			CLBuffer<FloatBuffer> rIn = videoFrame.getRedCLBuffer(this);
+			CLBuffer<FloatBuffer> rOut = resultVideoFrame.getRedCLBuffer(this);
+			warpeChannel(rIn, rOut, width, height);
+			
+			CLBuffer<FloatBuffer> gIn = videoFrame.getGreenCLBuffer(this);
+			CLBuffer<FloatBuffer> gOut = resultVideoFrame.getGreenCLBuffer(this);
+			warpeChannel(gIn, gOut, width, height);
+			
+			CLBuffer<FloatBuffer> bIn = videoFrame.getBlueCLBuffer(this);
+			CLBuffer<FloatBuffer> bOut = resultVideoFrame.getBlueCLBuffer(this);
+			warpeChannel(bIn, bOut, width, height);
+			
+			
+			return resultVideoFrame;
+		}
+		
 		if(speed>NORMAL){
 			if(fastImageMatrix == null){
 				return videoFrame;
