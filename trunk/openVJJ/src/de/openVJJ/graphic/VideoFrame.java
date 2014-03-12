@@ -45,6 +45,23 @@ public class VideoFrame {
 	int width = 0;
 	int height = 0;
 	
+	int inuse = 0;
+	
+	public void lock(){
+		inuse++;
+	}
+	
+	public void free(){
+		inuse--;
+		if(inuse <= 0){
+			try {
+				finalize();
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	public VideoFrame(int width, int height){
 		this.width = width;
 		this.height = height;

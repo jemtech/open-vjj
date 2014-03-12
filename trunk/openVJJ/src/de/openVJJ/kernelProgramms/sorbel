@@ -51,7 +51,6 @@ kernel void sorbel(global const float* in, global float* outx, global float* out
 }
 
 kernel void sorbelRGB(global const float* redin, global const float* greenin, global const float* bluein, global float* redout, global float* greenout, global float* blueout, const int width, const int height){
-
 	int xGID = get_global_id(0);
 	int yGID = get_global_id(1);
 	
@@ -163,19 +162,19 @@ kernel void sorbelRGB(global const float* redin, global const float* greenin, gl
 	float tempxy = tempx + tempy;
 	
 	tempxy = tempxy / 96;
-	if(tempxy <= 0){
+	if(tempxy < 0){
 		tempxy = tempxy * (-1);
 	}
 	blueout[pos] = tempxy;
 	
 	tempx = tempx / 48;
-	if(tempx <= 0){
+	if(tempx < 0){
 		tempx = tempx * (-1);
 	}
 	redout[pos] = tempx;
 	
 	tempy = tempy / 48;
-	if(tempy <= 0){
+	if(tempy < 0){
 		tempy = tempy * (-1);
 	}
 	greenout[pos] = tempy;

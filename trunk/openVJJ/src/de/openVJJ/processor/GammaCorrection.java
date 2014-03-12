@@ -48,11 +48,15 @@ public class GammaCorrection extends ImageProcessor {
 		if(videoFrame == null){
 			return null;
 		}
+		videoFrame.lock();
+		VideoFrame res = null;
 		if(InputComponents.useGPU){
-			return calculateGammaCorrectionGPU(videoFrame);
+			res =  calculateGammaCorrectionGPU(videoFrame);
 		}else{
-			return calculateGammaCorrection(videoFrame);
+			res =  calculateGammaCorrection(videoFrame);
 		}
+		videoFrame.free();
+		return res;
 	}
 	
 	private VideoFrame calculateGammaCorrection(VideoFrame videoFrame){

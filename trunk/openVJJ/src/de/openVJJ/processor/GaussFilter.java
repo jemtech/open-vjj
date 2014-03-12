@@ -36,10 +36,15 @@ public class GaussFilter extends ImageProcessor {
 
 	@Override
 	public VideoFrame processImage(VideoFrame videoFrame) {
+		videoFrame.lock();
+		VideoFrame res = null;
 		if(InputComponents.useGPU){
-			return filterFrameGPU(videoFrame);
+			res = filterFrameGPU(videoFrame);
+		}else{
+			res = filterFrame(videoFrame);
 		}
-		return filterFrame(videoFrame);
+		videoFrame.free();
+		return res;
 	}
 
 	@Override
