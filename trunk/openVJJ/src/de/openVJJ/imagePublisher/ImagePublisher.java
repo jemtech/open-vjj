@@ -109,7 +109,7 @@ public abstract class ImagePublisher extends GPUComponent implements VJJComponen
 		@Override
 		public void run() {
 			Collection<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
-			
+			videoFrame.lock();
 			for(ImageListener imageListenerElement : imageListener){
 				ListenerUpdater listenerUpdater = new ListenerUpdater(imageListenerElement, videoFrame);
 				tasks.add(Executors.callable(listenerUpdater));
@@ -123,6 +123,7 @@ public abstract class ImagePublisher extends GPUComponent implements VJJComponen
 			} catch (ExecutionException e) {
 				e.printStackTrace();
 			}
+			videoFrame.free();
 			
 		}
 	}
