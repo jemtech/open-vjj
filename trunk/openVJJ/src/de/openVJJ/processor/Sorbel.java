@@ -11,6 +11,7 @@ import com.jogamp.opencl.CLBuffer;
 import com.jogamp.opencl.CLCommandQueue;
 import com.jogamp.opencl.CLKernel;
 import com.jogamp.opencl.CLProgram;
+import com.jogamp.opencl.CLMemory.Mem;
 
 import de.openVJJ.InputComponents;
 import de.openVJJ.openGJTest;
@@ -220,7 +221,82 @@ public class Sorbel extends ImageProcessor {
 		}
 		return result;
 	}
+	
 
+	private CLKernel getKernel(){
+		return program.createCLKernel("sorbel");
+	}
+	
+	public SorbelResultGPU calculateSorbelResultGPU(VideoFrame videoFrame){
+		
+		if(!gpuReady){
+			initGPU();
+		}
+		if(!gpuReady){
+			return null;
+		}
+		CLKernel kernel = getKernel();
+		
+		int width = videoFrame.getWidth();
+		int height = videoFrame.getHeight();
+		SorbelResultGPU result = new SorbelResultGPU(width, height);
+		
+		calculateSorbelchannelGPU(kernel, videoFrame.getRedCLBuffer(this), result, width, height);
+		
+		calculateSorbelchannelGPU(kernel, videoFrame.getGreenCLBuffer(this), result, width, height);
+		
+		calculateSorbelchannelGPU(kernel, videoFrame.getBlueCLBuffer(this), result, width, height);
+		
+		kernel.release();
+		
+		return result;
+	}
+	
+	private void calculateSorbelchannelGPU(CLKernel kernel, CLBuffer<FloatBuffer> in, SorbelResultGPU result, int width, int height){
+		CLBuffer<FloatBuffer> outx = getCLContext().createFloatBuffer(width*height, Mem.READ_WRITE);
+		CLBuffer<FloatBuffer> outy = getCLContext().createFloatBuffer(width*height, Mem.READ_WRITE);
+		kernel.putArg(in);
+		kernel.putArg(outx);
+		kernel.putArg(outy);
+		kernel.putArg(width);
+		kernel.putArg(height);
+		CLCommandQueue clCommandQueue = getCLCommandQueue();
+		synchronized (clCommandQueue) {
+			clCommandQueue.putWriteBuffer(in, false);
+			clCommandQueue.put2DRangeKernel(kernel, 0, 0, width, height, 0, 0);//auto calc by driver
+			clCommandQueue.putReadBuffer(outx, true);
+			clCommandQueue.putReadBuffer(outy, true);
+			clCommandQueue.finish();
+		}
+		result.add(outx, outy);
+		
+	}
+
+	public class SorbelResultGPU{
+		ArrayList<CLBuffer<FloatBuffer>> resultsPerChanelX = new ArrayList<CLBuffer<FloatBuffer>>();
+		ArrayList<CLBuffer<FloatBuffer>> resultsPerChanelY = new ArrayList<CLBuffer<FloatBuffer>>();
+		int width;
+		int height;
+		
+		public SorbelResultGPU(int width, int height){
+			this.height = height;
+			this.width = width;
+		}
+		
+		public void add(CLBuffer<FloatBuffer> resultx, CLBuffer<FloatBuffer> resulty){
+			resultsPerChanelX.add(resultx);
+			resultsPerChanelY.add(resulty);
+		}
+		
+		public CLBuffer<FloatBuffer> getXbyChanel(int chanal){
+			return resultsPerChanelX.get(chanal);
+		}
+		
+		public CLBuffer<FloatBuffer> getYbyChanel(int chanal){
+			return resultsPerChanelY.get(chanal);
+		}
+	}
+	
 	public class SorbelResult{
 		ArrayList<int[][]> resultsPerChanelX = new ArrayList<int[][]>();
 		ArrayList<int[][]> resultsPerChanelY = new ArrayList<int[][]>();

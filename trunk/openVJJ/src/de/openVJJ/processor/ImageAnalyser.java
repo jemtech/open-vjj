@@ -2,6 +2,8 @@ package de.openVJJ.processor;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.io.IOException;
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -15,8 +17,16 @@ import javax.swing.event.ChangeListener;
 
 import org.jdom2.Element;
 
+import com.jogamp.opencl.CLBuffer;
+import com.jogamp.opencl.CLCommandQueue;
+import com.jogamp.opencl.CLKernel;
+import com.jogamp.opencl.CLProgram;
+import com.jogamp.opencl.CLMemory.Mem;
+
+import de.openVJJ.openGJTest;
 import de.openVJJ.graphic.VideoFrame;
 import de.openVJJ.processor.Sorbel.SorbelResult;
+import de.openVJJ.processor.Sorbel.SorbelResultGPU;
 
 /*
  * Copyright (C) 2013  Jan-Erik Matthies
@@ -72,6 +82,13 @@ public class ImageAnalyser extends ImageProcessor {
 		}
 		System.out.println(combinded.size());
 		return out;
+	}
+	
+	private VideoFrame processOnGPU(VideoFrame videoFrame){
+		SorbelResultGPU result = sorbel.calculateSorbelResultGPU(videoFrame);
+		CLBuffer<FloatBuffer> xTemp = combindColorsGPU(result.resultsPerChanelX, result.height*result.width);
+		CLBuffer<FloatBuffer> yTemp = combindColorsGPU(result.resultsPerChanelY, result.height*result.width);
+		
 	}
 	
 	private void paintLinesG(ArrayList<Line> lines, VideoFrame out){
@@ -187,6 +204,65 @@ public class ImageAnalyser extends ImageProcessor {
 
 		controllerFrame.setVisible(true);
 		controllerFrame.pack();
+	}
+	
+	private CLProgram programSumme;
+	//private CLKernel kernel;
+	boolean gpuReady = false;
+	boolean gpuIniting = false;
+	private void initGPU(){
+		if(gpuIniting){
+			return;
+		}
+		gpuIniting = true;
+		try {
+			programSumme = getCLContext().createProgram(openGJTest.class.getResourceAsStream("kernelProgramms/VectorAdd")).build();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		gpuReady = true;
+		gpuIniting = false;
+	}
+	
+
+	private CLKernel getSumme3Kernel(){
+		return programSumme.createCLKernel("summe3ABS");
+	}
+	
+	private CLBuffer<FloatBuffer> combindColorsGPU(ArrayList<CLBuffer<FloatBuffer>> resultsPerChanel, int pixelCout){
+		int chanelCount = resultsPerChanel.size();
+		if(chanelCount != 3){
+			System.err.println("not 3 channels");
+		}
+		
+		if(!gpuReady){
+			initGPU();
+		}
+		if(!gpuReady){
+			return null;
+		}
+		
+		CLKernel kernel = getSumme3Kernel();
+		
+		CLBuffer<FloatBuffer> out = getCLContext().createFloatBuffer(pixelCout, Mem.READ_WRITE);
+		
+		kernel.putArg(resultsPerChanel.get(0));
+		kernel.putArg(resultsPerChanel.get(1));
+		kernel.putArg(resultsPerChanel.get(2));
+		kernel.putArg(out);
+		kernel.putArg(pixelCout);
+		CLCommandQueue clCommandQueue = getCLCommandQueue();
+		synchronized (clCommandQueue) {
+			clCommandQueue.putWriteBuffer(resultsPerChanel.get(0), false);
+			clCommandQueue.putWriteBuffer(resultsPerChanel.get(1), false);
+			clCommandQueue.putWriteBuffer(resultsPerChanel.get(2), false);
+			clCommandQueue.put1DRangeKernel(kernel, 0, pixelCout, 0);//auto calc by driver
+			clCommandQueue.putReadBuffer(out, true);
+			clCommandQueue.finish();
+		}
+		
+		kernel.release();
+		return out;
 	}
 	
 	private int[][] combindColors(ArrayList<int[][]> resultsPerChanel){
@@ -600,6 +676,18 @@ public class ImageAnalyser extends ImageProcessor {
 		public boolean equals(Point point) {
 			return (x == point.x && y == point.y);
 		}
+	}
+	
+	private int[][] converte(CLBuffer<FloatBuffer> gpuBuffer, int width, int height){
+		int[][] res = new int[width][height];
+		FloatBuffer floatBuffer = gpuBuffer.getBuffer();
+		floatBuffer.rewind();
+		for(int x = 0; x < width; x++){
+			for(int y = 0; y < height; y++){
+				res[x][y] = (int) floatBuffer.get();
+			}
+		}
+		return res;
 	}
 
 }

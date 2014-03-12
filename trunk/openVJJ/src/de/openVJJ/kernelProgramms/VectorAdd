@@ -9,3 +9,24 @@ kernel void VectorAdd(global const float* a, global const float* b, global float
 	
 	c[iGID] = a[iGID] + b[iGID];
 }
+
+
+kernel void summe3(global const float* a, global const float* b, global const float* c,  global float* res, int numElements){
+	int iGID = get_global_id(0);
+	
+	if(iGID >= numElements){
+		return;
+	}
+	
+	res[iGID] = a[iGID] + b[iGID] + c[iGID];
+}
+
+kernel void summe3ABS(global const float* a, global const float* b, global const float* c,  global float* res, int numElements){
+	int iGID = get_global_id(0);
+	
+	if(iGID >= numElements){
+		return;
+	}
+	
+	res[iGID] = abs(a[iGID]) + abs(b[iGID]) + abs(c[iGID]);
+}
