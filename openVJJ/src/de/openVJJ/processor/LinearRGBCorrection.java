@@ -2,6 +2,8 @@ package de.openVJJ.processor;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.io.IOException;
+import java.nio.FloatBuffer;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -11,6 +13,13 @@ import javax.swing.event.ChangeListener;
 
 import org.jdom2.Element;
 
+import com.jogamp.opencl.CLBuffer;
+import com.jogamp.opencl.CLCommandQueue;
+import com.jogamp.opencl.CLKernel;
+import com.jogamp.opencl.CLProgram;
+
+import de.openVJJ.InputComponents;
+import de.openVJJ.openGJTest;
 import de.openVJJ.graphic.VideoFrame;
 
 /*
@@ -38,7 +47,77 @@ public class LinearRGBCorrection extends ImageProcessor {
 		if(videoFrame == null){
 			return null;
 		}
-		return calculateLinearRGBCorrection(videoFrame);
+		videoFrame.lock();
+		VideoFrame res = null;
+		if(InputComponents.useGPU){
+			res = calculateLinearRGBCorrectionGPU(videoFrame);
+		}else{
+			res = calculateLinearRGBCorrection(videoFrame);
+		}
+		videoFrame.free();
+		return res;
+	}
+	
+	private VideoFrame calculateLinearRGBCorrectionGPU(VideoFrame videoFrame){
+		if((mulR == 1) && (mulG == 1) && (mulB == 1)){
+			return videoFrame;
+		}
+		if(!gpuReady){
+			initGPU();
+		}
+		if(!gpuReady){
+			return videoFrame;
+		}
+		
+		int xMax = videoFrame.getWidth();
+		int yMax = videoFrame.getHeight();
+		VideoFrame resultVideoFrame = new VideoFrame(xMax, yMax);
+		calculateOnGPU(videoFrame.getRedCLBuffer(this), (float) mulR, resultVideoFrame.getRedCLBuffer(this), xMax, yMax);
+		calculateOnGPU(videoFrame.getGreenCLBuffer(this), (float) mulG, resultVideoFrame.getGreenCLBuffer(this), xMax, yMax);
+		calculateOnGPU(videoFrame.getBlueCLBuffer(this), (float) mulB, resultVideoFrame.getBlueCLBuffer(this), xMax, yMax);
+		return resultVideoFrame;
+	}
+
+	private synchronized void calculateOnGPU(CLBuffer<FloatBuffer> in, float multiplier, CLBuffer<FloatBuffer> out, int width, int height){
+		CLKernel kernel = getKernel();
+		//kernel.rewind();
+		kernel.putArg(in);
+		kernel.putArg(multiplier);
+		kernel.putArg(out);
+		kernel.putArg(width);
+		kernel.putArg(height);
+		CLCommandQueue clCommandQueue = getCLCommandQueue();
+		synchronized (clCommandQueue) {
+			clCommandQueue.putWriteBuffer(in, false);
+			//clCommandQueue.put2DRangeKernel(kernel, 0, 0, globalWorkSizeX, globalWorkSizeY, localWorkSizeX, localWorkSizeY);
+			clCommandQueue.put2DRangeKernel(kernel, 0, 0, width, height, 0, 0);//auto calc by driver
+			clCommandQueue.putReadBuffer(out, true);
+			clCommandQueue.finish();
+		}
+		kernel.release();
+	}
+	
+
+	private CLProgram program;
+	//private CLKernel kernel;
+	boolean gpuReady = false;
+	boolean gpuIniting = false;
+	private void initGPU(){
+		if(gpuIniting){
+			return;
+		}
+		gpuIniting = true;
+		try {
+			program = getCLContext().createProgram(openGJTest.class.getResourceAsStream("kernelProgramms/multiply")).build();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		gpuReady = true;
+		gpuIniting = false;
+	}
+
+	private CLKernel getKernel(){
+		return program.createCLKernel("multiply");
 	}
 	
 	private VideoFrame calculateLinearRGBCorrection(VideoFrame videoFrame){

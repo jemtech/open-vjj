@@ -39,11 +39,15 @@ public class Sorbel extends ImageProcessor {
 	
 	@Override
 	public VideoFrame processImage(VideoFrame videoFrame) {
+		videoFrame.lock();
+		VideoFrame res = null;
 		if(InputComponents.useGPU){
-			return calculateSorbelGPU(videoFrame);
+			res = calculateSorbelGPU(videoFrame);
+		}else{
+			res = calculateSorbel(videoFrame);
 		}
-		VideoFrame videoFrameRes = calculateSorbel(videoFrame);
-		return videoFrameRes;
+		videoFrame.free();
+		return res;
 	}
 
 	@Override
@@ -112,6 +116,7 @@ public class Sorbel extends ImageProcessor {
 			return videoFrame;
 		}
 		CLKernel kernel = getRGBKernel();
+		videoFrame.lock();
 		
 		int width = videoFrame.getWidth();
 		int height = videoFrame.getHeight();
@@ -136,17 +141,20 @@ public class Sorbel extends ImageProcessor {
 		kernel.putArg(height);
 		CLCommandQueue clCommandQueue = getCLCommandQueue();
 		synchronized (clCommandQueue) {
-			clCommandQueue.putWriteBuffer(rIn, false);
-			clCommandQueue.putWriteBuffer(gIn, false);
-			clCommandQueue.putWriteBuffer(bIn, false);
-			//clCommandQueue.put2DRangeKernel(kernel, 0, 0, globalWorkSizeX, globalWorkSizeY, localWorkSizeX, localWorkSizeY);
+			//comment because of errors
+			//clCommandQueue.putWriteBuffer(rIn, false);
+			//clCommandQueue.putWriteBuffer(gIn, false);
+			//clCommandQueue.putWriteBuffer(bIn, false);
 			clCommandQueue.put2DRangeKernel(kernel, 0, 0, width, height, 0, 0);//auto calc by driver
 			clCommandQueue.putReadBuffer(rOut, true);
 			clCommandQueue.putReadBuffer(gOut, true);
 			clCommandQueue.putReadBuffer(bOut, true);
 			clCommandQueue.finish();
 		}
+		
 		kernel.release();
+
+		videoFrame.free();
 		return resultVideoFrame;
 	}
 	
