@@ -33,7 +33,9 @@ public class Module extends Plugable{
 	private List<Plugable> plugables = new ArrayList<Plugable>();
 	
 	private Map<String, Connection> inputConnectionMap = new HashMap<String, Connection>();
-	private Map<Connection, ModuleConnectionListener> conectionListenerMap =  new HashMap<Connection, ModuleConnectionListener>();
+	private Map<Connection, ModuleConnectionListener> inConectionListenerMap =  new HashMap<Connection, ModuleConnectionListener>();
+	
+	private Map<Connection, ModuleConnectionListener> outConectionListenerMap =  new HashMap<Connection, ModuleConnectionListener>();
 	
 	/**
 	 * Use this method to add a {@link Plugable} to the {@link Module}
@@ -69,7 +71,7 @@ public class Module extends Plugable{
 	@Override
 	protected ConnectionListener createConnectionListener(String inpuName,
 			Connection connection) {
-		Connection inputConnection = getInputConnection(inpuName);
+		Connection inputConnection = getIntenalModuleInputConnection(inpuName);
 		if(inputConnection == null){
 			return null;
 		}
@@ -77,32 +79,74 @@ public class Module extends Plugable{
 			System.err.println("Connection did not match");
 			return null;
 		}
-		ModuleConnectionListener connectionListenerOld = conectionListenerMap.get(inputConnection);
+		ModuleConnectionListener connectionListenerOld = inConectionListenerMap.get(inputConnection);
 		if(connectionListenerOld != null){
 			connectionListenerOld.release();
 		}
 		ModuleConnectionListener connectionListener = new ModuleConnectionListener(connection, inputConnection);
-		conectionListenerMap.put(inputConnection, connectionListener);
+		inConectionListenerMap.put(inputConnection, connectionListener);
 		return connectionListener;
 	}
 	
 	/**
 	 * Gets the internal {@link Connection} for the specified input. If there is no {@link Connection} it creates a new one. If The input not exists a <code>null</code> is returned.
-	 * @param inpuName name of The input to return the {@link Connection}.
+	 * @param inputName name of The input to return the {@link Connection}.
 	 * @return the internal {@link Connection} for the specified input or <code>null</code> if the input not exists.
 	 */
-	private Connection getInputConnection(String inpuName){
-		Connection inputConnection = inputConnectionMap.get(inpuName);
+	public Connection getIntenalModuleInputConnection(String inputName){
+		Connection inputConnection = inputConnectionMap.get(inputName);
 		if(inputConnection == null){
-			Class<? extends Value> inputTypClass = getInputs().get(inpuName);
+			Class<? extends Value> inputTypClass = getInputs().get(inputName);
 			if(inputTypClass == null){
-				System.err.println("Input \"" + inpuName + "\" not found");
+				System.err.println("Input \"" + inputName + "\" not found");
 				return null;
 			}
 			inputConnection = new Connection(inputTypClass);
-			inputConnectionMap.put(inpuName, inputConnection);
+			inputConnectionMap.put(inputName, inputConnection);
 		}
 		return inputConnection;
+	}
+	
+	/**
+	 * connects to a internal {@link Module} output
+	 * @param outputName name of the output to send {@link Value}s to
+	 * @param toConnect the {@link Connection} witch should send {@link Value}s through the specified output
+	 * @return <code>true</code> if everything went well. <code>false</code> otherwise 
+	 */
+	public boolean connectToInternalModuleOutput(String outputName, Connection toConnect){
+		Connection outputConnection = getConnection(outputName);
+		if(outputConnection == null){
+			return false;
+		}
+		ModuleConnectionListener connectionListenerOld = outConectionListenerMap.get(outputConnection);
+		if(connectionListenerOld != null){
+			connectionListenerOld.release();
+		}
+		ModuleConnectionListener connectionListener = new ModuleConnectionListener(toConnect, outputConnection);
+		outConectionListenerMap.put(outputConnection, connectionListener);
+		return true;
+	}
+	
+	/**
+	 * creates a new input for the Module
+	 * @param name of the new input
+	 * @param inputType type of the input {@link Value}
+	 * @return <code>true</code> if everything went well. <code>false</code> otherwise.
+	 * @see Plugable#addInput(String, Class)
+	 */
+	public boolean createInput(String name, Class<? extends Value> inputType){
+		return addInput(name, inputType);
+	}
+	
+	/**
+	 * creates a new output for the Module
+	 * @param name of the new output
+	 * @param outputType type of the output {@link Value}
+	 * @return <code>true</code> if everything went well. <code>false</code> otherwise.
+	 * @see Plugable#addOutput(String, Class)
+	 */
+	public boolean createOutput(String name, Class<? extends Value> outputType){
+		return addOutput(name, outputType);
 	}
 
 	/**
@@ -132,9 +176,9 @@ public class Module extends Plugable{
 		 * @param externalConnection
 		 * @param internalConection
 		 */
-		public ModuleConnectionListener(Connection externalConnection, Connection internalConection) {
-			super(externalConnection);
-			this.internalConection = internalConection;
+		public ModuleConnectionListener(Connection in, Connection out) {
+			super(in);
+			this.internalConection = out;
 		}
 
 		/** 

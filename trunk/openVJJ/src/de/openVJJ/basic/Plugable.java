@@ -77,9 +77,6 @@ public abstract class Plugable {
 			System.out.println("release old Listener");
 			oldListener.release();
 		}
-		if(! connection.addListener(listener)){
-			System.err.println("was not able to add the Listener");
-		}
 		inputListenr.put(name, listener);
 		return true;
 	}
@@ -102,10 +99,11 @@ public abstract class Plugable {
 		if(connection == null){
 			Class<? extends Value> valueClass = outputTyps.get(name);
 			if(valueClass == null){
-				System.err.println("No input with name \"" + name + "\" found");
+				System.err.println("No output with name \"" + name + "\" found");
 				return null;
 			}
 			connection = new Connection(valueClass);
+			outputConnections.put(name, connection);
 		}
 		return connection;
 	}

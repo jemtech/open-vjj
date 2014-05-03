@@ -133,6 +133,7 @@ public class Connection{
 		 */
 		public ConnectionListener(Connection connection) {
 			this.connection = connection;
+			connection.addListener(this);
 		}
 		
 		/**
