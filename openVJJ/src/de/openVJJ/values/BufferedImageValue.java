@@ -1,7 +1,13 @@
-package de.openVJJ.basic;
-
 /**
  * 
+ */
+package de.openVJJ.values;
+
+import java.awt.image.BufferedImage;
+
+import de.openVJJ.basic.Value;
+
+/**
  * 
  * Copyright (C) 2014 Jan-Erik Matthies
  * 
@@ -18,11 +24,20 @@ package de.openVJJ.basic;
  * if not, see <http://www.gnu.org/licenses/>.
  * 
  * @author Jan-Erik Matthies
- *
+ * 
  */
-public abstract class Plugin extends Plugable{
+public class BufferedImageValue extends Value {
+	private BufferedImage image;
+	
+	public BufferedImageValue(BufferedImage image){
+		this.image = image;
+	}
+	
 	/**
-	 * This method is called for example at initialisation to send static values.  
+	 * @return the image
 	 */
-	public abstract void sendStatics();
+	public BufferedImage getImage() {
+		return image;
+	}
+	
 }

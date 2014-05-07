@@ -4,18 +4,20 @@
 package de.openVJJ.GUI;
 
 import java.awt.Color;
-import java.awt.Container;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import javax.swing.BorderFactory;
-import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import de.openVJJ.basic.Module;
+import de.openVJJ.basic.Plugable;
 
 /**
  * 
@@ -36,34 +38,41 @@ import de.openVJJ.basic.Module;
  * @author Jan-Erik Matthies
  * 
  */
-public class ModulePanel extends JPanel{
+public class PlugablePanel extends JPanel{
+	public static int REFRESH_TIME = 40; //in ms
+	public static int PLUG_LABEL_HEIGHT = 30;
+	public static int PLUG_LABEL_WIDTH = 150;
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -1396575249877997206L;
 	
-	private Module module;
+	private Plugable plugable;
 	
 	/**
 	 * 
 	 */
-	public ModulePanel(Module module) {
-		this.module = module;
+	public PlugablePanel(Plugable plugable, ModuleInsightPannel displayedAt) {
+		this.plugable = plugable;
+		this.displayedAt = displayedAt; 
 		init();
 	}
 	
 	private void init(){
-		Rectangle giuPosition = module.getGuiPosition();
+		setLayout(null);
+		Rectangle giuPosition = plugable.getGuiPosition();
 		setBounds(giuPosition);
 		setBorder(BorderFactory.createLineBorder(Color.black));
 		MyMouseListener myMouseListener = new MyMouseListener();
 		addMouseListener(myMouseListener);
 		addMouseMotionListener(myMouseListener);
 		setBackground(Color.blue);
+		createInOutputs();
 	}
 
-	public JFrame getFrame (  ) {
+	private ModuleInsightPannel displayedAt;
+	/*public JFrame getFrame (  ) {
 	     return getFrameRe ( this) ;
 	}
 
@@ -73,12 +82,73 @@ public class ModulePanel extends JPanel{
 	       return ( JFrame ) target;
 	     }
 	     return getFrameRe ( target.getParent ()) ;
+	}*/
+	
+	public String labelToInputName(JLabel label){
+		return labelInputMap.get(label);
 	}
+	
+	public String labelToOutputName(JLabel label){
+		return labelOutputMap.get(label);
+	}
+	
+	protected Map<String, JLabel> getInputLabelMap(){
+		return inputLabelMap;
+	}
+	
+	protected Map<String, JLabel> getOutputLabelMap(){
+		return outputLabelMap;
+	}
+	
+	private Map<JLabel, String> labelInputMap = new HashMap<JLabel, String>();
+	private Map<String, JLabel> inputLabelMap = new HashMap<String, JLabel>();
+	private Map<JLabel, String> labelOutputMap = new HashMap<JLabel, String>();
+	private Map<String, JLabel> outputLabelMap = new HashMap<String, JLabel>();
+	private void createInOutputs(){
+		/*
+		 * ins
+		 */
+		Set<String> keys = plugable.getInputs().keySet();
+		int plugCount = keys.size();
+		int labelBlockHight = plugCount * PLUG_LABEL_HEIGHT;
+		int posY = (getHeight() - labelBlockHight)/2;
+		for(String key : keys){
+			JLabel inputLabel = new JLabel("<html><body>" + key + "<br/>(" + plugable.getInputs().get(key).getSimpleName() + ")</body></html>");
+			inputLabel.setBounds(0, posY, PLUG_LABEL_WIDTH, PLUG_LABEL_HEIGHT);
+			inputLabel.setBackground(Color.yellow);
+			inputLabel.setOpaque(true);
+			inputLabel.addMouseListener(displayedAt.new InLabelMouseListener(plugable));
+			add(inputLabel);
+			labelInputMap.put(inputLabel, key);
+			inputLabelMap.put(key, inputLabel);
+			posY += PLUG_LABEL_HEIGHT;
+		}
+		
+		/*
+		 * outs
+		 */
+		keys = plugable.getOutputs().keySet();
+		plugCount = keys.size();
+		labelBlockHight = plugCount * PLUG_LABEL_HEIGHT;
+		posY = (getHeight() - labelBlockHight)/2;
+		int posX = getWidth() - PLUG_LABEL_WIDTH;
+		for(String key : keys){
+			JLabel outputLabel = new JLabel("<html><body>" + key + "<br/>(" + plugable.getOutputs().get(key).getSimpleName() + ")</body></html>");
+			outputLabel.setBounds(posX, posY, PLUG_LABEL_WIDTH, PLUG_LABEL_HEIGHT);
+			outputLabel.setBackground(Color.cyan);
+			outputLabel.setOpaque(true);
+			outputLabel.addMouseListener(displayedAt.new OutLabelMouseListener(plugable));
+			add(outputLabel);
+			labelOutputMap.put(outputLabel, key);
+			outputLabelMap.put(key, outputLabel);
+			posX += PLUG_LABEL_HEIGHT;
+		}
+	}
+
 	
 	protected class MyMouseListener implements MouseListener, MouseMotionListener{
 
 		Point screenPointPressed;
-		boolean isPressed = false;
 		Rectangle boundOnPressed;
 		
 		/* (non-Javadoc)
@@ -96,7 +166,6 @@ public class ModulePanel extends JPanel{
 		@Override
 		public void mouseEntered(MouseEvent e) {
 			// TODO Auto-generated method stub
-			
 		}
 
 		/* (non-Javadoc)
@@ -114,24 +183,27 @@ public class ModulePanel extends JPanel{
 		@Override
 		public void mousePressed(MouseEvent e) {
 			// TODO Auto-generated method stub
+			if(displayedAt == null){
+				return;
+			}
 			if(MouseEvent.BUTTON1 != e.getButton()){
 				return;
 			}
-			if(isPressed){
+			if(displayedAt.isPressed){
 				System.out.println("already pressed");
 				return;
 			}
-			screenPointPressed = getFrame().getMousePosition();
+			screenPointPressed = displayedAt.getMousePosition();
 			boundOnPressed = getBounds();
-			isPressed = true;
+			displayedAt.isPressed = true;
 			Runnable mouseUpdater = new Runnable() {
 				@Override
 				public void run() {
 					// TODO Auto-generated method stub
-					while(isPressed){
+					while(displayedAt.isPressed){
 						updatePos();
 						try {
-							Thread.sleep(40);
+							Thread.sleep(REFRESH_TIME);
 						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -143,13 +215,14 @@ public class ModulePanel extends JPanel{
 		}
 
 		public void updatePos(){
-			Point actuelPoint = getFrame().getMousePosition();
+			Point actuelPoint = displayedAt.getMousePosition();
 			if(actuelPoint == null){
 				return;
 			}
 			int x = boundOnPressed.x + actuelPoint.x - screenPointPressed.x;
 			int y = boundOnPressed.y + actuelPoint.y - screenPointPressed.y;
 			setBounds(x, y, boundOnPressed.width, boundOnPressed.height);
+			displayedAt.repaint();
 		}
 		
 		
@@ -162,11 +235,11 @@ public class ModulePanel extends JPanel{
 			if(MouseEvent.BUTTON1 != e.getButton()){
 				return;
 			}
-			if(! isPressed){
+			if(! displayedAt.isPressed){
 				return;
 			}
-			isPressed = false;
-			Point actuelPoint = getFrame().getMousePosition();
+			displayedAt.isPressed = false;
+			Point actuelPoint = displayedAt.getMousePosition();
 			if(actuelPoint == null){
 				return;
 			}
@@ -195,4 +268,8 @@ public class ModulePanel extends JPanel{
 		}
 		
 	}
+	
+	
+	
+	
 }

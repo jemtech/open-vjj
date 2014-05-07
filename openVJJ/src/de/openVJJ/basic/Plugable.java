@@ -41,7 +41,7 @@ public abstract class Plugable {
 	/**
 	 * GUI config
 	 */
-	private Rectangle guiPosition = new Rectangle(0, 0, 100, 100);
+	private Rectangle guiPosition = new Rectangle(0, 0, 350, 100);
 	
 	/**
 	 * getter for the GUI position
@@ -74,11 +74,14 @@ public abstract class Plugable {
 		Connection.ConnectionListener listener = createConnectionListener(name, connection);
 		Connection.ConnectionListener oldListener = inputListenr.get(name);
 		if(oldListener != null){
-			System.out.println("release old Listener");
 			oldListener.release();
 		}
 		inputListenr.put(name, listener);
 		return true;
+	}
+	
+	public Connection.ConnectionListener getListener(String inputName){
+		return inputListenr.get(inputName);
 	}
 	
 	/**
@@ -112,7 +115,7 @@ public abstract class Plugable {
 	 * 
 	 * @return the input {@link Map} with name and {@link Value} type
 	 */
-	protected Map<String, Class<? extends Value>> getInputs(){
+	public Map<String, Class<? extends Value>> getInputs(){
 		return inputTyps;
 	}
 	
@@ -121,7 +124,7 @@ public abstract class Plugable {
 	 * 
 	 * @return the output {@link Map} with name and {@link Value} type
 	 */
-	protected Map<String, Class<? extends Value>> getOutputs(){
+	public Map<String, Class<? extends Value>> getOutputs(){
 		return outputTyps;
 	}
 	
@@ -153,5 +156,18 @@ public abstract class Plugable {
 		return true;
 	}
 	
-	
+	/**
+	 * call this to shutdown a {@link Plugable} all {@link ConnectionListener}s will be released and all {@link Connection}s shutdown
+	 */
+	protected void shutdown(){
+		for(String inListenerName : inputListenr.keySet()){
+			ConnectionListener inListener = inputListenr.get(inListenerName);
+			inListener.release();
+		}
+		inputListenr.clear();
+		for(String connectionName : outputConnections.keySet()){
+			Connection outConnection = outputConnections.get(connectionName);
+			outConnection.shutdown();
+		}
+	}
 }

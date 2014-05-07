@@ -188,6 +188,15 @@ public class Module extends Plugable{
 		protected void valueReceved(Value value) {
 			internalConection.transmitValue(value);
 		}
+
+		/* (non-Javadoc)
+		 * @see de.openVJJ.basic.Connection.ConnectionListener#connectionShutdownCalled()
+		 */
+		@Override
+		protected void connectionShutdownCalled() {
+			// TODO Auto-generated method stub
+			
+		}
 		
 	}
 }
