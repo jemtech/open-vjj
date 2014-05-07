@@ -102,6 +102,16 @@ public class Connection{
 	}
 	
 	/**
+	 * call this to shutdown the Connection all listeners will removed
+	 */
+	public void shutdown(){
+		for(ConnectionListener connectionListener : listeners){
+			connectionListener.connectionShutdownCalled();
+		}
+		listeners.clear();
+	}
+	
+	/**
 	 * 
 	 * Copyright (C) 2014 Jan-Erik Matthies
 	 * 
@@ -156,5 +166,7 @@ public class Connection{
 		 * @param value the new {@link Value} received through the {@link Connection}
 		 */
 		protected abstract void valueReceved(Value value);
+		
+		protected abstract void connectionShutdownCalled();
 	}
 }
