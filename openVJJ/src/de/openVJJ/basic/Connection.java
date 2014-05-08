@@ -3,6 +3,9 @@ package de.openVJJ.basic;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  *
@@ -35,6 +38,7 @@ public class Connection{
 		this.valueClass = valueClass;
 	}
 	
+	ExecutorService executor = Executors.newCachedThreadPool();
 	/**
 	 * Call this method to submit the {@link Value} to all {@link ConnectionListener}
 	 * @param value is submitted to all {@link ConnectionListener} if value is <code>null</code> nothing is done
@@ -46,7 +50,9 @@ public class Connection{
 		Value.Lock lock = value.lock();
 		for(ConnectionListener listener : listeners){
 			try {
-				listener.valueReceved(value);
+				ConnectionThread connectionThread = new ConnectionThread(listener, value);
+				executor.execute(connectionThread);
+				//listener.valueReceved(value);
 			} catch (Exception e) {
 				System.err.println("Listener throws error while revive new Value. Removing from ListenerList");
 				listeners.remove(listener);
@@ -109,6 +115,7 @@ public class Connection{
 			connectionListener.connectionShutdownCalled();
 		}
 		listeners.clear();
+		executor.shutdown();
 	}
 	
 	/**
@@ -168,5 +175,20 @@ public class Connection{
 		protected abstract void valueReceved(Value value);
 		
 		protected abstract void connectionShutdownCalled();
+	}
+	
+	private class ConnectionThread implements Runnable{
+
+		private ConnectionListener listener;
+		private Value value;
+		public ConnectionThread(ConnectionListener listener, Value value){
+			this.listener = listener;
+			this.value = value;
+		}
+		@Override
+		public void run() {
+			listener.valueReceved(value);
+		}
+		
 	}
 }
