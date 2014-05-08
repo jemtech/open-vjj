@@ -28,5 +28,22 @@ kernel void summe3ABS(global const float* a, global const float* b, global const
 		return;
 	}
 	
-	res[iGID] = abs(a[iGID]) + abs(b[iGID]) + abs(c[iGID]);
+	if(a[iGID] < 0){
+		res[iGID] = 0 - a[iGID];
+	}else{
+		res[iGID] = a[iGID];
+	}
+	
+	if(b[iGID] < 0){
+		res[iGID] = res[iGID] - b[iGID];
+	}else{
+		res[iGID] = res[iGID] + b[iGID];
+	}
+	
+	if(c[iGID] < 0){
+		res[iGID] = res[iGID] - c[iGID];
+	}else{
+		res[iGID] = res[iGID] + c[iGID];
+	}
+	
 }
