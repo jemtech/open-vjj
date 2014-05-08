@@ -23,6 +23,7 @@ import com.jogamp.opencl.CLKernel;
 import com.jogamp.opencl.CLProgram;
 import com.jogamp.opencl.CLMemory.Mem;
 
+import de.openVJJ.InputComponents;
 import de.openVJJ.openGJTest;
 import de.openVJJ.graphic.VideoFrame;
 import de.openVJJ.processor.Sorbel.SorbelResult;
@@ -65,13 +66,98 @@ public class ImageAnalyser extends ImageProcessor {
 	private boolean showCombindedLines = true;
 	@Override
 	public VideoFrame processImage(VideoFrame videoFrame) {
-		SorbelResult sorbelResult =  sorbel.calculateSorbelResult(videoFrame);
-		ArrayList<Line> linesX = processX(sorbelResult);
-		ArrayList<Line> linesY = processY(sorbelResult);
+		videoFrame.lock();
+		if(InputComponents.useGPU){
+			return processOnGPU(videoFrame);
+		}else{
+			SorbelResult sorbelResult =  sorbel.calculateSorbelResult(videoFrame);
+			ArrayList<Line> linesX = processX(sorbelResult);
+			ArrayList<Line> linesY = processY(sorbelResult);
+			VideoFrame out = new VideoFrame(videoFrame.getWidth(), videoFrame.getHeight());
+			if(showOriginal){
+				out.setIntArray(videoFrame.getIntArray());
+			}
+			videoFrame.free();
+			if(showDetectedLines){
+				paintLinesR(linesX, out);
+				paintLinesB(linesY, out);
+			}
+			ArrayList<Line> combinded = combindeLines(linesX, linesY);
+			if(showCombindedLines){
+				paintLinesG(combinded, out);
+			}
+			System.out.println(combinded.size());
+			return out;
+		}
+	}
+	
+	private VideoFrame processOnGPU(VideoFrame videoFrame){
+		SorbelResultGPU result = sorbel.calculateSorbelResultGPU(videoFrame);
+		if(result == null){
+			return null;
+		}
+		result.lock();
+
 		VideoFrame out = new VideoFrame(videoFrame.getWidth(), videoFrame.getHeight());
 		if(showOriginal){
 			out.setIntArray(videoFrame.getIntArray());
 		}
+		videoFrame.free();
+		
+		CLBuffer<FloatBuffer> xTemp = combindColorsGPU(result.resultsPerChanelX, result.height*result.width);
+		CLBuffer<FloatBuffer> yTemp = combindColorsGPU(result.resultsPerChanelY, result.height*result.width);
+		if(xTemp == null || yTemp == null){
+			return null;
+		}
+		//musst be implementet on GPU
+		//xlines
+		int[][] combindetX = new int[result.width][result.height];
+		int[][] combindetY = new int[result.width][result.height];
+		FloatBuffer xBuffer = xTemp.getBuffer();
+		FloatBuffer yBuffer = yTemp.getBuffer();
+		xBuffer.rewind();
+		yBuffer.rewind();
+		for(int x = 0; x < result.width; x++){
+			for(int y = 0; y < result.height; y++){
+				combindetX[x][y] = (int) xBuffer.get();
+				combindetY[x][y] = (int) yBuffer.get();
+			}
+		}
+		int xMax = result.width -1;
+		int yMax = result.height -1;
+		result.free();
+		ArrayList<Line> linesX = new ArrayList<Line>();
+		for(int cykle = 0; cykle < lineLimit ; cykle++){
+			Point point = getStrongest(combindetX);
+			if(point == null){
+				break;
+			}
+			deactivatePoint(combindetX, point);
+			Line line = new Line();
+			line.addPoint(point);
+			linesX.add(line);
+			
+			combinedLineU(point, combindetX, line, 0, 0, yMax);
+			combinedLineD(point, combindetX, line, xMax, 0, yMax);
+			
+		}
+		
+		ArrayList<Line> linesY = new ArrayList<Line>();
+		for(int cykle = 0; cykle < lineLimit ; cykle++){
+			Point point = getStrongest(combindetY);
+			if(point == null){
+				break;
+			}
+			deactivatePoint(combindetY, point);
+			Line line = new Line();
+			line.addPoint(point);
+			linesY.add(line);
+			
+			combinedLineL(point, combindetY, line, 0, 0, xMax);
+			combinedLineR(point, combindetY, line, yMax, 0, xMax);
+			
+		}
+		
 		if(showDetectedLines){
 			paintLinesR(linesX, out);
 			paintLinesB(linesY, out);
@@ -82,13 +168,6 @@ public class ImageAnalyser extends ImageProcessor {
 		}
 		System.out.println(combinded.size());
 		return out;
-	}
-	
-	private VideoFrame processOnGPU(VideoFrame videoFrame){
-		SorbelResultGPU result = sorbel.calculateSorbelResultGPU(videoFrame);
-		CLBuffer<FloatBuffer> xTemp = combindColorsGPU(result.resultsPerChanelX, result.height*result.width);
-		CLBuffer<FloatBuffer> yTemp = combindColorsGPU(result.resultsPerChanelY, result.height*result.width);
-		
 	}
 	
 	private void paintLinesG(ArrayList<Line> lines, VideoFrame out){

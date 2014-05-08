@@ -243,24 +243,23 @@ public class Sorbel extends ImageProcessor {
 		if(!gpuReady){
 			return null;
 		}
-		CLKernel kernel = getKernel();
 		
 		int width = videoFrame.getWidth();
 		int height = videoFrame.getHeight();
 		SorbelResultGPU result = new SorbelResultGPU(width, height);
 		
-		calculateSorbelchannelGPU(kernel, videoFrame.getRedCLBuffer(this), result, width, height);
+		calculateSorbelchannelGPU(videoFrame.getRedCLBuffer(this), result, width, height);
 		
-		calculateSorbelchannelGPU(kernel, videoFrame.getGreenCLBuffer(this), result, width, height);
+		calculateSorbelchannelGPU(videoFrame.getGreenCLBuffer(this), result, width, height);
 		
-		calculateSorbelchannelGPU(kernel, videoFrame.getBlueCLBuffer(this), result, width, height);
+		calculateSorbelchannelGPU(videoFrame.getBlueCLBuffer(this), result, width, height);
 		
-		kernel.release();
 		
 		return result;
 	}
 	
-	private void calculateSorbelchannelGPU(CLKernel kernel, CLBuffer<FloatBuffer> in, SorbelResultGPU result, int width, int height){
+	private void calculateSorbelchannelGPU(CLBuffer<FloatBuffer> in, SorbelResultGPU result, int width, int height){
+		CLKernel kernel = getKernel();
 		CLBuffer<FloatBuffer> outx = getCLContext().createFloatBuffer(width*height, Mem.READ_WRITE);
 		CLBuffer<FloatBuffer> outy = getCLContext().createFloatBuffer(width*height, Mem.READ_WRITE);
 		kernel.putArg(in);
@@ -277,6 +276,7 @@ public class Sorbel extends ImageProcessor {
 			clCommandQueue.finish();
 		}
 		result.add(outx, outy);
+		kernel.release();
 		
 	}
 
@@ -285,6 +285,8 @@ public class Sorbel extends ImageProcessor {
 		ArrayList<CLBuffer<FloatBuffer>> resultsPerChanelY = new ArrayList<CLBuffer<FloatBuffer>>();
 		int width;
 		int height;
+		
+		int locks = 0;
 		
 		public SorbelResultGPU(int width, int height){
 			this.height = height;
@@ -302,6 +304,23 @@ public class Sorbel extends ImageProcessor {
 		
 		public CLBuffer<FloatBuffer> getYbyChanel(int chanal){
 			return resultsPerChanelY.get(chanal);
+		}
+		
+		public void lock(){
+			locks++;
+		}
+		public void free(){
+			locks--;
+			if(locks < 1){
+				for(CLBuffer<FloatBuffer> result : resultsPerChanelX){
+					result.release();
+				}
+				resultsPerChanelX.clear();
+				for(CLBuffer<FloatBuffer> result : resultsPerChanelY){
+					result.release();
+				}
+				resultsPerChanelY.clear();
+			}
 		}
 	}
 	

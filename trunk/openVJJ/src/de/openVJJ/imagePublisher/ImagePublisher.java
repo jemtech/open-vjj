@@ -79,19 +79,23 @@ public abstract class ImagePublisher extends GPUComponent implements VJJComponen
 	
 	ExecutorService executor = Executors.newCachedThreadPool();
 	public void publishImage(VideoFrame videoFrame, boolean forceThread){
-		if(imageListener == null){
+		if(imageListener == null || videoFrame == null){
 			return;
 		}
+    	videoFrame.lock();
 		synchronized (imageListener) {
 	        if(imageListener.size()<1){
-	          return;
+	        	videoFrame.free();
+	        	return;
 	        }
 	        if(imageListener.size()==1 && !forceThread){
 	        	imageListener.get(0).newImageReceived(videoFrame);
+	        	videoFrame.free();
 	        	return;
 		    }
 	        Updater updater = new Updater(videoFrame);
 	        executor.execute(updater);
+        	videoFrame.free();
 	        /*
 			for(ImageListener imageListenerElement : imageListener){
 				ListenerUpdater listenerUpdater = new ListenerUpdater(imageListenerElement, videoFrame);

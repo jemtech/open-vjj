@@ -148,7 +148,9 @@ public class ImageViewFrame implements ImageListener{
 		if(videoFrame == null){
 			return;
 		}
+		videoFrame.lock();
 		newImageReceived(videoFrame.getImage());
+		videoFrame.free();
 	}
 	
 	GraphicsConfiguration gConfiguration = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
@@ -172,12 +174,16 @@ public class ImageViewFrame implements ImageListener{
 				g.dispose();
 			}
 		}
+		try{
 		ImageIcon imageIcon = new ImageIcon(image);
-		camImage.setIcon(imageIcon);
-		if(!sizeByFrame && (camImageH != imageIcon.getIconHeight() || camImageW != imageIcon.getIconWidth())){
-			camImageH = imageIcon.getIconHeight();
-			camImageW = imageIcon.getIconWidth();
-			frame.pack();
+			camImage.setIcon(imageIcon);
+			if(!sizeByFrame && (camImageH != imageIcon.getIconHeight() || camImageW != imageIcon.getIconWidth())){
+				camImageH = imageIcon.getIconHeight();
+				camImageW = imageIcon.getIconWidth();
+				frame.pack();
+			}
+		}catch (Exception e) {
+			System.err.println("could not set image: " + e.getMessage());
 		}
 	}
 	
