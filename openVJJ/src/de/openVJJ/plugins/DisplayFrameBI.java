@@ -74,7 +74,7 @@ public class DisplayFrameBI extends Plugin {
 	protected ConnectionListener createConnectionListener(String inpuName,
 			Connection connection) {
 		if(inpuName == "Frames"){
-			new ConnectionListener(connection) {
+			return new ConnectionListener(connection) {
 				
 				@Override
 				protected void valueReceved(Value value) {

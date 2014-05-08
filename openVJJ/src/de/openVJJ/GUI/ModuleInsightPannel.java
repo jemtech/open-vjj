@@ -8,11 +8,8 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.PopupMenu;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -27,8 +24,6 @@ import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
 
 import de.openVJJ.GUI.SelectPlugable.SelectPlugableListener;
 import de.openVJJ.basic.Connection;
@@ -203,8 +198,10 @@ public class ModuleInsightPannel extends JPanel{
 			String inName = newLine.getInName();
 			List<ConectionLine> toRem = new ArrayList<ConectionLine>();
 			for(ConectionLine conectionLine : conectionLines){
-				if(conectionLine.getInName().equals(inName)){
-					toRem.add(conectionLine);
+				if(conectionLine.in == newLine.in){
+					if(conectionLine.getInName().equals(inName)){
+						toRem.add(conectionLine);
+					}
 				}
 			}
 			for(ConectionLine conectionLine : toRem){
