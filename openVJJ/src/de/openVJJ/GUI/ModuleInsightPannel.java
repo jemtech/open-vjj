@@ -29,6 +29,7 @@ import de.openVJJ.GUI.SelectPlugable.SelectPlugableListener;
 import de.openVJJ.basic.Connection;
 import de.openVJJ.basic.Module;
 import de.openVJJ.basic.Plugable;
+import de.openVJJ.basic.Value;
 
 /**
  * 
@@ -277,6 +278,7 @@ public class ModuleInsightPannel extends JPanel{
 	protected boolean isPressed = false;
 	protected JLabel mouseOverLabel = null;
 	protected Plugable mouseOverPlugable = null;
+	protected Class<? extends Value> mousePresedOverInputTypClass = null;
 	public class InLabelMouseListener implements MouseListener, MouseMotionListener{
 		
 		public InLabelMouseListener(Plugable plugable){
@@ -350,6 +352,7 @@ public class ModuleInsightPannel extends JPanel{
 			Point mouseLocation = e.getLocationOnScreen();
 			line = new Line2D.Float((float) labelLocation.x - frameLocation.x + PlugablePanel.PLUG_LABEL_WIDTH/2,(float) labelLocation.y - frameLocation.y + PlugablePanel.PLUG_LABEL_HEIGHT/2,(float) mouseLocation.x - frameLocation.x,(float) mouseLocation.y- frameLocation.y);
 			tempLine = line;
+			mousePresedOverInputTypClass = plugable.getInputs().get(plugablePlugablePannelMap.get(plugable).labelToInputName(pressedOver));
 			repaint();
 			
 			Runnable mouseUpdater = new Runnable() {
@@ -391,6 +394,7 @@ public class ModuleInsightPannel extends JPanel{
 			}
 			isPressed = false;
 			tempLine = null;
+			mousePresedOverInputTypClass = null;
 			if(pressedOver == null || mouseOverLabel == null){
 				repaint();
 				return;
@@ -443,6 +447,16 @@ public class ModuleInsightPannel extends JPanel{
 			mouseOverLabel = (JLabel) arg0.getSource();
 			mouseOverPlugable = plugable;
 			
+			if(mousePresedOverInputTypClass != null){
+				String outName = plugablePlugablePannelMap.get(plugable).labelToOutputName(mouseOverLabel);
+				Connection outCon = plugable.getConnection(outName);
+				if(! outCon.classMatch(mousePresedOverInputTypClass)){
+					mouseOverLabel.setBackground(Color.red);
+				}else{
+					mouseOverLabel.setBackground(Color.green);
+				}
+			}
+			
 		}
 
 		/* (non-Javadoc)
@@ -450,6 +464,7 @@ public class ModuleInsightPannel extends JPanel{
 		 */
 		@Override
 		public void mouseExited(MouseEvent arg0) {
+			((JLabel) arg0.getSource()).setBackground(Color.cyan);
 			mouseOverLabel = null;
 			mouseOverPlugable = null;
 		}
