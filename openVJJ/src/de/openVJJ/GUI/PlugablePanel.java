@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -162,8 +163,14 @@ public class PlugablePanel extends JPanel{
 		 */
 		@Override
 		public void mouseClicked(MouseEvent e) {
-			// TODO Auto-generated method stub
-			
+
+			JPanel configPanel = plugable.getConfigPannel();
+			if(configPanel != null){
+				JFrame configFrame = new JFrame();
+				configFrame.add(configPanel);
+				configFrame.setVisible(true);
+				configFrame.pack();
+			}
 		}
 
 		/* (non-Javadoc)

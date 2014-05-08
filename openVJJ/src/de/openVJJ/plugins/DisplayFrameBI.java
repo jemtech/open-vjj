@@ -3,7 +3,6 @@
  */
 package de.openVJJ.plugins;
 
-import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
@@ -17,11 +16,8 @@ import java.awt.image.BufferedImage;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 
-import org.jdom2.Element;
-
-import de.openVJJ.ImageListener.ImageListener;
-import de.openVJJ.ImageListener.ImageViewFrame.MyFrame;
 import de.openVJJ.basic.Connection;
 import de.openVJJ.basic.Plugin;
 import de.openVJJ.basic.Value;
@@ -93,7 +89,7 @@ public class DisplayFrameBI extends Plugin {
 	}
 	
 	private void frameReceived(BufferedImage frame){
-		
+		newImageReceived(frame);
 	}
 	
 	protected void shutdown() {
@@ -216,10 +212,11 @@ public class DisplayFrameBI extends Plugin {
 			}
 			startWatching();
 		}
+		Image imagetoDisplay = image;
 		if(sizeByFrame){
-				image = (BufferedImage) image.getScaledInstance(windowWidth, windowHeight, BufferedImage.SCALE_DEFAULT);
+			imagetoDisplay = image.getScaledInstance(windowWidth, windowHeight, BufferedImage.SCALE_DEFAULT);
 		}
-		ImageIcon imageIcon = new ImageIcon(image);
+		ImageIcon imageIcon = new ImageIcon(imagetoDisplay);
 		camImage.setIcon(imageIcon);
 		if(!sizeByFrame && (camImageH != imageIcon.getIconHeight() || camImageW != imageIcon.getIconWidth())){
 			camImageH = imageIcon.getIconHeight();
@@ -285,6 +282,11 @@ public class DisplayFrameBI extends Plugin {
 			windowWidth = getWidth();
 			windowHeight = getHeight();
 		}
+	}
+
+	@Override
+	public JPanel getConfigPannel() {
+		return null;
 	}
 
 

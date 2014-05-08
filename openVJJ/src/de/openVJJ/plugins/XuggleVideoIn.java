@@ -3,10 +3,22 @@
  */
 package de.openVJJ.plugins;
 
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import com.xuggle.mediatool.IMediaReader;
 import com.xuggle.mediatool.MediaListenerAdapter;
@@ -182,6 +194,61 @@ public class XuggleVideoIn extends Plugin {
 		// TODO Auto-generated method stub
 		stopReading();
 		super.shutdown();
+	}
+	@Override
+	public JPanel getConfigPannel() {
+		JPanel configPanel = new JPanel();
+		
+		configPanel.setLayout(new GridBagLayout());
+		GridBagConstraints gridBagConstraints =  new GridBagConstraints();
+		
+		JLabel rLabel = new JLabel("f/s (" + framerate + ")");
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 0;
+		configPanel.add(rLabel, gridBagConstraints);
+		
+		JSlider rSlider = new JSlider();
+		rSlider.setMinimum(0);
+		rSlider.setMaximum((int)framerateLimit);
+		rSlider.setMajorTickSpacing(64);
+		rSlider.setMinorTickSpacing(8);
+		rSlider.setPaintTicks(true);
+		rSlider.setValue((int)framerate);
+		rSlider.addChangeListener(new ChangeListener() {
+			
+			@Override
+			public void stateChanged(ChangeEvent arg0) {
+				framerate = ((JSlider) arg0.getSource()).getValue();
+			}
+		});
+		gridBagConstraints.gridx = 1;
+		configPanel.add(rSlider, gridBagConstraints);
+
+		JCheckBox chinButton = new JCheckBox("Framerate lock");
+	    chinButton.setSelected(lockFramerate);
+	    chinButton.addChangeListener(new ChangeListener() {
+			
+			@Override
+			public void stateChanged(ChangeEvent arg0) {
+				lockFramerate = ((JCheckBox) arg0.getSource()).isSelected();
+			}
+		});
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 1;
+		configPanel.add(chinButton, gridBagConstraints);
+		
+		JButton selctFileButton = new JButton("Select video");
+		selctFileButton.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				fileChooser();
+			}
+		});
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 2;
+		configPanel.add(selctFileButton, gridBagConstraints);
+		return configPanel;
 	}
 
 }
