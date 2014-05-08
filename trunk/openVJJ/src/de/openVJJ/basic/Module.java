@@ -5,6 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.JPanel;
+
+import de.openVJJ.GUI.ModuleInsightPannel;
 import de.openVJJ.basic.Connection.ConnectionListener;
 
 /**
@@ -198,5 +201,10 @@ public class Module extends Plugable{
 			
 		}
 		
+	}
+
+	@Override
+	public JPanel getConfigPannel() {
+		return new ModuleInsightPannel(this);
 	}
 }

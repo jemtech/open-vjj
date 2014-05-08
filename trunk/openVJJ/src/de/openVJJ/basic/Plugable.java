@@ -4,6 +4,8 @@ import java.awt.Rectangle;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.swing.JPanel;
+
 import de.openVJJ.basic.Connection.ConnectionListener;
 
 /**
@@ -170,4 +172,10 @@ public abstract class Plugable {
 			outConnection.shutdown();
 		}
 	}
+	
+	/**
+	 * 
+	 * @return the configuration {@link JPanel} for the {@link Plugable}
+	 */
+	public abstract JPanel getConfigPannel();
 }

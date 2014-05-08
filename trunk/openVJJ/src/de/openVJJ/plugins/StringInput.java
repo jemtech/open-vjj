@@ -3,6 +3,13 @@
  */
 package de.openVJJ.plugins;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
 import de.openVJJ.basic.Connection;
 import de.openVJJ.basic.Plugin;
 import de.openVJJ.basic.Connection.ConnectionListener;
@@ -58,6 +65,31 @@ public class StringInput extends Plugin {
 			Connection connection) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public JPanel getConfigPannel() {
+		JPanel configPanel = new JPanel();
+		JTextField textValueField = new JTextField(value, 30);
+		configPanel.add(textValueField);
+		JButton setButton = new JButton();
+		setButton.addActionListener(new ConfigSetButtonListener(textValueField));
+		setButton.setText("Set");
+		configPanel.add(setButton);
+		return configPanel;
+	}
+	
+	private class ConfigSetButtonListener implements ActionListener{
+
+		private JTextField textValueField;
+		public ConfigSetButtonListener(JTextField textValueField){
+			this.textValueField = textValueField;
+		}
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			value = textValueField.getText();
+		}
+		
 	}
 
 }
