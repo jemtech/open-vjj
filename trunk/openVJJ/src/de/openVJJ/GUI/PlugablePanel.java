@@ -100,6 +100,12 @@ public class PlugablePanel extends JPanel{
 		return outputLabelMap;
 	}
 	
+	@Override
+	public void setBounds(Rectangle rectangle) {
+		super.setBounds(rectangle);
+		plugable.setGuiPosition(rectangle);
+	}
+	
 	private Map<JLabel, String> labelInputMap = new HashMap<JLabel, String>();
 	private Map<String, JLabel> inputLabelMap = new HashMap<String, JLabel>();
 	private Map<JLabel, String> labelOutputMap = new HashMap<JLabel, String>();
@@ -221,7 +227,8 @@ public class PlugablePanel extends JPanel{
 			}
 			int x = boundOnPressed.x + actuelPoint.x - screenPointPressed.x;
 			int y = boundOnPressed.y + actuelPoint.y - screenPointPressed.y;
-			setBounds(x, y, boundOnPressed.width, boundOnPressed.height);
+			Rectangle rectangle = new Rectangle(x, y, boundOnPressed.width, boundOnPressed.height);
+			setBounds(rectangle);
 			displayedAt.repaint();
 		}
 		
@@ -247,7 +254,8 @@ public class PlugablePanel extends JPanel{
 			x += actuelPoint.x;
 			x -= screenPointPressed.x;
 			int y = boundOnPressed.y + actuelPoint.y - screenPointPressed.y;
-			setBounds(x, y, boundOnPressed.width, boundOnPressed.height);
+			Rectangle rectangle = new Rectangle(x, y, boundOnPressed.width, boundOnPressed.height);
+			setBounds(rectangle);
 		}
 
 		/* (non-Javadoc)
