@@ -22,6 +22,7 @@ import de.openVJJ.basic.Connection;
 import de.openVJJ.basic.Plugin;
 import de.openVJJ.basic.Value;
 import de.openVJJ.basic.Connection.ConnectionListener;
+import de.openVJJ.basic.Value.Lock;
 import de.openVJJ.graphic.VideoFrame;
 import de.openVJJ.imagePublisher.ImagePublisher;
 import de.openVJJ.values.BufferedImageValue;
@@ -74,8 +75,10 @@ public class DisplayFrameBI extends Plugin {
 				
 				@Override
 				protected void valueReceved(Value value) {
+					Lock lock = value.lock();
 					BufferedImageValue bImageValue = (BufferedImageValue) value;
 					frameReceived(bImageValue.getImage());
+					value.free(lock);
 				}
 				
 				@Override
