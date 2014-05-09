@@ -16,7 +16,10 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import de.openVJJ.basic.Module;
+import de.openVJJ.plugins.BufferdImageToIntegerArray;
 import de.openVJJ.plugins.DisplayFrameBI;
+import de.openVJJ.plugins.IntegerArrayToBufferdImage;
+import de.openVJJ.plugins.LinearRGBCorrectionIntegerArray;
 import de.openVJJ.plugins.StringInput;
 import de.openVJJ.plugins.XuggleVideoIn;
 
@@ -46,7 +49,14 @@ public class SelectPlugable extends JPanel {
 	 */
 	private static final long serialVersionUID = 5167693321984938892L;
 	
-	public static final Class<?>[] plugableClasses = new Class<?>[]{Module.class, XuggleVideoIn.class, DisplayFrameBI.class, StringInput.class};
+	public static final Class<?>[] plugableClasses = new Class<?>[]{
+		Module.class,
+		XuggleVideoIn.class,
+		DisplayFrameBI.class,
+		StringInput.class,
+		BufferdImageToIntegerArray.class,
+		LinearRGBCorrectionIntegerArray.class,
+		IntegerArrayToBufferdImage.class};
 
 	//public static List<Class<? extends Plugable>> plugableClasses = new ArrayList<Class<? extends Plugable>>();
 	
