@@ -5,16 +5,13 @@ package de.openVJJ.plugins;
 
 import javax.swing.JPanel;
 
-import artnet4j.packets.ArtDmxPacket;
-
 import de.openVJJ.basic.Connection;
 import de.openVJJ.basic.Plugin;
 import de.openVJJ.basic.Value;
 import de.openVJJ.basic.Connection.ConnectionListener;
 import de.openVJJ.basic.Value.Lock;
-import de.openVJJ.values.ArtNetDMXPaketValue;
-import de.openVJJ.values.DMXPacketValue;
 import de.openVJJ.values.IntValue;
+import de.openVJJ.values.RGBIntColorValue;
 
 /**
  * 
@@ -35,33 +32,20 @@ import de.openVJJ.values.IntValue;
  * @author Jan-Erik Matthies
  * 
  */
-public class DMXPaketToArtNetDMXPaket extends Plugin {
-
-    private int sequenceID;
-    private int subnetID;
-    private int universeID;
-    
-    public DMXPaketToArtNetDMXPaket(){
-    	addInput("Sequence ID", IntValue.class);
-    	addInput("Subnet ID", IntValue.class);
-    	addInput("Universe ID", IntValue.class);
-    	addInput("DMX Data", DMXPacketValue.class);
-    	
-    	addOutput("ArtNet DMX", ArtNetDMXPaketValue.class);
-    }
-    
-    private void setSequenceID(int sequenceID){
-    	this.sequenceID = sequenceID;
-    }
-    
-    private void setSubnetID(int subnetID){
-    	this.subnetID = subnetID;
-    }
-    
-    private void setUniverseID(int universeID){
-    	this.universeID = universeID;
-    }
-    
+public class RGBIntColor extends Plugin {
+	private int red;
+	private int green;
+	private int blue;
+	/**
+	 * 
+	 */
+	public RGBIntColor() {
+		addInput("Red", IntValue.class);
+		addInput("Green", IntValue.class);
+		addInput("Blue", IntValue.class);
+		
+		addOutput("RGB", RGBIntColorValue.class);
+	}
 	/* (non-Javadoc)
 	 * @see de.openVJJ.basic.Plugin#sendStatics()
 	 */
@@ -77,14 +61,15 @@ public class DMXPaketToArtNetDMXPaket extends Plugin {
 	@Override
 	protected ConnectionListener createConnectionListener(String inpuName,
 			Connection connection) {
-		if(inpuName == "Sequence ID"){
+		if(inpuName == "Red"){
 			return new ConnectionListener(connection) {
 				
 				@Override
 				protected void valueReceved(Value value) {
 					Lock lock = value.lock();
-					IntValue intValue = (IntValue) value;
-					setSequenceID(intValue.getValue());
+					IntValue intVal = (IntValue) value;
+					red = intVal.getValue();
+					colorChanged();
 					value.free(lock);
 				}
 				
@@ -94,14 +79,15 @@ public class DMXPaketToArtNetDMXPaket extends Plugin {
 					
 				}
 			};
-		}else if(inpuName == "Subnet ID"){
+		}else if(inpuName == "Green"){
 			return new ConnectionListener(connection) {
 				
 				@Override
 				protected void valueReceved(Value value) {
 					Lock lock = value.lock();
-					IntValue intValue = (IntValue) value;
-					setSubnetID(intValue.getValue());
+					IntValue intVal = (IntValue) value;
+					green = intVal.getValue();
+					colorChanged();
 					value.free(lock);
 				}
 				
@@ -111,15 +97,15 @@ public class DMXPaketToArtNetDMXPaket extends Plugin {
 					
 				}
 			};
-			
-		}else if(inpuName == "Universe ID"){
+		}else if(inpuName == "Blue"){
 			return new ConnectionListener(connection) {
 				
 				@Override
 				protected void valueReceved(Value value) {
 					Lock lock = value.lock();
-					IntValue intValue = (IntValue) value;
-					setUniverseID(intValue.getValue());
+					IntValue intVal = (IntValue) value;
+					blue = intVal.getValue();
+					colorChanged();
 					value.free(lock);
 				}
 				
@@ -129,37 +115,18 @@ public class DMXPaketToArtNetDMXPaket extends Plugin {
 					
 				}
 			};
-			
-		}else if(inpuName == "DMX Data"){
-			return new ConnectionListener(connection) {
-				
-				@Override
-				protected void valueReceved(Value value) {
-					Lock lock = value.lock();
-					DMXPacketValue dmxValue = (DMXPacketValue) value;
-					sendDMXData(dmxValue.getDmxData());
-					value.free(lock);
-				}
-				
-				@Override
-				protected void connectionShutdownCalled() {
-					// TODO Auto-generated method stub
-					
-				}
-			};
-		}
+		} 
 		return null;
 	}
 	
-	private void sendDMXData(byte[] dmxData){
-		ArtDmxPacket artDmxPacket = new ArtDmxPacket();
-		artDmxPacket.setDMX(dmxData, dmxData.length);
-		artDmxPacket.setSequenceID(sequenceID);
-		artDmxPacket.setSubnetID(subnetID);
-		artDmxPacket.setUniverseID(universeID);
-		ArtNetDMXPaketValue artNetDMXPaketValue = new ArtNetDMXPaketValue(artDmxPacket);
-		getConnection("ArtNet DMX").transmitValue(artNetDMXPaketValue);
+	private void colorChanged(){
+		int[] rgbCol = new int[3];
+		rgbCol[0] = red;
+		rgbCol[1] = green;
+		rgbCol[2] = blue;
+		getConnection("RGB").transmitValue(new RGBIntColorValue(rgbCol));
 	}
+
 
 	/* (non-Javadoc)
 	 * @see de.openVJJ.basic.Plugable#getConfigPannel()
