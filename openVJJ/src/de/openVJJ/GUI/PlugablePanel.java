@@ -64,6 +64,14 @@ public class PlugablePanel extends JPanel{
 	private void init(){
 		setLayout(null);
 		Rectangle giuPosition = plugable.getGuiPosition();
+		int height = giuPosition.height;
+		if(getInHeight() + 20 > height){
+			height = getInHeight() + 20;
+		}
+		if(getOutHeight() + 20 > height){
+			height = getOutHeight() + 20;
+		}
+		giuPosition.height = height;
 		setBounds(giuPosition);
 		setBorder(BorderFactory.createLineBorder(Color.black));
 		MyMouseListener myMouseListener = new MyMouseListener();
@@ -108,6 +116,18 @@ public class PlugablePanel extends JPanel{
 		plugable.setGuiPosition(rectangle);
 	}
 	
+	private int getInHeight(){
+		Set<String> keys = plugable.getInputs().keySet();
+		int plugCount = keys.size();
+		return (plugCount * PLUG_LABEL_HEIGHT)  + ((plugCount -1) * PLUG_LABEL_MARGIN_HEIGHT);
+	}
+	
+	private int getOutHeight(){
+		Set<String> keys = plugable.getOutputs().keySet();
+		int plugCount = keys.size();
+		return (plugCount * PLUG_LABEL_HEIGHT) + ((plugCount -1) * PLUG_LABEL_MARGIN_HEIGHT);
+	}
+	
 	private Map<JLabel, String> labelInputMap = new HashMap<JLabel, String>();
 	private Map<String, JLabel> inputLabelMap = new HashMap<String, JLabel>();
 	private Map<JLabel, String> labelOutputMap = new HashMap<JLabel, String>();
@@ -117,8 +137,7 @@ public class PlugablePanel extends JPanel{
 		 * ins
 		 */
 		Set<String> keys = plugable.getInputs().keySet();
-		int plugCount = keys.size();
-		int labelBlockHight = (plugCount * PLUG_LABEL_HEIGHT)  + ((plugCount -1) * PLUG_LABEL_MARGIN_HEIGHT);
+		int labelBlockHight = getInHeight();
 		int posY = (getHeight() - labelBlockHight)/2;
 		for(String key : keys){
 			JLabel inputLabel = new JLabel("<html><body>" + key + "<br/>(" + plugable.getInputs().get(key).getSimpleName() + ")</body></html>");
@@ -136,8 +155,7 @@ public class PlugablePanel extends JPanel{
 		 * outs
 		 */
 		keys = plugable.getOutputs().keySet();
-		plugCount = keys.size();
-		labelBlockHight = (plugCount * PLUG_LABEL_HEIGHT) + ((plugCount -1) * PLUG_LABEL_MARGIN_HEIGHT);
+		labelBlockHight = getOutHeight();
 		posY = (getHeight() - labelBlockHight)/2;
 		int posX = getWidth() - PLUG_LABEL_WIDTH;
 		for(String key : keys){
