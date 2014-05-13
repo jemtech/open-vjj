@@ -43,6 +43,7 @@ public class PlugablePanel extends JPanel{
 	public static int REFRESH_TIME = 40; //in ms
 	public static int PLUG_LABEL_HEIGHT = 30;
 	public static int PLUG_LABEL_WIDTH = 150;
+	public static int PLUG_LABEL_MARGIN_HEIGHT = 5;
 
 	/**
 	 * 
@@ -117,7 +118,7 @@ public class PlugablePanel extends JPanel{
 		 */
 		Set<String> keys = plugable.getInputs().keySet();
 		int plugCount = keys.size();
-		int labelBlockHight = plugCount * PLUG_LABEL_HEIGHT;
+		int labelBlockHight = (plugCount * PLUG_LABEL_HEIGHT)  + ((plugCount -1) * PLUG_LABEL_MARGIN_HEIGHT);
 		int posY = (getHeight() - labelBlockHight)/2;
 		for(String key : keys){
 			JLabel inputLabel = new JLabel("<html><body>" + key + "<br/>(" + plugable.getInputs().get(key).getSimpleName() + ")</body></html>");
@@ -128,7 +129,7 @@ public class PlugablePanel extends JPanel{
 			add(inputLabel);
 			labelInputMap.put(inputLabel, key);
 			inputLabelMap.put(key, inputLabel);
-			posY += PLUG_LABEL_HEIGHT;
+			posY += PLUG_LABEL_HEIGHT + PLUG_LABEL_MARGIN_HEIGHT;
 		}
 		
 		/*
@@ -136,7 +137,7 @@ public class PlugablePanel extends JPanel{
 		 */
 		keys = plugable.getOutputs().keySet();
 		plugCount = keys.size();
-		labelBlockHight = plugCount * PLUG_LABEL_HEIGHT;
+		labelBlockHight = (plugCount * PLUG_LABEL_HEIGHT) + ((plugCount -1) * PLUG_LABEL_MARGIN_HEIGHT);
 		posY = (getHeight() - labelBlockHight)/2;
 		int posX = getWidth() - PLUG_LABEL_WIDTH;
 		for(String key : keys){
@@ -148,7 +149,7 @@ public class PlugablePanel extends JPanel{
 			add(outputLabel);
 			labelOutputMap.put(outputLabel, key);
 			outputLabelMap.put(key, outputLabel);
-			posX += PLUG_LABEL_HEIGHT;
+			posY += PLUG_LABEL_HEIGHT + PLUG_LABEL_MARGIN_HEIGHT;
 		}
 	}
 

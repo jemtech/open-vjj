@@ -16,8 +16,11 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import de.openVJJ.basic.Module;
+import de.openVJJ.plugins.ArtNetPacketToUnicastArtNetPacket;
+import de.openVJJ.plugins.ArtnetController;
 import de.openVJJ.plugins.BufferdImageToIntegerArray;
 import de.openVJJ.plugins.DisplayFrameBI;
+import de.openVJJ.plugins.InetAddressInput;
 import de.openVJJ.plugins.IntegerArrayToBufferdImage;
 import de.openVJJ.plugins.LinearRGBCorrectionIntegerArray;
 import de.openVJJ.plugins.StringInput;
@@ -56,7 +59,10 @@ public class SelectPlugable extends JPanel {
 		StringInput.class,
 		BufferdImageToIntegerArray.class,
 		LinearRGBCorrectionIntegerArray.class,
-		IntegerArrayToBufferdImage.class};
+		IntegerArrayToBufferdImage.class,
+		ArtnetController.class,
+		ArtNetPacketToUnicastArtNetPacket.class,
+		InetAddressInput.class};
 
 	//public static List<Class<? extends Plugable>> plugableClasses = new ArrayList<Class<? extends Plugable>>();
 	
