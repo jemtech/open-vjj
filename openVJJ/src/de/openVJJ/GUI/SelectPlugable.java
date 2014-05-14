@@ -25,8 +25,10 @@ import de.openVJJ.plugins.DisplayFrameBI;
 import de.openVJJ.plugins.InetAddressInput;
 import de.openVJJ.plugins.IntArrayToRGBIntArray;
 import de.openVJJ.plugins.IntInput;
+import de.openVJJ.plugins.IntOszilator;
 import de.openVJJ.plugins.IntegerArrayToBufferdImage;
 import de.openVJJ.plugins.LinearRGBCorrectionIntegerArray;
+import de.openVJJ.plugins.RGBIntArrayToDMXPaket;
 import de.openVJJ.plugins.RGBIntColor;
 import de.openVJJ.plugins.SinIntArrayGen;
 import de.openVJJ.plugins.StringInput;
@@ -74,7 +76,9 @@ public class SelectPlugable extends JPanel {
 		IntInput.class,
 		SinIntArrayGen.class,
 		IntArrayToRGBIntArray.class,
-		RGBIntColor.class};
+		RGBIntColor.class,
+		IntOszilator.class,
+		RGBIntArrayToDMXPaket.class};
 
 	//public static List<Class<? extends Plugable>> plugableClasses = new ArrayList<Class<? extends Plugable>>();
 	

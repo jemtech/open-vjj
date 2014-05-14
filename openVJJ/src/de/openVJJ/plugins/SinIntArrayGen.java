@@ -3,11 +3,17 @@
  */
 package de.openVJJ.plugins;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 
 import de.openVJJ.basic.Connection;
 import de.openVJJ.basic.Plugin;
+import de.openVJJ.basic.Value;
 import de.openVJJ.basic.Connection.ConnectionListener;
+import de.openVJJ.basic.Value.Lock;
 import de.openVJJ.values.DoubleValue;
 import de.openVJJ.values.IntArrayValue;
 import de.openVJJ.values.IntValue;
@@ -69,17 +75,132 @@ public class SinIntArrayGen extends Plugin {
 	@Override
 	protected ConnectionListener createConnectionListener(String inpuName,
 			Connection connection) {
-		// TODO Auto-generated method stub
+		if(inpuName == "phase"){
+			return new ConnectionListener(connection) {
+				
+				@Override
+				protected void valueReceved(Value value) {
+					Lock lock = value.lock();
+					DoubleValue val = (DoubleValue) value;
+					phase = val.getValue();
+					value.free(lock);
+				}
+				
+				@Override
+				protected void connectionShutdownCalled() {
+					// TODO Auto-generated method stub
+					
+				}
+			};
+		}else if(inpuName == "min"){
+			return new ConnectionListener(connection) {
+				
+				@Override
+				protected void valueReceved(Value value) {
+					Lock lock = value.lock();
+					IntValue val = (IntValue) value;
+					min = val.getValue();
+					value.free(lock);
+				}
+				
+				@Override
+				protected void connectionShutdownCalled() {
+					// TODO Auto-generated method stub
+					
+				}
+			};
+		}else if(inpuName == "max"){
+			return new ConnectionListener(connection) {
+				
+				@Override
+				protected void valueReceved(Value value) {
+					Lock lock = value.lock();
+					IntValue val = (IntValue) value;
+					max = val.getValue();
+					value.free(lock);
+				}
+				
+				@Override
+				protected void connectionShutdownCalled() {
+					// TODO Auto-generated method stub
+					
+				}
+			};
+		}else if(inpuName == "length"){
+			return new ConnectionListener(connection) {
+				
+				@Override
+				protected void valueReceved(Value value) {
+					Lock lock = value.lock();
+					IntValue val = (IntValue) value;
+					length = val.getValue();
+					value.free(lock);
+				}
+				
+				@Override
+				protected void connectionShutdownCalled() {
+					// TODO Auto-generated method stub
+					
+				}
+			};
+		}
 		return null;
 	}
 
+	private boolean trigerToPhase = false;
+	private boolean trigerToMin = false;
+	private boolean trigerToMax = false;
+	private boolean trigerToLength = false;
 	/* (non-Javadoc)
 	 * @see de.openVJJ.basic.Plugable#getConfigPannel()
 	 */
 	@Override
 	public JPanel getConfigPannel() {
-		// TODO Auto-generated method stub
-		return null;
+		JPanel configPanel = new JPanel();
+		JCheckBox trigerToPhaseCheckBox = new JCheckBox("Triger to Phase");
+		trigerToPhaseCheckBox.setSelected(trigerToPhase);
+		trigerToPhaseCheckBox.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				trigerToPhase = ((JCheckBox)arg0.getSource()).isSelected();
+			}
+		});
+		configPanel.add(trigerToPhaseCheckBox);
+		
+		JCheckBox trigerToMinCheckBox = new JCheckBox("Triger to min");
+		trigerToMinCheckBox.setSelected(trigerToMin);
+		trigerToMinCheckBox.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				trigerToMin = ((JCheckBox)arg0.getSource()).isSelected();
+			}
+		});
+		configPanel.add(trigerToMinCheckBox);
+		
+		JCheckBox trigerToMaxCheckBox = new JCheckBox("Triger to max");
+		trigerToMaxCheckBox.setSelected(trigerToMax);
+		trigerToMaxCheckBox.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				trigerToMax = ((JCheckBox)arg0.getSource()).isSelected();
+			}
+		});
+		configPanel.add(trigerToMaxCheckBox);
+		
+		JCheckBox trigerToLengthCheckBox = new JCheckBox("Triger to Length");
+		trigerToLengthCheckBox.setSelected(trigerToLength);
+		trigerToLengthCheckBox.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				trigerToLength = ((JCheckBox)arg0.getSource()).isSelected();
+			}
+		});
+		configPanel.add(trigerToLengthCheckBox);
+		return configPanel;
 	}
 
 }
