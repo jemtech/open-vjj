@@ -3,13 +3,20 @@
  */
 package de.openVJJ.plugins;
 
+import java.net.InetAddress;
+
 import javax.swing.JPanel;
+
+import artnet4j.packets.ArtNetPacket;
 
 import de.openVJJ.basic.Connection;
 import de.openVJJ.basic.Plugin;
+import de.openVJJ.basic.Value;
 import de.openVJJ.basic.Connection.ConnectionListener;
+import de.openVJJ.basic.Value.Lock;
 import de.openVJJ.values.ArtNetPacketValue;
 import de.openVJJ.values.InetAddressValue;
+import de.openVJJ.values.RGBIntColorValue;
 import de.openVJJ.values.UnicastArtNetPacketValue;
 
 /**
@@ -47,14 +54,53 @@ public class ArtNetPacketToUnicastArtNetPacket extends Plugin {
 
 	}
 
+	private InetAddress inetAddress;
 	/* (non-Javadoc)
 	 * @see de.openVJJ.basic.Plugable#createConnectionListener(java.lang.String, de.openVJJ.basic.Connection)
 	 */
 	@Override
 	protected ConnectionListener createConnectionListener(String inpuName,
 			Connection connection) {
-		// TODO Auto-generated method stub
+		if(inpuName == "Adress"){
+			return new ConnectionListener(connection) {
+				
+				@Override
+				protected void valueReceved(Value value) {
+					Lock lock = value.lock();
+					InetAddressValue adressValue = (InetAddressValue) value;
+					inetAddress = adressValue.getInetAddress();
+					value.free(lock);
+				}
+				
+				@Override
+				protected void connectionShutdownCalled() {
+					// TODO Auto-generated method stub
+					
+				}
+			};
+		}else if(inpuName == "ArtNetPacket"){
+			return new ConnectionListener(connection) {
+				
+				@Override
+				protected void valueReceved(Value value) {
+					Lock lock = value.lock();
+					ArtNetPacketValue parketValue = (ArtNetPacketValue) value;
+					createUnicast(parketValue.getArtNetPacket());
+					value.free(lock);
+				}
+				
+				@Override
+				protected void connectionShutdownCalled() {
+					// TODO Auto-generated method stub
+					
+				}
+			};
+		}
 		return null;
+	}
+	
+	private void createUnicast(ArtNetPacket artNetPacket){
+		getConnection("Unicast").transmitValue(new UnicastArtNetPacketValue(artNetPacket, inetAddress));
 	}
 
 	/* (non-Javadoc)
