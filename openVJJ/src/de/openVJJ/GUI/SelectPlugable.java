@@ -21,6 +21,9 @@ import de.openVJJ.plugins.ArtNetPacketToUnicastArtNetPacket;
 import de.openVJJ.plugins.ArtnetController;
 import de.openVJJ.plugins.BufferdImageToIntegerArray;
 import de.openVJJ.plugins.DMXPaketToArtNetDMXPaket;
+import de.openVJJ.plugins.DebugArtNetPaket;
+import de.openVJJ.plugins.DebugInt;
+import de.openVJJ.plugins.DebugIntArray;
 import de.openVJJ.plugins.DisplayFrameBI;
 import de.openVJJ.plugins.InetAddressInput;
 import de.openVJJ.plugins.IntArrayToRGBIntArray;
@@ -78,7 +81,10 @@ public class SelectPlugable extends JPanel {
 		IntArrayToRGBIntArray.class,
 		RGBIntColor.class,
 		IntOszilator.class,
-		RGBIntArrayToDMXPaket.class};
+		RGBIntArrayToDMXPaket.class,
+		DebugArtNetPaket.class,
+		DebugInt.class,
+		DebugIntArray.class};
 
 	//public static List<Class<? extends Plugable>> plugableClasses = new ArrayList<Class<? extends Plugable>>();
 	

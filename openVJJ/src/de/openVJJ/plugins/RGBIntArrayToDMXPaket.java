@@ -86,10 +86,16 @@ public class RGBIntArrayToDMXPaket extends Plugin {
 	private int gMap = 1;
 	private int bMap = 2;
 	private int chCount = 3;
+	private int arrayOfset = 0;
+	public static int MAX_DMX_LENGTH = 512;
 	private void mapRGBArray(int[][] rgbArray){
-		byte[] dmx = new byte[rgbArray.length * chCount];
+		int pixels = MAX_DMX_LENGTH / chCount;
+		if(rgbArray.length - arrayOfset < pixels){
+			pixels = rgbArray.length - arrayOfset;
+		}
+		byte[] dmx = new byte[pixels * chCount];
 		int p = 0;
-		for(int i = 0; i < rgbArray.length ; i++){
+		for(int i = arrayOfset; i < pixels + arrayOfset ; i++){
 			int[] rgb = rgbArray[i];
 			dmx[p + rMap] = (byte) rgb[0];
 			dmx[p + gMap] = (byte) rgb[1];
