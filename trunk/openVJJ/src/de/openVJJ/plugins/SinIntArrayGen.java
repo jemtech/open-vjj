@@ -8,6 +8,8 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import de.openVJJ.basic.Connection;
 import de.openVJJ.basic.Plugin;
@@ -52,13 +54,13 @@ public class SinIntArrayGen extends Plugin {
 		addOutput("curve", IntArrayValue.class);
 	}
 	
-	private int[] calculate(){
+	private void calculate(){
 		int[] res = new int[length];
 		double range = (max - min) /2;
 		for(int i = 0; i < length; i++){
 			res[i] = (int) (min + ((Math.sin(phase + ((Math.PI * i) / length) ) + 1) * range));
 		}
-		return res;
+		getConnection("curve").transmitValue(new IntArrayValue(res));
 	}
 
 	/* (non-Javadoc)
@@ -66,7 +68,7 @@ public class SinIntArrayGen extends Plugin {
 	 */
 	@Override
 	public void sendStatics() {
-		getConnection("curve").transmitValue(new IntArrayValue(calculate()));
+		//getConnection("curve").transmitValue(new IntArrayValue(calculate()));
 	}
 
 	/* (non-Javadoc)
@@ -83,6 +85,9 @@ public class SinIntArrayGen extends Plugin {
 					Lock lock = value.lock();
 					DoubleValue val = (DoubleValue) value;
 					phase = val.getValue();
+					if(trigerToPhase){
+						calculate();
+					}
 					value.free(lock);
 				}
 				
@@ -100,6 +105,9 @@ public class SinIntArrayGen extends Plugin {
 					Lock lock = value.lock();
 					IntValue val = (IntValue) value;
 					min = val.getValue();
+					if(trigerToMin){
+						calculate();
+					}
 					value.free(lock);
 				}
 				
@@ -117,6 +125,9 @@ public class SinIntArrayGen extends Plugin {
 					Lock lock = value.lock();
 					IntValue val = (IntValue) value;
 					max = val.getValue();
+					if(trigerToMax){
+						calculate();
+					}
 					value.free(lock);
 				}
 				
@@ -134,6 +145,9 @@ public class SinIntArrayGen extends Plugin {
 					Lock lock = value.lock();
 					IntValue val = (IntValue) value;
 					length = val.getValue();
+					if(trigerToLength){
+						calculate();
+					}
 					value.free(lock);
 				}
 				
@@ -159,10 +173,16 @@ public class SinIntArrayGen extends Plugin {
 		JPanel configPanel = new JPanel();
 		JCheckBox trigerToPhaseCheckBox = new JCheckBox("Triger to Phase");
 		trigerToPhaseCheckBox.setSelected(trigerToPhase);
-		trigerToPhaseCheckBox.addActionListener(new ActionListener() {
+//		trigerToPhaseCheckBox.addActionListener(new ActionListener() {
+//			
+//			@Override
+//			public void actionPerformed(ActionEvent arg0) {
+//			}
+//		});
+		trigerToPhaseCheckBox.addChangeListener(new ChangeListener() {
 			
 			@Override
-			public void actionPerformed(ActionEvent arg0) {
+			public void stateChanged(ChangeEvent arg0) {
 				trigerToPhase = ((JCheckBox)arg0.getSource()).isSelected();
 			}
 		});
@@ -170,10 +190,17 @@ public class SinIntArrayGen extends Plugin {
 		
 		JCheckBox trigerToMinCheckBox = new JCheckBox("Triger to min");
 		trigerToMinCheckBox.setSelected(trigerToMin);
-		trigerToMinCheckBox.addActionListener(new ActionListener() {
+//		trigerToMinCheckBox.addActionListener(new ActionListener() {
+//			
+//			@Override
+//			public void actionPerformed(ActionEvent arg0) {
+//				trigerToMin = ((JCheckBox)arg0.getSource()).isSelected();
+//			}
+//		});
+		trigerToMinCheckBox.addChangeListener(new ChangeListener() {
 			
 			@Override
-			public void actionPerformed(ActionEvent arg0) {
+			public void stateChanged(ChangeEvent arg0) {
 				trigerToMin = ((JCheckBox)arg0.getSource()).isSelected();
 			}
 		});
@@ -181,10 +208,17 @@ public class SinIntArrayGen extends Plugin {
 		
 		JCheckBox trigerToMaxCheckBox = new JCheckBox("Triger to max");
 		trigerToMaxCheckBox.setSelected(trigerToMax);
-		trigerToMaxCheckBox.addActionListener(new ActionListener() {
+//		trigerToMaxCheckBox.addActionListener(new ActionListener() {
+//			
+//			@Override
+//			public void actionPerformed(ActionEvent arg0) {
+//				trigerToMax = ((JCheckBox)arg0.getSource()).isSelected();
+//			}
+//		});
+		trigerToMaxCheckBox.addChangeListener(new ChangeListener() {
 			
 			@Override
-			public void actionPerformed(ActionEvent arg0) {
+			public void stateChanged(ChangeEvent arg0) {
 				trigerToMax = ((JCheckBox)arg0.getSource()).isSelected();
 			}
 		});
@@ -192,10 +226,17 @@ public class SinIntArrayGen extends Plugin {
 		
 		JCheckBox trigerToLengthCheckBox = new JCheckBox("Triger to Length");
 		trigerToLengthCheckBox.setSelected(trigerToLength);
-		trigerToLengthCheckBox.addActionListener(new ActionListener() {
+//		trigerToLengthCheckBox.addActionListener(new ActionListener() {
+//			
+//			@Override
+//			public void actionPerformed(ActionEvent arg0) {
+//				trigerToLength = ((JCheckBox)arg0.getSource()).isSelected();
+//			}
+//		});
+		trigerToLengthCheckBox.addChangeListener(new ChangeListener() {
 			
 			@Override
-			public void actionPerformed(ActionEvent arg0) {
+			public void stateChanged(ChangeEvent arg0) {
 				trigerToLength = ((JCheckBox)arg0.getSource()).isSelected();
 			}
 		});

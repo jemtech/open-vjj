@@ -107,6 +107,7 @@ public class IntOszilator extends Plugin {
 			
 			@Override
 			public void run() {
+				run = true;
 				while(run){
 					step();
 					try {
