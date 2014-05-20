@@ -88,7 +88,7 @@ public class Connection{
 	}
 	
 	/**
-	 * Use to check if your {@link Value} matches to this {@link Connection}
+	 * Use to check if your {@link Value} is assignable from this {@link Connection}
 	 * @param matchingClass the {@link Class} representation of your {@link Value} to match
 	 * @return <code>true</code> if {@link Class} type match <code>false</code> otherwise
 	 */
@@ -101,7 +101,10 @@ public class Connection{
 			System.err.println("matchingClass is null");
 			return false;
 		}
-		if(valueClass.equals(matchingClass)){
+		/*
+		 * Super.class.isAssignableFrom(Sub.class)
+		 */
+		if(matchingClass.isAssignableFrom(valueClass)){
 			return true;
 		}
 		return false;
