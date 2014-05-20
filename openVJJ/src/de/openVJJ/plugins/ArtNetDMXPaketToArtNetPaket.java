@@ -12,7 +12,6 @@ import de.openVJJ.basic.Connection.ConnectionListener;
 import de.openVJJ.basic.Value.Lock;
 import de.openVJJ.values.ArtNetDMXPaketValue;
 import de.openVJJ.values.ArtNetPacketValue;
-import de.openVJJ.values.IntValue;
 
 /**
  * 

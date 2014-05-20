@@ -18,7 +18,6 @@ import de.openVJJ.basic.Value;
 import de.openVJJ.basic.Connection.ConnectionListener;
 import de.openVJJ.basic.Value.Lock;
 import de.openVJJ.values.ArtNetPacketValue;
-import de.openVJJ.values.BufferedImageValue;
 import de.openVJJ.values.UnicastArtNetPacketValue;
 
 /**

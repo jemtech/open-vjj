@@ -13,7 +13,6 @@ import java.io.File;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
@@ -28,7 +27,6 @@ import com.xuggle.mediatool.event.IVideoPictureEvent;
 import de.openVJJ.basic.Connection;
 import de.openVJJ.basic.Plugin;
 import de.openVJJ.basic.Connection.ConnectionListener;
-import de.openVJJ.graphic.VideoFrame;
 import de.openVJJ.values.BufferedImageValue;
 
 /**
