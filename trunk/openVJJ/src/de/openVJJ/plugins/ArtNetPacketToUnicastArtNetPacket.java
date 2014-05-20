@@ -16,7 +16,6 @@ import de.openVJJ.basic.Connection.ConnectionListener;
 import de.openVJJ.basic.Value.Lock;
 import de.openVJJ.values.ArtNetPacketValue;
 import de.openVJJ.values.InetAddressValue;
-import de.openVJJ.values.RGBIntColorValue;
 import de.openVJJ.values.UnicastArtNetPacketValue;
 
 /**

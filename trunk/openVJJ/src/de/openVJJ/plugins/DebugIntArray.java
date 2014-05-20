@@ -11,7 +11,6 @@ import de.openVJJ.basic.Value;
 import de.openVJJ.basic.Connection.ConnectionListener;
 import de.openVJJ.basic.Value.Lock;
 import de.openVJJ.values.IntArrayValue;
-import de.openVJJ.values.IntValue;
 
 /**
  * 
