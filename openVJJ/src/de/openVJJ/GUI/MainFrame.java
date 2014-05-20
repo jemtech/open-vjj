@@ -12,7 +12,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 
 import de.openVJJ.InputComponents;
-import de.openVJJ.RegisteredComponents;
 import de.openVJJ.VJJComponent;
 import de.openVJJ.GUI.ShowComponents.ShowComponetsListener;
 import de.openVJJ.ImageListener.ImageListener;
