@@ -65,11 +65,11 @@ public class PlugablePanel extends JPanel{
 		setLayout(null);
 		Rectangle giuPosition = plugable.getGuiPosition();
 		int height = giuPosition.height;
-		if(getInHeight() + 20 > height){
-			height = getInHeight() + 20;
+		if(getInHeight() + 20 + PLUG_LABEL_HEIGHT > height){
+			height = getInHeight() + 20 + PLUG_LABEL_HEIGHT;
 		}
-		if(getOutHeight() + 20 > height){
-			height = getOutHeight() + 20;
+		if(getOutHeight() + 20 + PLUG_LABEL_HEIGHT> height){
+			height = getOutHeight() + 20 + PLUG_LABEL_HEIGHT;
 		}
 		giuPosition.height = height;
 		setBounds(giuPosition);
@@ -78,6 +78,11 @@ public class PlugablePanel extends JPanel{
 		addMouseListener(myMouseListener);
 		addMouseMotionListener(myMouseListener);
 		setBackground(Color.blue);
+		JLabel nameLabel = new JLabel(plugable.getName());
+		nameLabel.setBounds((giuPosition.width-PLUG_LABEL_WIDTH)/2, 5, PLUG_LABEL_WIDTH, PLUG_LABEL_HEIGHT);
+		nameLabel.setBackground(Color.white);
+		nameLabel.setOpaque(true);
+		add(nameLabel);
 		createInOutputs();
 	}
 
@@ -138,7 +143,7 @@ public class PlugablePanel extends JPanel{
 		 */
 		Set<String> keys = plugable.getInputs().keySet();
 		int labelBlockHight = getInHeight();
-		int posY = (getHeight() - labelBlockHight)/2;
+		int posY = (getHeight() - labelBlockHight - PLUG_LABEL_HEIGHT)/2 + PLUG_LABEL_HEIGHT;
 		for(String key : keys){
 			JLabel inputLabel = new JLabel("<html><body>" + key + "<br/>(" + plugable.getInputs().get(key).getSimpleName() + ")</body></html>");
 			inputLabel.setBounds(0, posY, PLUG_LABEL_WIDTH, PLUG_LABEL_HEIGHT);
@@ -156,7 +161,7 @@ public class PlugablePanel extends JPanel{
 		 */
 		keys = plugable.getOutputs().keySet();
 		labelBlockHight = getOutHeight();
-		posY = (getHeight() - labelBlockHight)/2;
+		posY = (getHeight() - labelBlockHight - PLUG_LABEL_HEIGHT)/2 + PLUG_LABEL_HEIGHT;
 		int posX = getWidth() - PLUG_LABEL_WIDTH;
 		for(String key : keys){
 			JLabel outputLabel = new JLabel("<html><body>" + key + "<br/>(" + plugable.getOutputs().get(key).getSimpleName() + ")</body></html>");

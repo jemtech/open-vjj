@@ -178,4 +178,8 @@ public abstract class Plugable {
 	 * @return the configuration {@link JPanel} for the {@link Plugable}
 	 */
 	public abstract JPanel getConfigPannel();
+	
+	public String getName(){
+		return this.getClass().getSimpleName();
+	}
 }
