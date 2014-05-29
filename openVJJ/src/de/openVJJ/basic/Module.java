@@ -341,19 +341,9 @@ public class Module extends Plugable{
 				}
 				
 				Connection outCon = outPlugable.getConnection(outName);
-				System.out.println(inPlugable.getName());
-				System.out.println("loadCon:" + inPlugable.setInput(inName, outCon));
-				System.out.println(inPlugable.getInputs().keySet().size());
-				for(String key : inPlugable.getInputs().keySet()){
-					System.out.println( key );
-				}
-				System.out.println(outCon);
-				System.out.println(inName);
-				System.out.println(inPlugable.getListener(inName));
-				System.out.println(inPlugable.getListener(inName).getConnection());
+				inPlugable.setInput(inName, outCon);
 			}
 		}
-		System.out.println("Con count:" + getConnectionInfo().size());
 	}
 	
 	/**
