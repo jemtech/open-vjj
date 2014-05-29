@@ -7,6 +7,8 @@ import java.util.Map;
 
 import javax.swing.JPanel;
 
+import org.jdom2.Element;
+
 import de.openVJJ.GUI.ModuleInsightPannel;
 import de.openVJJ.basic.Connection.ConnectionListener;
 
@@ -206,5 +208,183 @@ public class Module extends Plugable{
 	@Override
 	public JPanel getConfigPannel() {
 		return new ModuleInsightPannel(this);
+	}
+	
+	public List<ConnectionInfo> getConnectionInfo(){
+		ArrayList<ConnectionInfo> connectionInfoList = new ArrayList<ConnectionInfo>();
+		
+		for(Plugable plugable : plugables){
+			for(String key : plugable.getInputs().keySet()){
+				Connection.ConnectionListener listener = plugable.getListener(key);
+				if(listener == null){
+					continue;
+				}
+				Connection inputConnectedTo = listener.getConnection();
+				for(Plugable plugableOut : plugables){
+					for(String outKey : plugableOut.getOutputs().keySet()){
+						Connection outCon = plugableOut.getConnection(outKey);
+						if(outCon == inputConnectedTo){
+							
+							ConnectionInfo connectionInfo = new ConnectionInfo();
+							connectionInfo.in = plugable;
+							connectionInfo.inName = key;
+							connectionInfo.out = plugableOut;
+							connectionInfo.outName = outKey;
+							connectionInfoList.add(connectionInfo);
+						}
+					}
+				}
+			}
+		}
+		
+		return connectionInfoList;
+	}
+	
+	public class ConnectionInfo{
+		Plugable in;
+		Plugable out;
+		String inName;
+		String outName;
+		
+		public Plugable getIn(){
+			return in;
+		}
+		
+		public Plugable getOut(){
+			return out;
+		}
+		
+		public String getInName(){
+			return inName;
+		}
+		
+		public String getOutName(){
+			return outName;
+		}
+	}
+	
+	public static final String ELEMENT_NAME_PLUGABLES = "plugables";
+	public static final String ELEMENT_NAME_PLUGABLE = "plugable";
+	public static final String ELEMENT_NAME_PLUGABLE_CONFIG = "plugable config";
+	public static final String ELEMENT_NAME_CONNECTIONS = "connections";
+	public static final String ELEMENT_NAME_CONNECTION = "connection";
+
+	private static final String ELEMENT_ATTRIBUTE_PLUGABLE_CLASS = "plugable class";
+	private static final String ELEMENT_ATTRIBUTE_PLUGABLE_NR = "plugable nr";
+	
+	private static final String ELEMENT_ATTRIBUTE_IN_PLUGABLE_NR = "inPlugabel nr";
+	private static final String ELEMENT_ATTRIBUTE_OUT_PLUGABLE_NR = "outPlugabel nr";
+	private static final String ELEMENT_ATTRIBUTE_IN_NAME = "in name";
+	private static final String ELEMENT_ATTRIBUTE_OUT_NAME = "out name";
+	/**
+	 * @see de.openVJJ.basic.Plugable#setConfig(org.jdom2.Element)
+	 */
+	@Override
+	public void setConfig(Element element) {
+		super.setConfig(element);
+		
+		Map<Integer, Plugable> plugabelNrMap = new HashMap<Integer, Plugable>();
+		Element plugablesElement = element.getChild(ELEMENT_NAME_PLUGABLES);
+		if(plugablesElement != null){
+			for(Element plugableElement : plugablesElement.getChildren(ELEMENT_NAME_PLUGABLE)){
+				String plugableClass =  plugableElement.getAttributeValue(ELEMENT_ATTRIBUTE_PLUGABLE_CLASS);
+				Plugable plugable = null;
+				if(plugableClass != null){
+					try {
+					Class<?> c = Class.forName(plugableClass);
+					Object classInstance = c.newInstance();
+					plugable = (Plugable) classInstance;
+					} catch (InstantiationException e) {
+						e.printStackTrace();
+					} catch (IllegalAccessException e) {
+						e.printStackTrace();
+					} catch (ClassNotFoundException e) {
+						e.printStackTrace();
+					}
+				}
+				if(plugable == null){
+					System.err.println("Was not abel to create instance of Plugabe");
+					continue;
+				}
+				String plugableNr =  plugableElement.getAttributeValue(ELEMENT_ATTRIBUTE_PLUGABLE_NR);
+				if(plugableNr != null){
+					plugabelNrMap.put(Integer.parseInt(plugableNr), plugable);
+				}
+				
+				Element plugableElementConfig = plugableElement.getChild(ELEMENT_NAME_PLUGABLE_CONFIG);
+				if(plugableElementConfig != null){
+					plugable.setConfig(plugableElementConfig);
+				}
+			}
+		}
+
+		Element connectionsElement = element.getChild(ELEMENT_NAME_CONNECTIONS);
+		if(connectionsElement != null){
+			for(Element connectionElement : connectionsElement.getChildren(ELEMENT_NAME_CONNECTION)){
+				String inNRString = connectionElement.getAttributeValue(ELEMENT_ATTRIBUTE_IN_PLUGABLE_NR);
+				Plugable inPlugable = null;
+				if(inNRString != null){
+					inPlugable = plugabelNrMap.get(Integer.parseInt(inNRString));
+				}
+				String outNRString = connectionElement.getAttributeValue(ELEMENT_ATTRIBUTE_OUT_PLUGABLE_NR);
+				Plugable outPlugable = null;
+				if(outNRString != null){
+					outPlugable = plugabelNrMap.get(Integer.parseInt(outNRString));
+				}
+				String inName = connectionElement.getAttributeValue(ELEMENT_ATTRIBUTE_IN_NAME);
+				String outName = connectionElement.getAttributeValue(ELEMENT_ATTRIBUTE_OUT_NAME);
+				
+				if(inPlugable == null || outPlugable == null || inName == null || outName == null){
+					System.err.println("Connection not fully defined");
+					continue;
+				}
+				
+				Connection outCon = outPlugable.getConnection(outName);
+				inPlugable.setInput(inName, outCon);
+				
+			}
+		}
+		
+	}
+	
+	/**
+	 * @see de.openVJJ.basic.Plugable#getConfig(org.jdom2.Element)
+	 */
+	@Override
+	public void getConfig(Element element) {
+		super.getConfig(element);
+
+		Element plugablesElement = new Element(ELEMENT_NAME_PLUGABLES);
+		element.addContent(plugablesElement);
+		int pugableNr = 0;
+		Map<Plugable, Integer> plugabelNrMap = new HashMap<Plugable, Integer>();
+		for(Plugable plugable : getPlugables()){
+			plugabelNrMap.put(plugable, pugableNr);
+			
+			Element plugableElement = new Element(ELEMENT_NAME_PLUGABLE);
+			plugablesElement.addContent(plugableElement);
+			plugableElement.setAttribute(ELEMENT_ATTRIBUTE_PLUGABLE_CLASS, plugable.getClass().getName());
+			plugableElement.setAttribute(ELEMENT_ATTRIBUTE_PLUGABLE_NR, String.valueOf(pugableNr));
+			
+			Element plugableConfigElement = new Element(ELEMENT_NAME_PLUGABLE_CONFIG);
+			plugableElement.addContent(plugableConfigElement);
+			plugable.getConfig(plugableConfigElement);
+			
+			pugableNr++;
+		}
+		
+
+		Element connectionsElement = new Element(ELEMENT_NAME_CONNECTIONS);
+		element.addContent(connectionsElement);
+		for(ConnectionInfo connectionInfo : getConnectionInfo()){
+			Element connectionElement = new Element(ELEMENT_NAME_CONNECTIONS);
+			connectionsElement.addContent(connectionElement);
+			
+			connectionsElement.setAttribute(ELEMENT_ATTRIBUTE_IN_PLUGABLE_NR, String.valueOf(plugabelNrMap.get(connectionInfo.getIn())));
+			connectionsElement.setAttribute(ELEMENT_ATTRIBUTE_OUT_PLUGABLE_NR, String.valueOf(plugabelNrMap.get(connectionInfo.getOut())));
+			connectionsElement.setAttribute(ELEMENT_ATTRIBUTE_IN_NAME, String.valueOf(plugabelNrMap.get(connectionInfo.getInName())));
+			connectionsElement.setAttribute(ELEMENT_ATTRIBUTE_OUT_NAME, String.valueOf(plugabelNrMap.get(connectionInfo.getOutName())));
+			
+		}
 	}
 }

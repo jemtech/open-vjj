@@ -30,6 +30,7 @@ import de.openVJJ.basic.Connection;
 import de.openVJJ.basic.Module;
 import de.openVJJ.basic.Plugable;
 import de.openVJJ.basic.Value;
+import de.openVJJ.basic.Module.ConnectionInfo;
 
 /**
  * 
@@ -139,29 +140,40 @@ public class ModuleInsightPannel extends JPanel{
 	}
 	
 	private void initConnections(){
-		List<Plugable> plugables = module.getPlugables();
-		for(Plugable plugable : plugables){
-			PlugablePanel pannel = plugablePlugablePannelMap.get(plugable);
-			for(String key : plugable.getInputs().keySet()){
-				JLabel inputLabel = pannel.getInputLabelMap().get(key);
-				Connection.ConnectionListener listener = plugable.getListener(key);
-				if(listener == null){
-					continue;
-				}
-				Connection inputConnectedTo = listener.getConnection();
-				for(Plugable plugableOut : plugables){
-					for(String outKey : plugableOut.getOutputs().keySet()){
-						Connection outCon = plugableOut.getConnection(outKey);
-						if(outCon == inputConnectedTo){
-							PlugablePanel outPannel = plugablePlugablePannelMap.get(plugableOut);
-							JLabel outLabel = outPannel.getOutputLabelMap().get(outKey);
-							
-							ConectionLine conectionLine = new ConectionLine(inputLabel, plugable, outLabel, plugableOut);
-							conectionLines.add(conectionLine);
-						}
-					}
-				}
-			}
+//		List<Plugable> plugables = module.getPlugables();
+//		for(Plugable plugable : plugables){
+//			PlugablePanel pannel = plugablePlugablePannelMap.get(plugable);
+//			for(String key : plugable.getInputs().keySet()){
+//				JLabel inputLabel = pannel.getInputLabelMap().get(key);
+//				Connection.ConnectionListener listener = plugable.getListener(key);
+//				if(listener == null){
+//					continue;
+//				}
+//				Connection inputConnectedTo = listener.getConnection();
+//				for(Plugable plugableOut : plugables){
+//					for(String outKey : plugableOut.getOutputs().keySet()){
+//						Connection outCon = plugableOut.getConnection(outKey);
+//						if(outCon == inputConnectedTo){
+//							PlugablePanel outPannel = plugablePlugablePannelMap.get(plugableOut);
+//							JLabel outLabel = outPannel.getOutputLabelMap().get(outKey);
+//							
+//							ConectionLine conectionLine = new ConectionLine(inputLabel, plugable, outLabel, plugableOut);
+//							conectionLines.add(conectionLine);
+//						}
+//					}
+//				}
+//			}
+//		}
+		
+		List<ConnectionInfo> connectionInfoList = module.getConnectionInfo();
+		for(ConnectionInfo connectionInfo : connectionInfoList){
+			PlugablePanel inPannel = plugablePlugablePannelMap.get(connectionInfo.getIn());
+			JLabel inputLabel = inPannel.getInputLabelMap().get(connectionInfo.getInName());
+			PlugablePanel outPannel = plugablePlugablePannelMap.get(connectionInfo.getOut());
+			JLabel outLabel = outPannel.getOutputLabelMap().get(connectionInfo.getOutName());
+			
+			ConectionLine conectionLine = new ConectionLine(inputLabel, connectionInfo.getIn(), outLabel, connectionInfo.getOut());
+			conectionLines.add(conectionLine);
 		}
 	}
 	

@@ -6,6 +6,8 @@ import java.util.Map;
 
 import javax.swing.JPanel;
 
+import org.jdom2.Element;
+
 import de.openVJJ.basic.Connection.ConnectionListener;
 
 /**
@@ -185,5 +187,47 @@ public abstract class Plugable {
 	
 	public String getName(){
 		return this.getClass().getSimpleName();
+	}
+	
+
+	public static final String ELEMENT_NAME_GUI_POSITION = "gui position";
+	/**
+	 * for saving configuration 
+	 * @param element to save configuration to.
+	 */
+	public void getConfig(Element element){
+		Element guiPositionElement = new Element(ELEMENT_NAME_GUI_POSITION);
+		element.addContent(guiPositionElement);
+		Rectangle guiPosition = getGuiPosition();
+		guiPositionElement.setAttribute("x", String.valueOf(guiPosition.x));
+		guiPositionElement.setAttribute("y", String.valueOf(guiPosition.y));
+		guiPositionElement.setAttribute("height", String.valueOf(guiPosition.height));
+		guiPositionElement.setAttribute("width", String.valueOf(guiPosition.width));
+	}
+	/**
+	 * for restoring from saved configuration
+	 * @param element XML Element
+	 */
+	public void setConfig(Element element){
+		Element guiPositionElement = element.getChild(ELEMENT_NAME_GUI_POSITION);
+		if(guiPositionElement != null){
+			Rectangle guiPosition = getGuiPosition();
+			String val = guiPositionElement.getAttributeValue("x");
+			if(val != null){
+				guiPosition.x =  Integer.parseInt(val);
+			}
+			val = guiPositionElement.getAttributeValue("y");
+			if(val != null){
+				guiPosition.y =  Integer.parseInt(val);
+			}
+			val = guiPositionElement.getAttributeValue("height");
+			if(val != null){
+				guiPosition.height =  Integer.parseInt(val);
+			}
+			val = guiPositionElement.getAttributeValue("width");
+			if(val != null){
+				guiPosition.width =  Integer.parseInt(val);
+			}
+		}
 	}
 }
