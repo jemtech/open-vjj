@@ -197,20 +197,24 @@ public class ModuleInsightPannel extends JPanel{
 		}
 		if(newLine.connect()){
 			String inName = newLine.getInName();
-			List<ConectionLine> toRem = new ArrayList<ConectionLine>();
-			for(ConectionLine conectionLine : conectionLines){
-				if(conectionLine.in == newLine.in){
-					if(conectionLine.getInName().equals(inName)){
-						toRem.add(conectionLine);
-					}
-				}
-			}
-			for(ConectionLine conectionLine : toRem){
-				conectionLines.remove(conectionLine);
-			}
+			removeConnectionLine(newLine.in, inName);
 			conectionLines.add(newLine);
 		}
 		repaint();
+	}
+	
+	private void removeConnectionLine(Plugable in, String inName){
+		List<ConectionLine> toRem = new ArrayList<ConectionLine>();
+		for(ConectionLine conectionLine : conectionLines){
+			if(conectionLine.in == in){
+				if(conectionLine.getInName().equals(inName)){
+					toRem.add(conectionLine);
+				}
+			}
+		}
+		for(ConectionLine conectionLine : toRem){
+			conectionLines.remove(conectionLine);
+		}
 	}
 	
 	public class ConectionLine{
@@ -338,14 +342,16 @@ public class ModuleInsightPannel extends JPanel{
 		 */
 		@Override
 		public void mousePressed(MouseEvent e) {
+			JLabel label = (JLabel) e.getSource();
 			if(MouseEvent.BUTTON1 != e.getButton()){
+				InputMousePopUp mousePopUp = new InputMousePopUp(label, plugable);
+				mousePopUp.show(e.getComponent(), e.getX(), e.getY());
 				return;
 			}
 			if(isPressed){
 				return;
 			}
 			isPressed = true;
-			JLabel label = (JLabel) e.getSource();
 			pressedOver = label;
 			Point labelLocation = label.getLocationOnScreen();
 			Point frameLocation = getLocationOnScreen();
@@ -580,6 +586,41 @@ public class ModuleInsightPannel extends JPanel{
 			}
 		}
 		
+	}
+	
+	private class InputMousePopUp extends JPopupMenu {
+	    /**
+		 * 
+		 */
+		private static final long serialVersionUID = -2510704964240859771L;
+		JMenuItem anItem;
+		private String inputName;
+		private Plugable plugable;
+		
+	    public InputMousePopUp(JLabel opendAt, Plugable atPlugable){
+	    	plugable = atPlugable;
+	    	inputName = plugablePlugablePannelMap.get(plugable).labelToInputName(opendAt);
+	        anItem = new JMenuItem("Remove connection");
+	        anItem.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					removeConnection(plugable, inputName);
+				}
+			});
+	        add(anItem);
+	    }
+	}
+	
+	private void removeConnection(Plugable inPlugable, String inName){
+		inPlugable.releaseInput(inName);
+		removeConnectionLine(inPlugable, inName);
+		repaint();
+	}
+	
+	protected void removePlugable(Plugable plugable){
+		module.removePlugable(plugable);
+		initModule();
 	}
 	
 }

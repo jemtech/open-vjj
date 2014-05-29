@@ -6,6 +6,8 @@ package de.openVJJ.GUI;
 import java.awt.Color;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -16,7 +18,9 @@ import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 
 import de.openVJJ.basic.Plugable;
 
@@ -188,13 +192,9 @@ public class PlugablePanel extends JPanel{
 		@Override
 		public void mouseClicked(MouseEvent e) {
 
-			JPanel configPanel = plugable.getConfigPannel();
-			if(configPanel != null){
-				JFrame configFrame = new JFrame();
-				configFrame.add(configPanel);
-				configFrame.setVisible(true);
-				configFrame.pack();
-			}
+			PugableMousePopUp mousePopUp = new PugableMousePopUp();
+			mousePopUp.show(e.getComponent(), e.getX(), e.getY());
+
 		}
 
 		/* (non-Javadoc)
@@ -308,7 +308,40 @@ public class PlugablePanel extends JPanel{
 		
 	}
 	
-	
+	private class PugableMousePopUp extends JPopupMenu {
+	    /**
+		 * 
+		 */
+		private static final long serialVersionUID = -2510704964240859771L;
+		
+	    public PugableMousePopUp(){
+	    	JMenuItem anItem = new JMenuItem("Config");
+	        anItem.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					JPanel configPanel = plugable.getConfigPannel();
+					if(configPanel != null){
+						JFrame configFrame = new JFrame();
+						configFrame.add(configPanel);
+						configFrame.setVisible(true);
+						configFrame.pack();
+					}
+				}
+			});
+	        add(anItem);
+	        
+	        anItem = new JMenuItem("Remove");
+	        anItem.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					displayedAt.removePlugable(plugable);
+				}
+			});
+	        add(anItem);
+	    }
+	}
 	
 	
 }
