@@ -74,16 +74,20 @@ public abstract class Plugable {
 			return false;
 		}
 		Connection.ConnectionListener listener = createConnectionListener(name, connection);
-		Connection.ConnectionListener oldListener = inputListenr.get(name);
-		if(oldListener != null){
-			oldListener.release();
-		}
+		releaseInput(name);
 		inputListenr.put(name, listener);
 		return true;
 	}
 	
 	public Connection.ConnectionListener getListener(String inputName){
 		return inputListenr.get(inputName);
+	}
+	
+	public void releaseInput(String name){
+		Connection.ConnectionListener oldListener = inputListenr.get(name);
+		if(oldListener != null){
+			oldListener.release();
+		}
 	}
 	
 	/**
