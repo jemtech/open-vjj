@@ -56,7 +56,7 @@ public class DebugArtNetPaket extends Plugin {
 	@Override
 	protected ConnectionListener createConnectionListener(String inpuName,
 			Connection connection) {
-		if(inpuName == "Paket"){
+		if("Paket".equals(inpuName)){
 			return new ConnectionListener(connection) {
 				
 				@Override

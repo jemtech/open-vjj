@@ -60,7 +60,7 @@ public class ArtNetPacketToUnicastArtNetPacket extends Plugin {
 	@Override
 	protected ConnectionListener createConnectionListener(String inpuName,
 			Connection connection) {
-		if(inpuName == "Adress"){
+		if("Adress".equals(inpuName)){
 			return new ConnectionListener(connection) {
 				
 				@Override
@@ -77,7 +77,7 @@ public class ArtNetPacketToUnicastArtNetPacket extends Plugin {
 					
 				}
 			};
-		}else if(inpuName == "ArtNetPacket"){
+		}else if("ArtNetPacket".equals(inpuName)){
 			return new ConnectionListener(connection) {
 				
 				@Override

@@ -62,7 +62,7 @@ public class RGBIntArrayToDMXPaket extends Plugin {
 	@Override
 	protected ConnectionListener createConnectionListener(String inpuName,
 			Connection connection) {
-		if(inpuName == "RGB Array"){
+		if("RGB Array".equals(inpuName)){
 			return new ConnectionListener(connection) {
 				
 				@Override

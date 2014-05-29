@@ -54,7 +54,7 @@ public class ArtNetDMXPaketToArtNetPaket extends Plugin {
 	@Override
 	protected ConnectionListener createConnectionListener(String inpuName,
 			Connection connection) {
-		if(inpuName == "ArtNet DMX Paket"){
+		if("ArtNet DMX Paket".equals(inpuName)){
 			return new ConnectionListener(connection) {
 				
 				@Override

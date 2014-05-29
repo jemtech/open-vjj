@@ -108,7 +108,7 @@ public class ArtnetController extends Plugin {
 	@Override
 	protected ConnectionListener createConnectionListener(String inpuName,
 			Connection connection) {
-		if(inpuName == "Broadcast"){
+		if("Broadcast".equals(inpuName)){
 			return new ConnectionListener(connection) {
 				
 				@Override
@@ -125,7 +125,7 @@ public class ArtnetController extends Plugin {
 					
 				}
 			};
-		}else if(inpuName == "Unicast"){
+		}else if("Unicast".equals(inpuName)){
 			return new ConnectionListener(connection) {
 				
 				@Override

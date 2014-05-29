@@ -166,6 +166,7 @@ public class ModuleInsightPannel extends JPanel{
 //		}
 		
 		List<ConnectionInfo> connectionInfoList = module.getConnectionInfo();
+		System.out.println("cons: " + connectionInfoList.size());
 		for(ConnectionInfo connectionInfo : connectionInfoList){
 			PlugablePanel inPannel = plugablePlugablePannelMap.get(connectionInfo.getIn());
 			JLabel inputLabel = inPannel.getInputLabelMap().get(connectionInfo.getInName());
@@ -174,6 +175,7 @@ public class ModuleInsightPannel extends JPanel{
 			
 			ConectionLine conectionLine = new ConectionLine(inputLabel, connectionInfo.getIn(), outLabel, connectionInfo.getOut());
 			conectionLines.add(conectionLine);
+			
 		}
 	}
 	

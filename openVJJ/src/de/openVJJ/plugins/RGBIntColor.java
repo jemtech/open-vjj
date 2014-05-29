@@ -61,7 +61,7 @@ public class RGBIntColor extends Plugin {
 	@Override
 	protected ConnectionListener createConnectionListener(String inpuName,
 			Connection connection) {
-		if(inpuName == "Red"){
+		if("Red".equals(inpuName)){
 			return new ConnectionListener(connection) {
 				
 				@Override
@@ -79,7 +79,7 @@ public class RGBIntColor extends Plugin {
 					
 				}
 			};
-		}else if(inpuName == "Green"){
+		}else if("Green".equals(inpuName)){
 			return new ConnectionListener(connection) {
 				
 				@Override
@@ -97,7 +97,7 @@ public class RGBIntColor extends Plugin {
 					
 				}
 			};
-		}else if(inpuName == "Blue"){
+		}else if("Blue".equals(inpuName)){
 			return new ConnectionListener(connection) {
 				
 				@Override

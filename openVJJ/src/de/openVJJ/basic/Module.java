@@ -265,17 +265,17 @@ public class Module extends Plugable{
 	
 	public static final String ELEMENT_NAME_PLUGABLES = "plugables";
 	public static final String ELEMENT_NAME_PLUGABLE = "plugable";
-	public static final String ELEMENT_NAME_PLUGABLE_CONFIG = "plugable config";
+	public static final String ELEMENT_NAME_PLUGABLE_CONFIG = "plugableConfig";
 	public static final String ELEMENT_NAME_CONNECTIONS = "connections";
 	public static final String ELEMENT_NAME_CONNECTION = "connection";
 
-	private static final String ELEMENT_ATTRIBUTE_PLUGABLE_CLASS = "plugable class";
-	private static final String ELEMENT_ATTRIBUTE_PLUGABLE_NR = "plugable nr";
+	private static final String ELEMENT_ATTRIBUTE_PLUGABLE_CLASS = "plugableClass";
+	private static final String ELEMENT_ATTRIBUTE_PLUGABLE_NR = "plugableNr";
 	
-	private static final String ELEMENT_ATTRIBUTE_IN_PLUGABLE_NR = "inPlugabel nr";
-	private static final String ELEMENT_ATTRIBUTE_OUT_PLUGABLE_NR = "outPlugabel nr";
-	private static final String ELEMENT_ATTRIBUTE_IN_NAME = "in name";
-	private static final String ELEMENT_ATTRIBUTE_OUT_NAME = "out name";
+	private static final String ELEMENT_ATTRIBUTE_IN_PLUGABLE_NR = "inPlugabelNr";
+	private static final String ELEMENT_ATTRIBUTE_OUT_PLUGABLE_NR = "outPlugabelNr";
+	private static final String ELEMENT_ATTRIBUTE_IN_NAME = "inName";
+	private static final String ELEMENT_ATTRIBUTE_OUT_NAME = "outName";
 	/**
 	 * @see de.openVJJ.basic.Plugable#setConfig(org.jdom2.Element)
 	 */
@@ -310,6 +310,7 @@ public class Module extends Plugable{
 				if(plugableNr != null){
 					plugabelNrMap.put(Integer.parseInt(plugableNr), plugable);
 				}
+				addPlugable(plugable);
 				
 				Element plugableElementConfig = plugableElement.getChild(ELEMENT_NAME_PLUGABLE_CONFIG);
 				if(plugableElementConfig != null){
@@ -335,16 +336,24 @@ public class Module extends Plugable{
 				String outName = connectionElement.getAttributeValue(ELEMENT_ATTRIBUTE_OUT_NAME);
 				
 				if(inPlugable == null || outPlugable == null || inName == null || outName == null){
-					System.err.println("Connection not fully defined");
+					System.err.println("Connection not fully defined: " + inNRString + ":" + inName + " -> " + outNRString + ":" + outName );
 					continue;
 				}
 				
 				Connection outCon = outPlugable.getConnection(outName);
-				inPlugable.setInput(inName, outCon);
-				
+				System.out.println(inPlugable.getName());
+				System.out.println("loadCon:" + inPlugable.setInput(inName, outCon));
+				System.out.println(inPlugable.getInputs().keySet().size());
+				for(String key : inPlugable.getInputs().keySet()){
+					System.out.println( key );
+				}
+				System.out.println(outCon);
+				System.out.println(inName);
+				System.out.println(inPlugable.getListener(inName));
+				System.out.println(inPlugable.getListener(inName).getConnection());
 			}
 		}
-		
+		System.out.println("Con count:" + getConnectionInfo().size());
 	}
 	
 	/**
@@ -377,13 +386,13 @@ public class Module extends Plugable{
 		Element connectionsElement = new Element(ELEMENT_NAME_CONNECTIONS);
 		element.addContent(connectionsElement);
 		for(ConnectionInfo connectionInfo : getConnectionInfo()){
-			Element connectionElement = new Element(ELEMENT_NAME_CONNECTIONS);
+			Element connectionElement = new Element(ELEMENT_NAME_CONNECTION);
 			connectionsElement.addContent(connectionElement);
 			
-			connectionsElement.setAttribute(ELEMENT_ATTRIBUTE_IN_PLUGABLE_NR, String.valueOf(plugabelNrMap.get(connectionInfo.getIn())));
-			connectionsElement.setAttribute(ELEMENT_ATTRIBUTE_OUT_PLUGABLE_NR, String.valueOf(plugabelNrMap.get(connectionInfo.getOut())));
-			connectionsElement.setAttribute(ELEMENT_ATTRIBUTE_IN_NAME, String.valueOf(plugabelNrMap.get(connectionInfo.getInName())));
-			connectionsElement.setAttribute(ELEMENT_ATTRIBUTE_OUT_NAME, String.valueOf(plugabelNrMap.get(connectionInfo.getOutName())));
+			connectionElement.setAttribute(ELEMENT_ATTRIBUTE_IN_PLUGABLE_NR, String.valueOf(plugabelNrMap.get(connectionInfo.getIn())));
+			connectionElement.setAttribute(ELEMENT_ATTRIBUTE_OUT_PLUGABLE_NR, String.valueOf(plugabelNrMap.get(connectionInfo.getOut())));
+			connectionElement.setAttribute(ELEMENT_ATTRIBUTE_IN_NAME, connectionInfo.getInName());
+			connectionElement.setAttribute(ELEMENT_ATTRIBUTE_OUT_NAME, connectionInfo.getOutName());
 			
 		}
 	}
