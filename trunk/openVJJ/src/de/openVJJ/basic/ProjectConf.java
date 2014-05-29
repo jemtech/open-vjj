@@ -43,8 +43,8 @@ import de.openVJJ.GUI.ModuleInsightPannel;
  * 
  */
 public class ProjectConf {
-	public static final String ROOT_ELEMET_NAME = "Open-VJJ 2";
-	public static final String ELEMET_NAME_BASE_MODULE = "base Module";
+	public static final String ROOT_ELEMET_NAME = "Open-VJJ2";
+	public static final String ELEMET_NAME_BASE_MODULE = "baseModule";
 	
 	private static Module baseModule;
 	private static JFrame projectFrame;

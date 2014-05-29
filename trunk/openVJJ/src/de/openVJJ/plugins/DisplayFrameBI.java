@@ -70,7 +70,7 @@ public class DisplayFrameBI extends Plugin {
 	@Override
 	protected ConnectionListener createConnectionListener(String inpuName,
 			Connection connection) {
-		if(inpuName == "Frames"){
+		if("Frames".equals(inpuName)){
 			return new ConnectionListener(connection) {
 				
 				@Override
@@ -87,8 +87,10 @@ public class DisplayFrameBI extends Plugin {
 					
 				}
 			};
+		}else{
+			System.err.println("could not create Conection Listener. Input not found: " + inpuName);
+			return null;
 		}
-		return null;
 	}
 	
 	private void frameReceived(BufferedImage frame){

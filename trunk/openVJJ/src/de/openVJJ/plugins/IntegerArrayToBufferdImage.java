@@ -29,7 +29,7 @@ public class IntegerArrayToBufferdImage extends Plugin {
 	@Override
 	protected ConnectionListener createConnectionListener(String inpuName,
 			Connection connection) {
-		if(inpuName == "Frame"){
+		if("Frame".equals(inpuName)){
 			return new ConnectionListener(connection) {
 				
 				@Override

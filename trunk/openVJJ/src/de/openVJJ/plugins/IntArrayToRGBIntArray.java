@@ -58,7 +58,7 @@ public class IntArrayToRGBIntArray extends Plugin {
 	@Override
 	protected ConnectionListener createConnectionListener(String inpuName,
 			Connection connection) {
-		if(inpuName == "Color"){
+		if("Color".equals(inpuName)){
 			return new ConnectionListener(connection) {
 				
 				@Override
@@ -75,7 +75,7 @@ public class IntArrayToRGBIntArray extends Plugin {
 					
 				}
 			};
-		}else if(inpuName == "Int Array"){
+		}else if("Int Array".equals(inpuName)){
 			return new ConnectionListener(connection) {
 				
 				@Override

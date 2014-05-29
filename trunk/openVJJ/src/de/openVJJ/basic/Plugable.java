@@ -71,12 +71,20 @@ public abstract class Plugable {
 	 */
 	public synchronized boolean setInput(String name, Connection connection){
 		Class<? extends Value> inputTypClass = inputTyps.get(name);
+		if(inputTypClass == null){
+			System.err.println("Input not found: " + name);
+			return false;
+		}
 		if(! connection.classMatch(inputTypClass)){
 			System.err.println("valueClass does not equals matchingClass");
 			return false;
 		}
-		Connection.ConnectionListener listener = createConnectionListener(name, connection);
 		releaseInput(name);
+		Connection.ConnectionListener listener = createConnectionListener(name, connection);
+		if(listener == null){
+			System.err.println("connection listener is null");
+			return false;
+		}
 		inputListenr.put(name, listener);
 		return true;
 	}
@@ -190,7 +198,7 @@ public abstract class Plugable {
 	}
 	
 
-	public static final String ELEMENT_NAME_GUI_POSITION = "gui position";
+	public static final String ELEMENT_NAME_GUI_POSITION = "guiPosition";
 	/**
 	 * for saving configuration 
 	 * @param element to save configuration to.

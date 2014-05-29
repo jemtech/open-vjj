@@ -74,7 +74,7 @@ public class SinIntArrayGen extends Plugin {
 	@Override
 	protected ConnectionListener createConnectionListener(String inpuName,
 			Connection connection) {
-		if(inpuName == "phase"){
+		if("phase".equals(inpuName)){
 			return new ConnectionListener(connection) {
 				
 				@Override
@@ -94,7 +94,7 @@ public class SinIntArrayGen extends Plugin {
 					
 				}
 			};
-		}else if(inpuName == "min"){
+		}else if("min".equals(inpuName)){
 			return new ConnectionListener(connection) {
 				
 				@Override
@@ -114,7 +114,7 @@ public class SinIntArrayGen extends Plugin {
 					
 				}
 			};
-		}else if(inpuName == "max"){
+		}else if("max".equals(inpuName)){
 			return new ConnectionListener(connection) {
 				
 				@Override
@@ -134,7 +134,7 @@ public class SinIntArrayGen extends Plugin {
 					
 				}
 			};
-		}else if(inpuName == "length"){
+		}else if("length".equals(inpuName)){
 			return new ConnectionListener(connection) {
 				
 				@Override

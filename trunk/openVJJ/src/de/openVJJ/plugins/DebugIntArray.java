@@ -54,7 +54,7 @@ public class DebugIntArray extends Plugin {
 	@Override
 	protected ConnectionListener createConnectionListener(String inpuName,
 			Connection connection) {
-		if(inpuName == "Integer Array"){
+		if("Integer Array".equals(inpuName)){
 			return new ConnectionListener(connection) {
 				
 				@Override

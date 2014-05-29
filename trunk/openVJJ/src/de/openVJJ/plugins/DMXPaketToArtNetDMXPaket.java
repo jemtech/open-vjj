@@ -77,7 +77,7 @@ public class DMXPaketToArtNetDMXPaket extends Plugin {
 	@Override
 	protected ConnectionListener createConnectionListener(String inpuName,
 			Connection connection) {
-		if(inpuName == "Sequence ID"){
+		if("Sequence ID".equals(inpuName)){
 			return new ConnectionListener(connection) {
 				
 				@Override
@@ -94,7 +94,7 @@ public class DMXPaketToArtNetDMXPaket extends Plugin {
 					
 				}
 			};
-		}else if(inpuName == "Subnet ID"){
+		}else if("Subnet ID".equals(inpuName)){
 			return new ConnectionListener(connection) {
 				
 				@Override
@@ -112,7 +112,7 @@ public class DMXPaketToArtNetDMXPaket extends Plugin {
 				}
 			};
 			
-		}else if(inpuName == "Universe ID"){
+		}else if("Universe ID".equals(inpuName)){
 			return new ConnectionListener(connection) {
 				
 				@Override
@@ -130,7 +130,7 @@ public class DMXPaketToArtNetDMXPaket extends Plugin {
 				}
 			};
 			
-		}else if(inpuName == "DMX Data"){
+		}else if("DMX Data".equals(inpuName)){
 			return new ConnectionListener(connection) {
 				
 				@Override
