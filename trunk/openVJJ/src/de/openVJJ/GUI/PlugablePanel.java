@@ -325,6 +325,7 @@ public class PlugablePanel extends JPanel{
 						JFrame configFrame = new JFrame();
 						configFrame.add(configPanel);
 						configFrame.setVisible(true);
+						configFrame.setSize(800, 600);
 						configFrame.pack();
 					}
 				}

@@ -5,9 +5,11 @@ package de.openVJJ.GUI;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -69,7 +71,8 @@ public class ModuleInsightPannel extends JPanel{
 	
 	private void init(){
 		setLayout(null);
-		setSize( 1000, 500 );
+		setSize( 2000, 2000 );
+        setPreferredSize(new Dimension(2000, 2000));
 		initModule();
 		addMouseListener(new PannelMouseListener());
 	}
@@ -140,31 +143,6 @@ public class ModuleInsightPannel extends JPanel{
 	}
 	
 	private void initConnections(){
-//		List<Plugable> plugables = module.getPlugables();
-//		for(Plugable plugable : plugables){
-//			PlugablePanel pannel = plugablePlugablePannelMap.get(plugable);
-//			for(String key : plugable.getInputs().keySet()){
-//				JLabel inputLabel = pannel.getInputLabelMap().get(key);
-//				Connection.ConnectionListener listener = plugable.getListener(key);
-//				if(listener == null){
-//					continue;
-//				}
-//				Connection inputConnectedTo = listener.getConnection();
-//				for(Plugable plugableOut : plugables){
-//					for(String outKey : plugableOut.getOutputs().keySet()){
-//						Connection outCon = plugableOut.getConnection(outKey);
-//						if(outCon == inputConnectedTo){
-//							PlugablePanel outPannel = plugablePlugablePannelMap.get(plugableOut);
-//							JLabel outLabel = outPannel.getOutputLabelMap().get(outKey);
-//							
-//							ConectionLine conectionLine = new ConectionLine(inputLabel, plugable, outLabel, plugableOut);
-//							conectionLines.add(conectionLine);
-//						}
-//					}
-//				}
-//			}
-//		}
-		
 		List<ConnectionInfo> connectionInfoList = module.getConnectionInfo();
 		for(ConnectionInfo connectionInfo : connectionInfoList){
 			PlugablePanel inPannel = plugablePlugablePannelMap.get(connectionInfo.getIn());
@@ -570,7 +548,8 @@ public class ModuleInsightPannel extends JPanel{
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
 					SelectPlugable selectPlugable = new SelectPlugable();
-					MySelectPlugableListener listener = new MySelectPlugableListener();
+					Point mousPos = ModuleInsightPannel.this.getMousePosition();
+					MySelectPlugableListener listener = new MySelectPlugableListener(mousPos.x, mousPos.y);
 					selectPlugable.addListener(listener);
 					selectPlugable.openAsFrame();
 				}
@@ -580,6 +559,14 @@ public class ModuleInsightPannel extends JPanel{
 	}
 	
 	private class MySelectPlugableListener implements SelectPlugableListener{
+		
+		int x;
+		int y;
+		
+		public MySelectPlugableListener(int x, int y){
+			this.x = x;
+			this.y = y;
+		}
 
 		/* (non-Javadoc)
 		 * @see de.openVJJ.GUI.SelectPlugable.SelectPlugableListener#plugableSelected(java.lang.Class)
@@ -588,6 +575,11 @@ public class ModuleInsightPannel extends JPanel{
 		public void plugableSelected(Class<?> plugableClass) {
 			try {
 				Plugable plugable = (Plugable) plugableClass.newInstance();
+				
+				Rectangle plugablePos = plugable.getGuiPosition();
+				plugablePos.x = x;
+				plugablePos.y = y;
+				plugable.setGuiPosition(plugablePos);
 				module.addPlugable(plugable);
 				initModule();
 			} catch (InstantiationException e) {
