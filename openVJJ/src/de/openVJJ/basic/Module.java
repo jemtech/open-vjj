@@ -1,11 +1,15 @@
 package de.openVJJ.basic;
 
+import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.BoxLayout;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.ScrollPaneConstants;
 
 import org.jdom2.Element;
 
@@ -205,9 +209,18 @@ public class Module extends Plugable{
 		
 	}
 
+	private JPanel panel;
+	private JScrollPane scrollPane;
 	@Override
 	public JPanel getConfigPannel() {
-		return new ModuleInsightPannel(this);
+		panel = new JPanel();
+		panel.setLayout(new BoxLayout(panel, 0));
+		scrollPane = new JScrollPane(new ModuleInsightPannel(this), 
+	            ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+	            ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+		panel.add(scrollPane);
+		panel.setPreferredSize(new Dimension(800, 600));
+		return panel;
 	}
 	
 	public List<ConnectionInfo> getConnectionInfo(){

@@ -14,14 +14,13 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.XMLOutputter;
-
-import de.openVJJ.GUI.ModuleInsightPannel;
 
 /**
  * 
@@ -67,11 +66,11 @@ public class ProjectConf {
 	private static void openFrame(){
 		projectFrame = new JFrame("Oper VJJ");
 		projectFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		ModuleInsightPannel baseModuleInsightPannel = new ModuleInsightPannel(baseModule);
-		projectFrame.add(baseModuleInsightPannel);
-		projectFrame.setBounds(0, 0, 1800, 1000);
-		projectFrame.setVisible(true);
 		buildMenue(projectFrame);
+		JPanel moduleJPanel = baseModule.getConfigPannel();
+		projectFrame.add(moduleJPanel);
+		projectFrame.setVisible(true);
+		projectFrame.pack();
 	}
 	
 	private static JMenuBar menuBar;
