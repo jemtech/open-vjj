@@ -6,10 +6,6 @@ package de.openVJJ.GUI;
 import java.awt.Dimension;
 import java.awt.MouseInfo;
 import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -18,13 +14,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BoxLayout;
-import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
 import de.openVJJ.basic.Module;
 import de.openVJJ.plugins.ArtNetDMXPaketToArtNetPaket;
@@ -203,19 +196,19 @@ public class SelectPlugable extends JPanel {
 		listeners.add(listener);
 	}
 	
-	private class SelectButtonActionListener implements ActionListener {
-		
-		Class<?> plugableClass;
-		
-		public SelectButtonActionListener(Class<?> plugableClass){
-			this.plugableClass = plugableClass;
-		}
-		
-		@Override
-		public void actionPerformed(ActionEvent arg0) {
-			selected(plugableClass);
-		}
-	}
+//	private class SelectButtonActionListener implements ActionListener {
+//		
+//		Class<?> plugableClass;
+//		
+//		public SelectButtonActionListener(Class<?> plugableClass){
+//			this.plugableClass = plugableClass;
+//		}
+//		
+//		@Override
+//		public void actionPerformed(ActionEvent arg0) {
+//			selected(plugableClass);
+//		}
+//	}
 	
 	public interface SelectPlugableListener{
 		public void plugableSelected(Class<?> plugableClass);

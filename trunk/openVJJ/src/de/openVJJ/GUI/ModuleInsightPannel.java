@@ -60,12 +60,13 @@ public class ModuleInsightPannel extends JPanel{
 	 */
 	private static final long serialVersionUID = -4791375899655587881L;
 	Module module;
-
+	private boolean baseModule;
 	/**
 	 * 
 	 */
-	public ModuleInsightPannel(Module module) {
+	public ModuleInsightPannel(Module module, boolean baseModule) {
 		this.module = module;
+		this.baseModule = baseModule;
 		init();
 	}
 	
@@ -290,7 +291,6 @@ public class ModuleInsightPannel extends JPanel{
 		 */
 		@Override
 		public void mouseDragged(MouseEvent e) {
-			// TODO Auto-generated method stub
 			
 		}
 
@@ -299,7 +299,6 @@ public class ModuleInsightPannel extends JPanel{
 		 */
 		@Override
 		public void mouseMoved(MouseEvent e) {
-			// TODO Auto-generated method stub
 			
 		}
 
@@ -308,7 +307,6 @@ public class ModuleInsightPannel extends JPanel{
 		 */
 		@Override
 		public void mouseClicked(MouseEvent e) {
-			// TODO Auto-generated method stub
 			
 		}
 
@@ -317,7 +315,6 @@ public class ModuleInsightPannel extends JPanel{
 		 */
 		@Override
 		public void mouseEntered(MouseEvent e) {
-			// TODO Auto-generated method stub
 		}
 
 		/* (non-Javadoc)
@@ -325,7 +322,6 @@ public class ModuleInsightPannel extends JPanel{
 		 */
 		@Override
 		public void mouseExited(MouseEvent e) {
-			// TODO Auto-generated method stub
 		}
 
 		/* (non-Javadoc)
@@ -414,7 +410,6 @@ public class ModuleInsightPannel extends JPanel{
 		 */
 		@Override
 		public void mouseDragged(MouseEvent arg0) {
-			// TODO Auto-generated method stub
 			
 		}
 
@@ -423,7 +418,6 @@ public class ModuleInsightPannel extends JPanel{
 		 */
 		@Override
 		public void mouseMoved(MouseEvent arg0) {
-			// TODO Auto-generated method stub
 			
 		}
 
@@ -432,7 +426,6 @@ public class ModuleInsightPannel extends JPanel{
 		 */
 		@Override
 		public void mouseClicked(MouseEvent arg0) {
-			// TODO Auto-generated method stub
 			
 		}
 
@@ -471,7 +464,6 @@ public class ModuleInsightPannel extends JPanel{
 		 */
 		@Override
 		public void mousePressed(MouseEvent arg0) {
-			// TODO Auto-generated method stub
 			
 		}
 
@@ -480,7 +472,6 @@ public class ModuleInsightPannel extends JPanel{
 		 */
 		@Override
 		public void mouseReleased(MouseEvent arg0) {
-			// TODO Auto-generated method stub
 			
 		}
 		
@@ -493,7 +484,6 @@ public class ModuleInsightPannel extends JPanel{
 		 */
 		@Override
 		public void mouseClicked(MouseEvent e) {
-			// TODO Auto-generated method stub
 			
 		}
 
@@ -502,7 +492,6 @@ public class ModuleInsightPannel extends JPanel{
 		 */
 		@Override
 		public void mouseEntered(MouseEvent e) {
-			// TODO Auto-generated method stub
 			
 		}
 
@@ -511,7 +500,6 @@ public class ModuleInsightPannel extends JPanel{
 		 */
 		@Override
 		public void mouseExited(MouseEvent e) {
-			// TODO Auto-generated method stub
 			
 		}
 
@@ -530,7 +518,6 @@ public class ModuleInsightPannel extends JPanel{
 		 */
 		@Override
 		public void mouseReleased(MouseEvent e) {
-			// TODO Auto-generated method stub
 			
 		}
 	}
@@ -540,9 +527,8 @@ public class ModuleInsightPannel extends JPanel{
 		 * 
 		 */
 		private static final long serialVersionUID = -2510704964240859771L;
-		JMenuItem anItem;
 	    public MousePopUp(){
-	        anItem = new JMenuItem("Add");
+	    	JMenuItem anItem = new JMenuItem("Add");
 	        anItem.addActionListener(new ActionListener() {
 				
 				@Override
@@ -555,6 +541,28 @@ public class ModuleInsightPannel extends JPanel{
 				}
 			});
 	        add(anItem);
+	        if(!baseModule){
+	        	anItem = new JMenuItem("Add Input");
+		        anItem.addActionListener(new ActionListener() {
+					
+					@Override
+					public void actionPerformed(ActionEvent arg0) {
+						System.out.println("Add Input");
+						//TODO create input
+					}
+				});
+		        add(anItem);
+		        anItem = new JMenuItem("Add Output");
+		        anItem.addActionListener(new ActionListener() {
+					
+					@Override
+					public void actionPerformed(ActionEvent arg0) {
+						System.out.println("Add Output");
+						//TODO create output
+					}
+				});
+		        add(anItem);
+	        }
 	    }
 	}
 	
@@ -583,10 +591,8 @@ public class ModuleInsightPannel extends JPanel{
 				module.addPlugable(plugable);
 				initModule();
 			} catch (InstantiationException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IllegalAccessException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}

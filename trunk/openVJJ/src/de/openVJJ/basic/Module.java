@@ -209,13 +209,18 @@ public class Module extends Plugable{
 		
 	}
 
+	public void setBaseModule(boolean baseModule){
+		this.baseModule = baseModule;
+	}
+	
 	private JPanel panel;
 	private JScrollPane scrollPane;
+	private boolean baseModule = false;
 	@Override
 	public JPanel getConfigPannel() {
 		panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, 0));
-		scrollPane = new JScrollPane(new ModuleInsightPannel(this), 
+		scrollPane = new JScrollPane(new ModuleInsightPannel(this, baseModule), 
 	            ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
 	            ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
 		panel.add(scrollPane);
