@@ -3,17 +3,28 @@
  */
 package de.openVJJ.GUI;
 
+import java.awt.Dimension;
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import de.openVJJ.basic.Module;
 import de.openVJJ.plugins.ArtNetDMXPaketToArtNetPaket;
@@ -92,13 +103,77 @@ public class SelectPlugable extends JPanel {
 		setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 		createSeletabels();
 	}
-	
+	JList<String> plugableClassesList;
 	private void createSeletabels(){
-		for(Class<?> plugableClass : plugableClasses){
-			JButton selectButton = new JButton(plugableClass.getSimpleName());
-			selectButton.addActionListener(new SelectButtonActionListener(plugableClass));
-			add(selectButton);
+//		for(Class<?> plugableClass : plugableClasses){
+//			JButton selectButton = new JButton(plugableClass.getSimpleName());
+//			selectButton.addActionListener(new SelectButtonActionListener(plugableClass));
+//			add(selectButton);
+//		}
+		
+		String[] plugableClassNames = new String[plugableClasses.length];
+		for(int i =0; i < plugableClasses.length; i++){
+			plugableClassNames[i] = plugableClasses[i].getSimpleName();
 		}
+		plugableClassesList = new JList<String>(plugableClassNames);
+		plugableClassesList.addKeyListener(new KeyListener() {
+			
+			@Override
+			public void keyTyped(KeyEvent e) {
+				if('\n' == e.getKeyChar()){
+					selected(plugableClasses[plugableClassesList.getSelectedIndex()]);
+				}
+			}
+			
+			@Override
+			public void keyReleased(KeyEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void keyPressed(KeyEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
+		plugableClassesList.addMouseListener(new MouseListener() {
+			
+			@Override
+			public void mouseReleased(MouseEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void mousePressed(MouseEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void mouseExited(MouseEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void mouseEntered(MouseEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void mouseClicked(MouseEvent event) {
+				if (event.getClickCount() == 2) {
+					selected(plugableClasses[plugableClassesList.getSelectedIndex()]);
+				  }
+			}
+		});
+		
+		JScrollPane listScroller = new JScrollPane(plugableClassesList);
+		listScroller.setPreferredSize(new Dimension(350, 200));
+		add(listScroller);
 	}
 	
 	private JFrame frame;
