@@ -60,6 +60,7 @@ public class ProjectConf {
 	 */
 	public static void init(){
 		baseModule = new Module();
+		baseModule.setBaseModule(true);
 		openFrame();
 	}
 	
@@ -176,6 +177,7 @@ public class ProjectConf {
 //			}
 			Element baseModuleElement = rootElement.getChild(ELEMET_NAME_BASE_MODULE);
 			baseModule = new Module();
+			baseModule.setBaseModule(true);
 			baseModule.setConfig(baseModuleElement);
 			if(projectFrame != null){
 				projectFrame.dispose();
