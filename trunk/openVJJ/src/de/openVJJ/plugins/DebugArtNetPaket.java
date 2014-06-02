@@ -83,7 +83,11 @@ public class DebugArtNetPaket extends Plugin {
 		System.out.println("length: " + artNetPacket.getLength());
 		System.out.println("Data:\n");
 		for(byte b : artNetPacket.getData()){
-			System.out.print(" " + (int)b);
+			int val = b;
+			if(val < 0){
+				val += 256;
+			}
+			System.out.print(" " + val);
 		}
 		
 	}
