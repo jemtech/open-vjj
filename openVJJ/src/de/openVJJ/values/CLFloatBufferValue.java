@@ -9,6 +9,9 @@ import de.openVJJ.basic.Value;
 public class CLFloatBufferValue extends Value {
 	private CLBuffer<FloatBuffer> floatBuffer;
 	
+	public int width;
+	public int height;
+	
 	public CLFloatBufferValue(CLBuffer<FloatBuffer> floatBuffer){
 		this.floatBuffer = floatBuffer;
 	}

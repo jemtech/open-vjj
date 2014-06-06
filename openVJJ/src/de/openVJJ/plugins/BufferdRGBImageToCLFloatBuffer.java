@@ -104,8 +104,14 @@ public class BufferdRGBImageToCLFloatBuffer extends Plugin {
 		
 
 		CLFloatBufferValue rValue = new CLFloatBufferValue(rCLBuffer);
+		rValue.width = width;
+		rValue.height = height;
 		CLFloatBufferValue gValue = new CLFloatBufferValue(gCLBuffer);
+		gValue.width = width;
+		gValue.height = height;
 		CLFloatBufferValue bValue = new CLFloatBufferValue(bCLBuffer);
+		bValue.width = width;
+		bValue.height = height;
 		getConnection("R CLFloat").transmitValue(rValue);
 		getConnection("G CLFloat").transmitValue(gValue);
 		getConnection("B CLFloat").transmitValue(bValue);
