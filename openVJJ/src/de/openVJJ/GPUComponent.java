@@ -17,7 +17,12 @@ public class GPUComponent {
 		}
 		System.out.println("Start init gpu");
 		if(context == null){
-			context = CLContext.create();
+			try{
+				context = CLContext.create();
+			}catch(Exception e){
+				e.printStackTrace();
+				return;
+			}
 		}
 		device = context.getMaxFlopsDevice();
 		System.out.println("Divice name: " + device.getName() + " device type: " + device.getType());

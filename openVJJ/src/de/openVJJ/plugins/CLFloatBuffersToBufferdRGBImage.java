@@ -1,17 +1,12 @@
 package de.openVJJ.plugins;
 
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
 import java.nio.FloatBuffer;
 
 import javax.swing.JPanel;
 
-import com.jogamp.opencl.CLBuffer;
-import com.jogamp.opencl.CLMemory.Mem;
-
 import de.openVJJ.basic.Connection;
 import de.openVJJ.basic.Plugin;
-import de.openVJJ.basic.ProjectConf;
 import de.openVJJ.basic.Value;
 import de.openVJJ.basic.Connection.ConnectionListener;
 import de.openVJJ.basic.Value.Lock;
@@ -62,6 +57,46 @@ public class CLFloatBuffersToBufferdRGBImage extends Plugin {
 				}
 			};
 		}
+		if("G CLFloat".equals(inpuName)){
+			return new ConnectionListener(connection) {
+				
+				@Override
+				protected void valueReceved(Value value) {
+					if(gBufferValue != null){
+						gBufferValue.free(gLock);
+					}
+					gLock = value.lock();
+					gBufferValue = (CLFloatBufferValue) value;
+					channelValueSet();
+				}
+				
+				@Override
+				protected void connectionShutdownCalled() {
+					// TODO Auto-generated method stub
+					
+				}
+			};
+		}
+		if("B CLFloat".equals(inpuName)){
+			return new ConnectionListener(connection) {
+				
+				@Override
+				protected void valueReceved(Value value) {
+					if(bBufferValue != null){
+						bBufferValue.free(bLock);
+					}
+					bLock = value.lock();
+					bBufferValue = (CLFloatBufferValue) value;
+					channelValueSet();
+				}
+				
+				@Override
+				protected void connectionShutdownCalled() {
+					// TODO Auto-generated method stub
+					
+				}
+			};
+		}
 		return null;
 	}
 
@@ -75,62 +110,36 @@ public class CLFloatBuffersToBufferdRGBImage extends Plugin {
 		if(rBufferValue == null || gBufferValue == null || bBufferValue == null){
 			return;
 		}
-		
-		
-		rBufferValue.free(rLock);
-		rBufferValue = null;
-		gBufferValue.free(gLock);
-		gBufferValue = null;
-		bBufferValue.free(bLock);
-		bBufferValue = null;
-	}
-	
-	private void converte(BufferedImage image){
-		
-		int width = image.getWidth();
-		int height = image.getHeight();
-		
-		int globalWorkSize = ProjectConf.getGPU().getGlobalWorkSize(width * height);
-		CLBuffer<FloatBuffer> rCLBuffer = ProjectConf.getGPU().getCLContext().createFloatBuffer(globalWorkSize, Mem.READ_WRITE);
-		CLBuffer<FloatBuffer> gCLBuffer = ProjectConf.getGPU().getCLContext().createFloatBuffer(globalWorkSize, Mem.READ_WRITE);
-		CLBuffer<FloatBuffer> bCLBuffer = ProjectConf.getGPU().getCLContext().createFloatBuffer(globalWorkSize, Mem.READ_WRITE);
-		
-		FloatBuffer rBuffer = rCLBuffer.getBuffer();
-		FloatBuffer gBuffer = gCLBuffer.getBuffer();
-		FloatBuffer bBuffer = bCLBuffer.getBuffer();
+		int[] pixels = new int[rBufferValue.width * rBufferValue.height * 3];
+		FloatBuffer rBuffer = rBufferValue.getValue().getBuffer();
 		rBuffer.rewind();
-		gBuffer.rewind();
-		bBuffer.rewind();
-		
-		boolean hasAlphaChannel = image.getAlphaRaster() != null;
-		final byte[] pixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
-		if(!hasAlphaChannel){
-			final int pixelLength = 3;
-	        for (int pixel = 0; pixel < pixels.length; pixel += pixelLength) {
-	        	bBuffer.put((int) pixels[pixel] & 0xff); // blue
-	        	gBuffer.put(((int) pixels[pixel + 1] & 0xff)); // green
-	        	rBuffer.put(((int) pixels[pixel + 2] & 0xff)); // red
-	        }
-		}else{
-			final int pixelLength = 4;
-	        for (int pixel = 0; pixel < pixels.length; pixel += pixelLength) {
-	//          (((int) pixels[pixel] & 0xff)); // alpha
-	        	bBuffer.put((int) pixels[pixel + 1] & 0xff); // blue
-	        	gBuffer.put(((int) pixels[pixel + 2] & 0xff)); // green
-	        	rBuffer.put(((int) pixels[pixel + 3] & 0xff)); // red
-	        }
-		}
+		FloatBuffer gBuffer = gBufferValue.getValue().getBuffer();
 		rBuffer.rewind();
-		gBuffer.rewind();
-		bBuffer.rewind();
-		
+		FloatBuffer bBuffer = bBufferValue.getValue().getBuffer();
+		rBuffer.rewind();
+		try{
+			for(int i = 0; i < pixels.length; i += 3){
+				pixels[i] = (int) rBuffer.get();
+				pixels[i+1] = (int) gBuffer.get();
+				pixels[i+2] = (int) bBuffer.get();
+			}
+			BufferedImage bufferedImage = new BufferedImage(rBufferValue.width, rBufferValue.height, BufferedImage.TYPE_INT_RGB);
+			bufferedImage.getRaster().setPixels(0, 0, rBufferValue.width, rBufferValue.height, pixels);
 
-		CLFloatBufferValue rValue = new CLFloatBufferValue(rCLBuffer);
-		CLFloatBufferValue gValue = new CLFloatBufferValue(gCLBuffer);
-		CLFloatBufferValue bValue = new CLFloatBufferValue(bCLBuffer);
-		getConnection("R CLFloat").transmitValue(rValue);
-		getConnection("G CLFloat").transmitValue(gValue);
-		getConnection("B CLFloat").transmitValue(bValue);
+			getConnection("RGB Image").transmitValue(new BufferedImageValue(bufferedImage));
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally{
+			rBufferValue.free(rLock);
+			rBufferValue = null;
+			gBufferValue.free(gLock);
+			gBufferValue = null;
+			bBufferValue.free(bLock);
+			bBufferValue = null;
+		}
+		
+		
+		
 	}
 
 }
