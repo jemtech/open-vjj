@@ -22,6 +22,8 @@ import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.XMLOutputter;
 
+import de.openVJJ.GPUComponent;
+
 /**
  * 
  * Copyright (C) 2014 Jan-Erik Matthies
@@ -47,6 +49,12 @@ public class ProjectConf {
 	
 	private static Module baseModule;
 	private static JFrame projectFrame;
+	
+	private static GPUComponent gpuComponent = new GPUComponent();
+	
+	public static GPUComponent getGPU(){
+		return gpuComponent;
+	}
 	
 	/**
 	 * this class should only be used static
