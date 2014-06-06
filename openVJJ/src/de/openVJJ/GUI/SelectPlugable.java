@@ -24,6 +24,7 @@ import de.openVJJ.plugins.ArtNetDMXPaketToArtNetPaket;
 import de.openVJJ.plugins.ArtNetPacketToUnicastArtNetPacket;
 import de.openVJJ.plugins.ArtnetController;
 import de.openVJJ.plugins.BufferdImageToIntegerArray;
+import de.openVJJ.plugins.BufferdRGBImageToCLFloatBuffer;
 import de.openVJJ.plugins.DMXPaketToArtNetDMXPaket;
 import de.openVJJ.plugins.DebugArtNetPaket;
 import de.openVJJ.plugins.DebugInt;
@@ -88,7 +89,8 @@ public class SelectPlugable extends JPanel {
 		RGBIntArrayToDMXPaket.class,
 		DebugArtNetPaket.class,
 		DebugInt.class,
-		DebugIntArray.class};
+		DebugIntArray.class,
+		BufferdRGBImageToCLFloatBuffer.class};
 
 	//public static List<Class<? extends Plugable>> plugableClasses = new ArrayList<Class<? extends Plugable>>();
 	
@@ -96,7 +98,7 @@ public class SelectPlugable extends JPanel {
 		setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 		createSeletabels();
 	}
-	JList<String> plugableClassesList;
+	JList plugableClassesList;
 	private void createSeletabels(){
 //		for(Class<?> plugableClass : plugableClasses){
 //			JButton selectButton = new JButton(plugableClass.getSimpleName());
@@ -108,7 +110,7 @@ public class SelectPlugable extends JPanel {
 		for(int i =0; i < plugableClasses.length; i++){
 			plugableClassNames[i] = plugableClasses[i].getSimpleName();
 		}
-		plugableClassesList = new JList<String>(plugableClassNames);
+		plugableClassesList = new JList(plugableClassNames);
 		plugableClassesList.addKeyListener(new KeyListener() {
 			
 			@Override
