@@ -22,7 +22,9 @@ public class CLFloatBufferValue extends Value {
 	
 	@Override
 	protected void finalize() throws Throwable {
-		floatBuffer.release();
+		if(!floatBuffer.isReleased()){
+			floatBuffer.release();
+		}
 		super.finalize();
 	}
 	

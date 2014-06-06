@@ -67,6 +67,7 @@ public class ProjectConf {
 	 * Use this to start a blank new project
 	 */
 	public static void init(){
+		gpuComponent.getCLDevice();
 		baseModule = new Module();
 		baseModule.setBaseModule(true);
 		openFrame();
