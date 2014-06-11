@@ -51,7 +51,7 @@ public class Connection{
 			try {
 				ConnectionThread connectionThread = new ConnectionThread(listener, value);
 				executor.execute(connectionThread);
-				//listener.valueReceved(value);
+//				listener.valueReceved(value);
 			} catch (Exception e) {
 				System.err.println("Listener throws error while revive new Value. Removing from ListenerList");
 				listeners.remove(listener);

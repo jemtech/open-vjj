@@ -40,6 +40,7 @@ import de.openVJJ.plugins.LinearRGBCorrectionIntegerArray;
 import de.openVJJ.plugins.RGBIntArrayToDMXPaket;
 import de.openVJJ.plugins.RGBIntColor;
 import de.openVJJ.plugins.SinIntArrayGen;
+import de.openVJJ.plugins.Sorbel;
 import de.openVJJ.plugins.StringInput;
 import de.openVJJ.plugins.XuggleVideoIn;
 
@@ -92,7 +93,8 @@ public class SelectPlugable extends JPanel {
 		DebugInt.class,
 		DebugIntArray.class,
 		BufferdRGBImageToCLFloatBuffer.class,
-		CLFloatBuffersToBufferdRGBImage.class};
+		CLFloatBuffersToBufferdRGBImage.class,
+		Sorbel.class};
 
 	//public static List<Class<? extends Plugable>> plugableClasses = new ArrayList<Class<? extends Plugable>>();
 	

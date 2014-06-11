@@ -106,8 +106,17 @@ public class CLFloatBuffersToBufferdRGBImage extends Plugin {
 		return null;
 	}
 	
-	private void channelValueSet(){
+	private synchronized void channelValueSet(){
 		if(rBufferValue == null || gBufferValue == null || bBufferValue == null){
+			return;
+		}
+		if(rBufferValue.getValue() == null || gBufferValue.getValue() == null || bBufferValue.getValue() == null ){
+			rBufferValue.free(rLock);
+			rBufferValue = null;
+			gBufferValue.free(gLock);
+			gBufferValue = null;
+			bBufferValue.free(bLock);
+			bBufferValue = null;
 			return;
 		}
 		int[] pixels = new int[rBufferValue.width * rBufferValue.height * 3];
@@ -129,14 +138,13 @@ public class CLFloatBuffersToBufferdRGBImage extends Plugin {
 			getConnection("RGB Image").transmitValue(new BufferedImageValue(bufferedImage));
 		}catch(Exception e){
 			e.printStackTrace();
-		}finally{
-			rBufferValue.free(rLock);
-			rBufferValue = null;
-			gBufferValue.free(gLock);
-			gBufferValue = null;
-			bBufferValue.free(bLock);
-			bBufferValue = null;
 		}
+		rBufferValue.free(rLock);
+		rBufferValue = null;
+		gBufferValue.free(gLock);
+		gBufferValue = null;
+		bBufferValue.free(bLock);
+		bBufferValue = null;
 		
 		
 		
