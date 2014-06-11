@@ -1,8 +1,14 @@
 package de.openVJJ;
 
+import java.nio.FloatBuffer;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.jogamp.opencl.CLBuffer;
 import com.jogamp.opencl.CLCommandQueue;
 import com.jogamp.opencl.CLContext;
 import com.jogamp.opencl.CLDevice;
+import com.jogamp.opencl.CLMemory.Mem;
 
 public class GPUComponent {
 
@@ -11,7 +17,8 @@ public class GPUComponent {
 	static private CLDevice device;
 	static private CLCommandQueue queue;
 	static private boolean gpuReady = false;
-	private static synchronized void initGPU(){
+	static private Thread gpuThread = null;
+	private static void initGPU(){
 		if(gpuReady){
 			return;
 		}
@@ -31,49 +38,59 @@ public class GPUComponent {
 		gpuReady = true;
 	}
 	
-	private void shutdownGPU(){
+	public static void startGPU(){
+		if(gpuThread != null){
+			return;
+		}
+		GPUThread gpurunnable = new GPUThread();
+		gpuThread = new Thread(gpurunnable);
+		gpuThread.setName("GPU executor Thread");
+		gpuThread.start();
+	}
+	
+	private static void shutdownGPU(){
 		queue.finish();
 		queue.release();
 	}
 	
-	public synchronized CLContext getCLContext(){
+	public static CLContext getCLContext(){
 		if(context == null){
 			initGPU();
 		}
 		return context;
 	}
 	
-	public synchronized CLDevice getCLDevice(){
+	public static CLDevice getCLDevice(){
 		if(device == null){
 			initGPU();
 		}
 		return device;
 	}
 	
-	public synchronized CLCommandQueue getCLCommandQueue(){
+	public static CLCommandQueue getCLCommandQueue(){
 		if(queue == null){
 			initGPU();
 		}
 		return queue;
 	}
 	
-	public int getLocalWorkSize(){
+	public static int getLocalWorkSize(){
 		return Math.min(getCLDevice().getMaxWorkGroupSize(), 256);
 	}
 
-	public int getLocalWorkSize2D(){
+	public static int getLocalWorkSize2D(){
 		return Math.min(getCLDevice().getMaxWorkGroupSize(), 16);
 	}
 	
-	public int getGlobalWorkSize(int pixelCount){
+	public static int getGlobalWorkSize(int pixelCount){
 		return roundUp(getLocalWorkSize(), pixelCount);
 	}
 	
-	public int getGlobalWorkSizeX(int width){
+	public static int getGlobalWorkSizeX(int width){
 		return roundUp(getLocalWorkSize(), width);
 	}
 	
-	public int getGlobalWorkSizeY(int height){
+	public static int getGlobalWorkSizeY(int height){
 		return roundUp(getLocalWorkSize(), height);
 	}
 
@@ -86,10 +103,103 @@ public class GPUComponent {
 		}
 	}
 	
+	public static CLBuffer<FloatBuffer> createFloatBuffer(int size){
+		return getCLContext().createFloatBuffer(size, Mem.READ_WRITE);
+	}
+	
 
 	@Override
 	protected void finalize() throws Throwable {
 		shutdownGPU();
 		super.finalize();
+	}
+	
+	public static void execute(SyncedExequtor exequtor){
+		startGPU();
+		Thread callingThread = Thread.currentThread();
+		synchronized (todoList) {
+			todoList.add(new Queelement(callingThread, exequtor));
+		}
+		synchronized (gpuThread) {
+			gpuThread.notify();
+		}
+		try {
+			synchronized (callingThread) {
+				callingThread.wait();
+			}
+		} catch (InterruptedException e) {
+			System.err.println("error while waiting for gpu execution");
+			e.printStackTrace();
+		}
+	}
+	
+	private static class Queelement{
+		private Thread callingThread;
+		private SyncedExequtor todo;
+		
+		public Queelement(Thread callingThread, SyncedExequtor todo){
+			this.callingThread = callingThread;
+			this.todo = todo;
+		}
+	}
+	
+	public static abstract class SyncedExequtor{
+		
+		public abstract void toExequte();
+	}
+	
+	private static List<GPUComponent.Queelement> todoList = new ArrayList<GPUComponent.Queelement>();
+	
+	private static class GPUThread implements Runnable{
+
+		private boolean run = true;
+		/* (non-Javadoc)
+		 * @see java.lang.Runnable#run()
+		 */
+		@Override
+		public void run() {
+			initGPU();
+			exeutor();
+		}
+		
+		private void exeutor(){
+			while(run){
+				try{
+					List<GPUComponent.Queelement> exequted = new ArrayList<GPUComponent.Queelement>();
+					synchronized (todoList) {
+						for(GPUComponent.Queelement toExequte : todoList){
+							if(toExequte.todo != null){
+								try{
+									toExequte.todo.toExequte();
+								}catch(Exception e){
+									System.err.println("Error while running GPU process.");
+									e.printStackTrace();
+								}
+							}else {
+								System.out.println("todo ist null");
+							}
+							synchronized (toExequte.callingThread) {
+								toExequte.callingThread.notify();
+							}
+							exequted.add(toExequte);
+						}
+					}
+					for(GPUComponent.Queelement toRemove : exequted){
+						todoList.remove(toRemove);
+					}
+				}catch(Exception e){
+					e.printStackTrace();
+				}
+				try {
+					synchronized (gpuThread) {
+						gpuThread.wait();
+					}
+				} catch (InterruptedException e) {
+					System.err.println("GPU exiqutor failed to wait");
+					e.printStackTrace();
+				}
+			}
+		}
+		
 	}
 }

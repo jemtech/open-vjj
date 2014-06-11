@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import javax.media.opengl.Threading;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -50,9 +51,12 @@ public class ProjectConf {
 	private static Module baseModule;
 	private static JFrame projectFrame;
 	
-	private static GPUComponent gpuComponent = new GPUComponent();
-	
+	private static GPUComponent gpuComponent = getGPU() ;
 	public static GPUComponent getGPU(){
+		GPUComponent.startGPU();
+		if(gpuComponent == null){
+			gpuComponent = new GPUComponent();
+		}
 		return gpuComponent;
 	}
 	
@@ -67,7 +71,6 @@ public class ProjectConf {
 	 * Use this to start a blank new project
 	 */
 	public static void init(){
-		gpuComponent.getCLDevice();
 		baseModule = new Module();
 		baseModule.setBaseModule(true);
 		openFrame();

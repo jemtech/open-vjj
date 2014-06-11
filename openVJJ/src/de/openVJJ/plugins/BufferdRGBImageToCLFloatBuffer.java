@@ -7,11 +7,10 @@ import java.nio.FloatBuffer;
 import javax.swing.JPanel;
 
 import com.jogamp.opencl.CLBuffer;
-import com.jogamp.opencl.CLMemory.Mem;
 
+import de.openVJJ.GPUComponent;
 import de.openVJJ.basic.Connection;
 import de.openVJJ.basic.Plugin;
-import de.openVJJ.basic.ProjectConf;
 import de.openVJJ.basic.Value;
 import de.openVJJ.basic.Connection.ConnectionListener;
 import de.openVJJ.basic.Value.Lock;
@@ -67,11 +66,12 @@ public class BufferdRGBImageToCLFloatBuffer extends Plugin {
 		
 		int width = image.getWidth();
 		int height = image.getHeight();
+		MySyncedExequtor mySyncedExequtor = new MySyncedExequtor(width * height);
+		GPUComponent.execute(mySyncedExequtor);
+		CLBuffer<FloatBuffer> rCLBuffer = mySyncedExequtor.rCLBuffer;
+		CLBuffer<FloatBuffer> gCLBuffer = mySyncedExequtor.gCLBuffer;
+		CLBuffer<FloatBuffer> bCLBuffer = mySyncedExequtor.bCLBuffer;
 		
-		int globalWorkSize = ProjectConf.getGPU().getGlobalWorkSize(width * height);
-		CLBuffer<FloatBuffer> rCLBuffer = ProjectConf.getGPU().getCLContext().createFloatBuffer(globalWorkSize, Mem.READ_WRITE);
-		CLBuffer<FloatBuffer> gCLBuffer = ProjectConf.getGPU().getCLContext().createFloatBuffer(globalWorkSize, Mem.READ_WRITE);
-		CLBuffer<FloatBuffer> bCLBuffer = ProjectConf.getGPU().getCLContext().createFloatBuffer(globalWorkSize, Mem.READ_WRITE);
 		
 		FloatBuffer rBuffer = rCLBuffer.getBuffer();
 		FloatBuffer gBuffer = gCLBuffer.getBuffer();
@@ -115,6 +115,29 @@ public class BufferdRGBImageToCLFloatBuffer extends Plugin {
 		getConnection("R CLFloat").transmitValue(rValue);
 		getConnection("G CLFloat").transmitValue(gValue);
 		getConnection("B CLFloat").transmitValue(bValue);
+	}
+	
+	protected class MySyncedExequtor extends GPUComponent.SyncedExequtor{
+		
+		private int pixelCount;
+		public CLBuffer<FloatBuffer> rCLBuffer;
+		public CLBuffer<FloatBuffer> gCLBuffer;
+		public CLBuffer<FloatBuffer> bCLBuffer;
+		
+		protected MySyncedExequtor(int pixelCount){
+			this.pixelCount = pixelCount;
+		}
+
+		/* (non-Javadoc)
+		 * @see de.openVJJ.GPUComponent.SyncedExequtor#toExequte()
+		 */
+		@Override
+		public void toExequte() {
+			rCLBuffer = GPUComponent.createFloatBuffer(pixelCount);
+			gCLBuffer = GPUComponent.createFloatBuffer(pixelCount);
+			bCLBuffer = GPUComponent.createFloatBuffer(pixelCount);
+		}
+		
 	}
 
 }
