@@ -71,8 +71,13 @@ public abstract class Value {
 	 * @author Jan-Erik Matthies
 	 *
 	 */
-	public class Lock{
+	public static class Lock{
+		private static long idRun = 0;
+		private long id;
+		
 		private Lock(){
+			id = idRun;
+			idRun++;
 		}
 	}
 }

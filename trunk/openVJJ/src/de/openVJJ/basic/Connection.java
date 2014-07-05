@@ -37,6 +37,7 @@ public class Connection{
 		this.valueClass = valueClass;
 	}
 	
+	public static final boolean multiThreading = true;
 	ExecutorService executor = Executors.newCachedThreadPool();
 	/**
 	 * Call this method to submit the {@link Value} to all {@link ConnectionListener}
@@ -49,9 +50,12 @@ public class Connection{
 		Value.Lock lock = value.lock();
 		for(ConnectionListener listener : listeners){
 			try {
-				ConnectionThread connectionThread = new ConnectionThread(listener, value);
-				executor.execute(connectionThread);
-//				listener.valueReceved(value);
+				if(multiThreading){
+					ConnectionThread connectionThread = new ConnectionThread(listener, value);
+					executor.execute(connectionThread);
+				}else{
+					listener.valueReceved(value);
+				}
 			} catch (Exception e) {
 				System.err.println("Listener throws error while revive new Value. Removing from ListenerList");
 				listeners.remove(listener);

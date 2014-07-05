@@ -103,7 +103,7 @@ public class GPUComponent {
 		}
 	}
 	
-	public static CLBuffer<FloatBuffer> createFloatBuffer(int size){
+	public static synchronized CLBuffer<FloatBuffer> createFloatBuffer(int size){
 		return getCLContext().createFloatBuffer(size, Mem.READ_WRITE);
 	}
 	
