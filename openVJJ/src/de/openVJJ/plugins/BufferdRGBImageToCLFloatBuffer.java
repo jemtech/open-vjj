@@ -76,14 +76,17 @@ public class BufferdRGBImageToCLFloatBuffer extends Plugin {
 		FloatBuffer rBuffer = rCLBuffer.getBuffer();
 		FloatBuffer gBuffer = gCLBuffer.getBuffer();
 		FloatBuffer bBuffer = bCLBuffer.getBuffer();
-		rBuffer.rewind();
-		gBuffer.rewind();
-		bBuffer.rewind();
+//		rBuffer.rewind();
+//		gBuffer.rewind();
+//		bBuffer.rewind();
 		
 		boolean hasAlphaChannel = image.getAlphaRaster() != null;
 		final byte[] pixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
 		if(!hasAlphaChannel){
 			final int pixelLength = 3;
+			if(pixels.length != (width * height * pixelLength)){
+				System.err.println("pixels (" + pixels.length + ") not matching image size (" + (width * height * pixelLength) + ").");
+			}
 	        for (int pixel = 0; pixel < pixels.length; pixel += pixelLength) {
 	        	bBuffer.put((int) pixels[pixel] & 0xff); // blue
 	        	gBuffer.put(((int) pixels[pixel + 1] & 0xff)); // green
@@ -91,6 +94,9 @@ public class BufferdRGBImageToCLFloatBuffer extends Plugin {
 	        }
 		}else{
 			final int pixelLength = 4;
+			if(pixels.length != (width * height * pixelLength)){
+				System.err.println("pixels (" + pixels.length + ") not matching image size (" + (width * height * pixelLength) + ").");
+			}
 	        for (int pixel = 0; pixel < pixels.length; pixel += pixelLength) {
 	//          (((int) pixels[pixel] & 0xff)); // alpha
 	        	bBuffer.put((int) pixels[pixel + 1] & 0xff); // blue
@@ -98,10 +104,6 @@ public class BufferdRGBImageToCLFloatBuffer extends Plugin {
 	        	rBuffer.put(((int) pixels[pixel + 3] & 0xff)); // red
 	        }
 		}
-		rBuffer.rewind();
-		gBuffer.rewind();
-		bBuffer.rewind();
-		
 
 		CLFloatBufferValue rValue = new CLFloatBufferValue(rCLBuffer);
 		rValue.width = width;

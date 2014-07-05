@@ -26,6 +26,8 @@ public class Sorbel extends Plugin {
 		addInput("CLFloat", CLFloatBufferValue.class);
 		addOutput("Sorbel X", CLFloatBufferValue.class);
 		addOutput("Sorbel Y", CLFloatBufferValue.class);
+		MySyncedExequtor mySyncedExequtor = new MySyncedExequtor(null, 0, 0);
+		GPUComponent.execute(mySyncedExequtor);
 	}
 	
 	@Override
@@ -68,7 +70,9 @@ public class Sorbel extends Plugin {
 		try{
 			MySyncedExequtor mySyncedExequtor = new MySyncedExequtor(bufferValue.getValue(), bufferValue.width, bufferValue.height);
 			GPUComponent.execute(mySyncedExequtor);
-
+			if(mySyncedExequtor.xCLBuffer == null || mySyncedExequtor.yCLBuffer == null){
+				return;
+			}
 			getConnection("Sorbel X").transmitValue(new CLFloatBufferValue(mySyncedExequtor.xCLBuffer));
 			getConnection("Sorbel Y").transmitValue(new CLFloatBufferValue(mySyncedExequtor.yCLBuffer));
 		}catch(Exception e){
@@ -98,15 +102,18 @@ public class Sorbel extends Plugin {
 		@Override
 		public void toExequte() {
 			initGPU();
-			calculateSorbelchannelGPU(inCLBuffer, width, height);
+			if(inCLBuffer != null){
+				calculateSorbelchannelGPU(inCLBuffer, width, height);
+			}
 		}
 
 		private synchronized void calculateSorbelchannelGPU(CLBuffer<FloatBuffer> in,  int width, int height){
 			synchronized (GPUComponent.getCLContext()) {
 				CLKernel kernel = getKernel();
+				CLBuffer<FloatBuffer> outx = GPUComponent.createFloatBuffer(width*height);
+				CLBuffer<FloatBuffer> outy = GPUComponent.createFloatBuffer(width*height);
 				try{
-					CLBuffer<FloatBuffer> outx = GPUComponent.createFloatBuffer(width*height);
-					CLBuffer<FloatBuffer> outy = GPUComponent.createFloatBuffer(width*height);
+					System.out.println("use: " + in.ID);
 					kernel.putArg(in);
 					kernel.putArg(outx);
 					kernel.putArg(outy);
@@ -123,8 +130,19 @@ public class Sorbel extends Plugin {
 					xCLBuffer = outx;
 					yCLBuffer = outy;
 				}catch(Exception e){
-					System.err.println("Error while Sorbel: ");
-					e.printStackTrace();
+					if(outx != null){
+						if(!outx.isReleased()){
+							outx.release();
+						}
+					}
+					if(outy != null){
+						if(!outy.isReleased()){
+							outy.release();
+						}
+					}
+					System.err.println("Error while Sorbel: " + e.getMessage());
+					outy = null;
+					outx = null;
 				}finally{
 					kernel.release();
 				}
