@@ -1,31 +1,46 @@
+/**
+ * 
+ */
 package de.openVJJ.plugins;
-
-import java.io.IOException;
-import java.nio.FloatBuffer;
 
 import javax.swing.JPanel;
 
-import com.jogamp.opencl.CLBuffer;
-import com.jogamp.opencl.CLCommandQueue;
-import com.jogamp.opencl.CLKernel;
-import com.jogamp.opencl.CLProgram;
-
 import de.openVJJ.GPUComponent;
-import de.openVJJ.openGJTest;
 import de.openVJJ.basic.Connection;
-import de.openVJJ.basic.Plugin;
-import de.openVJJ.basic.ProjectConf;
 import de.openVJJ.basic.Value;
 import de.openVJJ.basic.Connection.ConnectionListener;
 import de.openVJJ.basic.Value.Lock;
-import de.openVJJ.values.CLFloatBufferValue;
+import de.openVJJ.basic.Plugin;
+import de.openVJJ.plugins.SorbelCL.MySyncedExequtor;
+import de.openVJJ.values.Integer2DArrayValue;
+import de.openVJJ.values.IntegerArrayImageValue;
 
+/**
+ * 
+ * Copyright (C) 2014 Jan-Erik Matthies
+ * 
+ * This program is free software;
+ * you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation;
+ * either version 3 of the License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with this program;
+ * if not, see <http://www.gnu.org/licenses/>.
+ * 
+ * @author Jan-Erik Matthies
+ * 
+ */
 public class Sorbel extends Plugin {
 
+	
 	public Sorbel(){
-		addInput("CLFloat", CLFloatBufferValue.class);
-		addOutput("Sorbel X", CLFloatBufferValue.class);
-		addOutput("Sorbel Y", CLFloatBufferValue.class);
+		addInput("3DIntegerArray", IntegerArrayImageValue.class);
+		addOutput("Sorbel X", Integer2DArrayValue.class);
+		addOutput("Sorbel Y", Integer2DArrayValue.class);
 		MySyncedExequtor mySyncedExequtor = new MySyncedExequtor(null, 0, 0);
 		GPUComponent.execute(mySyncedExequtor);
 	}
@@ -44,10 +59,10 @@ public class Sorbel extends Plugin {
 				
 				@Override
 				protected void valueReceved(Value value) {
-					CLFloatBufferValue bufferValue = (CLFloatBufferValue) value;
-					Lock lock = bufferValue.lock();
-					calculate(bufferValue);
-					bufferValue.free(lock);
+					IntegerArrayImageValue image = (IntegerArrayImageValue) value;
+					Lock lock = image.lock();
+					calculate(image);
+					image.free(lock);
 				}
 				
 				@Override
@@ -60,119 +75,45 @@ public class Sorbel extends Plugin {
 		return null;
 	}
 
+	int colorChannel = 0; 
 	@Override
 	public JPanel getConfigPannel() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 	
-	private synchronized void calculate(CLFloatBufferValue bufferValue){
-		try{
-			MySyncedExequtor mySyncedExequtor = new MySyncedExequtor(bufferValue.getValue(), bufferValue.width, bufferValue.height);
-			GPUComponent.execute(mySyncedExequtor);
-			if(mySyncedExequtor.xCLBuffer == null || mySyncedExequtor.yCLBuffer == null){
-				return;
-			}
-			getConnection("Sorbel X").transmitValue(new CLFloatBufferValue(mySyncedExequtor.xCLBuffer));
-			getConnection("Sorbel Y").transmitValue(new CLFloatBufferValue(mySyncedExequtor.yCLBuffer));
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-	}
-	
-	
-	
-	
-	protected static class MySyncedExequtor extends GPUComponent.SyncedExequtor{
-		public int width;
-		public int height;
-		public CLBuffer<FloatBuffer> inCLBuffer;
-		public CLBuffer<FloatBuffer> xCLBuffer;
-		public CLBuffer<FloatBuffer> yCLBuffer;
+	private void calculate(IntegerArrayImageValue image){
+		int[][] imageChannel = image.getImageArray()[colorChannel];
+		int width = imageChannel.length;
+		int height = imageChannel[0].length;
 		
-		protected MySyncedExequtor(CLBuffer<FloatBuffer> inCLBuffer, int width, int height){
-			this.inCLBuffer = inCLBuffer;
-			this.width = width;
-			this.height = height;
-		}
+		int[][] resultx = new int[width][height];
+		int[][] resulty = new int[width][height];
+		for(int x = 1; x < width-1; x++ ){
+			for(int y = 1; y < height-1; y++){
+				int xRes = imageChannel[x-1][y-1] * -3;
+				xRes += imageChannel[x-1][y] *-10;
+				xRes += imageChannel[x-1][y+1] *-3;
+				xRes += imageChannel[x+1][y-1] *3;
+				xRes += imageChannel[x+1][y] *10;
+				xRes += imageChannel[x+1][y+1] *3;
+				resultx[x][y] =  Math.abs(xRes);
+				
 
-		/* (non-Javadoc)
-		 * @see de.openVJJ.GPUComponent.SyncedExequtor#toExequte()
-		 */
-		@Override
-		public void toExequte() {
-			initGPU();
-			if(inCLBuffer != null){
-				calculateSorbelchannelGPU(inCLBuffer, width, height);
+				int yRes = imageChannel[x-1][y-1] *3;
+				yRes += imageChannel[x][y-1] *10;
+				yRes += imageChannel[x+1][y-1] *3;
+				yRes += imageChannel[x-1][y+1] *-3;
+				yRes += imageChannel[x][y+1] *-10;
+				yRes += imageChannel[x+1][y+1] *-3;
+				resulty[x][y] =  Math.abs(yRes);
 			}
 		}
-
-		private synchronized void calculateSorbelchannelGPU(CLBuffer<FloatBuffer> in,  int width, int height){
-			synchronized (GPUComponent.getCLContext()) {
-				CLKernel kernel = getKernel();
-				CLBuffer<FloatBuffer> outx = GPUComponent.createFloatBuffer(width*height);
-				CLBuffer<FloatBuffer> outy = GPUComponent.createFloatBuffer(width*height);
-				try{
-					System.out.println("use: " + in.ID);
-					kernel.putArg(in);
-					kernel.putArg(outx);
-					kernel.putArg(outy);
-					kernel.putArg(width);
-					kernel.putArg(height);
-					CLCommandQueue clCommandQueue = GPUComponent.getCLCommandQueue();
-					synchronized (clCommandQueue) {
-						clCommandQueue.putWriteBuffer(in, false);
-						clCommandQueue.put2DRangeKernel(kernel, 0, 0, width, height, 0, 0);//auto calc by driver
-						clCommandQueue.putReadBuffer(outx, true);
-						clCommandQueue.putReadBuffer(outy, true);
-						clCommandQueue.finish();
-					}
-					xCLBuffer = outx;
-					yCLBuffer = outy;
-				}catch(Exception e){
-					if(outx != null){
-						if(!outx.isReleased()){
-							outx.release();
-						}
-					}
-					if(outy != null){
-						if(!outy.isReleased()){
-							outy.release();
-						}
-					}
-					System.err.println("Error while Sorbel: " + e.getMessage());
-					outy = null;
-					outx = null;
-				}finally{
-					kernel.release();
-				}
-			}
-			
-		}
+		Integer2DArrayValue xRes = new Integer2DArrayValue(resultx);
+		Integer2DArrayValue yRes = new Integer2DArrayValue(resulty);
+		getConnection("Sorbel X").transmitValue(xRes);
+		getConnection("Sorbel Y").transmitValue(yRes);
 		
-
-		private CLKernel getKernel(){
-			return program.createCLKernel("sorbel");
-		}
-		
-
-		private static CLProgram program;
-		private static boolean  gpuIniting = false;
-		private static synchronized void initGPU(){
-			if(gpuIniting || program != null){
-				return;
-			}
-			gpuIniting = true;
-			try {
-				synchronized (GPUComponent.getCLContext()) {
-					ProjectConf.getGPU();
-					program = GPUComponent.getCLContext().createProgram(openGJTest.class.getResourceAsStream("kernelProgramms/sorbel")).build();
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			gpuIniting = false;
-		}
 	}
 
 }
