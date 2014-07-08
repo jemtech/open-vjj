@@ -54,7 +54,7 @@ public class Sorbel extends Plugin {
 	@Override
 	protected ConnectionListener createConnectionListener(String inpuName,
 			Connection connection) {
-		if("CLFloat".equals(inpuName)){
+		if("3DIntegerArray".equals(inpuName)){
 			return new ConnectionListener(connection) {
 				
 				@Override
