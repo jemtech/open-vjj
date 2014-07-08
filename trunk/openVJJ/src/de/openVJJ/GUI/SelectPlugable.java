@@ -26,6 +26,7 @@ import de.openVJJ.plugins.ArtnetController;
 import de.openVJJ.plugins.BufferdImageToIntegerArray;
 import de.openVJJ.plugins.BufferdRGBImageToCLFloatBuffer;
 import de.openVJJ.plugins.CLFloatBuffersToBufferdRGBImage;
+import de.openVJJ.plugins.CombindLines;
 import de.openVJJ.plugins.DMXPaketToArtNetDMXPaket;
 import de.openVJJ.plugins.DebugArtNetPaket;
 import de.openVJJ.plugins.DebugInt;
@@ -36,12 +37,16 @@ import de.openVJJ.plugins.IntArrayToRGBIntArray;
 import de.openVJJ.plugins.IntInput;
 import de.openVJJ.plugins.IntOszilator;
 import de.openVJJ.plugins.IntegerArrayToBufferdImage;
+import de.openVJJ.plugins.LineFromSorbel2DIntArray;
 import de.openVJJ.plugins.LinearRGBCorrectionIntegerArray;
+import de.openVJJ.plugins.PixelLineToVectors;
 import de.openVJJ.plugins.RGBIntArrayToDMXPaket;
 import de.openVJJ.plugins.RGBIntColor;
 import de.openVJJ.plugins.SinIntArrayGen;
 import de.openVJJ.plugins.Sorbel;
+import de.openVJJ.plugins.SorbelCL;
 import de.openVJJ.plugins.StringInput;
+import de.openVJJ.plugins.Sum2DIntArrays;
 import de.openVJJ.plugins.XuggleVideoIn;
 
 /**
@@ -94,7 +99,12 @@ public class SelectPlugable extends JPanel {
 		DebugIntArray.class,
 		BufferdRGBImageToCLFloatBuffer.class,
 		CLFloatBuffersToBufferdRGBImage.class,
-		Sorbel.class};
+		SorbelCL.class,
+		Sorbel.class,
+		LineFromSorbel2DIntArray.class,
+		Sum2DIntArrays.class,
+		CombindLines.class,
+		PixelLineToVectors.class};
 
 	//public static List<Class<? extends Plugable>> plugableClasses = new ArrayList<Class<? extends Plugable>>();
 	
