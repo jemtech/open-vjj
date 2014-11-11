@@ -47,6 +47,8 @@ import de.openVJJ.plugins.Sorbel;
 import de.openVJJ.plugins.SorbelCL;
 import de.openVJJ.plugins.StringInput;
 import de.openVJJ.plugins.Sum2DIntArrays;
+import de.openVJJ.plugins.VectorPainter;
+import de.openVJJ.plugins.XuggleWebCam;
 import de.openVJJ.plugins.XuggleVideoIn;
 
 /**
@@ -104,7 +106,10 @@ public class SelectPlugable extends JPanel {
 		LineFromSorbel2DIntArray.class,
 		Sum2DIntArrays.class,
 		CombindLines.class,
-		PixelLineToVectors.class};
+		PixelLineToVectors.class,
+		XuggleWebCam.class,
+		VectorPainter.class
+		};
 
 	//public static List<Class<? extends Plugable>> plugableClasses = new ArrayList<Class<? extends Plugable>>();
 	
@@ -112,7 +117,7 @@ public class SelectPlugable extends JPanel {
 		setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 		createSeletabels();
 	}
-	JList plugableClassesList;
+	JList<String> plugableClassesList;
 	private void createSeletabels(){
 //		for(Class<?> plugableClass : plugableClasses){
 //			JButton selectButton = new JButton(plugableClass.getSimpleName());
@@ -124,7 +129,7 @@ public class SelectPlugable extends JPanel {
 		for(int i =0; i < plugableClasses.length; i++){
 			plugableClassNames[i] = plugableClasses[i].getSimpleName();
 		}
-		plugableClassesList = new JList(plugableClassNames);
+		plugableClassesList = new JList<String>(plugableClassNames);
 		plugableClassesList.addKeyListener(new KeyListener() {
 			
 			@Override

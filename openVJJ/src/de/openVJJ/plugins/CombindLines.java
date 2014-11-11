@@ -156,11 +156,16 @@ public class CombindLines extends Plugin {
 			combindedLines.add(line1);
 			
 		}
+		getConnection("Lines").transmitValue(new PointCloundList(combindedLines));
 		
-		lines1.free(lock1);
-		lines1 = null;
-		lines2.free(lock2);
-		lines2 = null;
+		if(lines1 != null && lock1 != null){
+			lines1.free(lock1);
+			lines1 = null;
+		}
+		if(lines2 != null && lock2 != null){
+			lines2.free(lock2);
+			lines2 = null;
+		}
 	}
 
 }

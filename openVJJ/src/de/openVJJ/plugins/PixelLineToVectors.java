@@ -18,6 +18,7 @@ import de.openVJJ.basic.Value.Lock;
 import de.openVJJ.values.PointCloud;
 import de.openVJJ.values.PointCloundList;
 import de.openVJJ.values.VectorValue;
+import de.openVJJ.values.VectorValueList;
 
 /**
  * 
@@ -46,6 +47,7 @@ public class PixelLineToVectors extends Plugin {
 	 */
 	public PixelLineToVectors() {
 		addInput("Lines", PointCloundList.class);
+		addOutput("Vectors", VectorValueList.class);
 	}
 	/* (non-Javadoc)
 	 * @see de.openVJJ.basic.Plugin#sendStatics()
@@ -93,6 +95,7 @@ public class PixelLineToVectors extends Plugin {
 	
 	private void calculate(PointCloundList pointCloundList){
 		System.out.println("Clouds: " + pointCloundList.getValue().size());
+		List<VectorValue> vectorValues = new ArrayList<VectorValue>();
 		for(PointCloud pointCloud : pointCloundList.getValue()){
 			List<Point> points = pointCloud.getValue();
 			List<Point> copy = new ArrayList<Point>();
@@ -100,13 +103,12 @@ public class PixelLineToVectors extends Plugin {
 				copy.add(point);
 			}
 			sort(copy);
-			System.out.println();
-			List<VectorValue> vectorValues = new ArrayList<VectorValue>();
 			while(copy.size()>0){
 				findVector(copy, vectorValues);
 			}
-			System.out.println("Points: " + points.size() + " Vectors: " + vectorValues.size());
 		}
+		VectorValueList value = new VectorValueList(vectorValues);
+		getConnection("Vectors").transmitValue(value);
 	}
 	
 	private void findVector(List<Point> points, List<VectorValue> vectorList){

@@ -31,4 +31,9 @@ public class CLFloatBufferValue extends Value {
 		super.finalize();
 	}
 	
+	@Override
+	public boolean isThreadSave(){
+		return false;
+	}
+	
 }

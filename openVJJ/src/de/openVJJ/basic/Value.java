@@ -52,6 +52,14 @@ public abstract class Value {
 	}
 	
 	/**
+	 * Override if a Variable is not thread save
+	 * @return default true
+	 */
+	public boolean isThreadSave(){
+		return true;
+	}
+	
+	/**
 	 * 
 	 * 
 	 * Copyright (C) 2014 Jan-Erik Matthies
