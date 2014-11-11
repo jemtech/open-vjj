@@ -50,7 +50,7 @@ public class Connection{
 		Value.Lock lock = value.lock();
 		for(ConnectionListener listener : listeners){
 			try {
-				if(multiThreading){
+				if(multiThreading && value.isThreadSave()){
 					ConnectionThread connectionThread = new ConnectionThread(listener, value);
 					executor.execute(connectionThread);
 				}else{

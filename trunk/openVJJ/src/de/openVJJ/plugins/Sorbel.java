@@ -41,8 +41,6 @@ public class Sorbel extends Plugin {
 		addInput("3DIntegerArray", IntegerArrayImageValue.class);
 		addOutput("Sorbel X", Integer2DArrayValue.class);
 		addOutput("Sorbel Y", Integer2DArrayValue.class);
-		MySyncedExequtor mySyncedExequtor = new MySyncedExequtor(null, 0, 0);
-		GPUComponent.execute(mySyncedExequtor);
 	}
 	
 	@Override
@@ -83,7 +81,7 @@ public class Sorbel extends Plugin {
 	}
 	
 	private void calculate(IntegerArrayImageValue image){
-		int[][] imageChannel = image.getImageArray()[colorChannel];
+		int[][][] imageChannel = image.getImageArray();
 		int width = imageChannel.length;
 		int height = imageChannel[0].length;
 		
@@ -91,28 +89,28 @@ public class Sorbel extends Plugin {
 		int[][] resulty = new int[width][height];
 		for(int x = 1; x < width-1; x++ ){
 			for(int y = 1; y < height-1; y++){
-				int xRes = imageChannel[x-1][y-1] * -3;
-				xRes += imageChannel[x-1][y] *-10;
-				xRes += imageChannel[x-1][y+1] *-3;
-				xRes += imageChannel[x+1][y-1] *3;
-				xRes += imageChannel[x+1][y] *10;
-				xRes += imageChannel[x+1][y+1] *3;
+				int xRes = imageChannel[x-1][y-1][colorChannel] * -3;
+				xRes += imageChannel[x-1][y][colorChannel] *-10;
+				xRes += imageChannel[x-1][y+1][colorChannel] *-3;
+				xRes += imageChannel[x+1][y-1][colorChannel] *3;
+				xRes += imageChannel[x+1][y][colorChannel] *10;
+				xRes += imageChannel[x+1][y+1][colorChannel] *3;
 				resultx[x][y] =  Math.abs(xRes);
 				
 
-				int yRes = imageChannel[x-1][y-1] *3;
-				yRes += imageChannel[x][y-1] *10;
-				yRes += imageChannel[x+1][y-1] *3;
-				yRes += imageChannel[x-1][y+1] *-3;
-				yRes += imageChannel[x][y+1] *-10;
-				yRes += imageChannel[x+1][y+1] *-3;
+				int yRes = imageChannel[x-1][y-1][colorChannel] *3;
+				yRes += imageChannel[x][y-1][colorChannel] *10;
+				yRes += imageChannel[x+1][y-1][colorChannel] *3;
+				yRes += imageChannel[x-1][y+1][colorChannel] *-3;
+				yRes += imageChannel[x][y+1][colorChannel] *-10;
+				yRes += imageChannel[x+1][y+1][colorChannel] *-3;
 				resulty[x][y] =  Math.abs(yRes);
 			}
 		}
 		Integer2DArrayValue xRes = new Integer2DArrayValue(resultx);
 		Integer2DArrayValue yRes = new Integer2DArrayValue(resulty);
-		getConnection("Sorbel X").transmitValue(xRes);
-		getConnection("Sorbel Y").transmitValue(yRes);
+		getConnection("Sorbel Y").transmitValue(xRes);
+		getConnection("Sorbel X").transmitValue(yRes);
 		
 	}
 

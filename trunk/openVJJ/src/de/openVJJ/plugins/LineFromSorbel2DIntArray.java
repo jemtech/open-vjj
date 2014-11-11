@@ -3,10 +3,24 @@
  */
 package de.openVJJ.plugins;
 
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Point;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 
+import javax.swing.ButtonGroup;
+import javax.swing.JFormattedTextField;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JTextField;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
+import org.jdom2.Element;
 
 import de.openVJJ.basic.Connection;
 import de.openVJJ.basic.Value;
@@ -37,6 +51,8 @@ import de.openVJJ.values.PointCloundList;
  * 
  */
 public class LineFromSorbel2DIntArray extends Plugin {
+	
+	public static final String ELEMENT_NAME_LineFromSorbel2DIntArray_CONFIG = "LineFromSorbel2DIntArray";
 	
 	/**
 	 * 
@@ -87,14 +103,127 @@ public class LineFromSorbel2DIntArray extends Plugin {
 	 */
 	@Override
 	public JPanel getConfigPannel() {
-		// TODO Auto-generated method stub
-		return null;
+		JPanel configPanel = new JPanel();
+		
+		configPanel.setLayout(new GridBagLayout());
+		GridBagConstraints gridBagConstraints =  new GridBagConstraints();
+		
+
+		JRadioButton xButton = new JRadioButton("X");
+		xButton.addChangeListener(new ChangeListener() {
+			
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				xDirection = ((JRadioButton) e.getSource()).isSelected();
+				
+			}
+		});
+		
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 0;
+		configPanel.add(xButton, gridBagConstraints);
+		
+		JRadioButton yButton = new JRadioButton("y");
+		
+		gridBagConstraints.gridy = 1;
+		configPanel.add(yButton, gridBagConstraints);
+		
+		ButtonGroup group = new ButtonGroup();
+		group.add(yButton);
+		group.add(xButton);
+		
+		xButton.setSelected(xDirection);
+		yButton.setSelected(!xDirection);
+		
+		JLabel limitLabel = new JLabel("max Lines");
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 2;
+		configPanel.add(limitLabel, gridBagConstraints);
+		
+		JFormattedTextField limitTextField = new JFormattedTextField(NumberFormat.getNumberInstance());
+		limitTextField.setValue(lineLimit);
+		limitTextField.setColumns(3);
+		limitTextField.addPropertyChangeListener("value",  new PropertyChangeListener() {
+			
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				lineLimit = ((Number) ((JFormattedTextField)evt.getSource()).getValue()).intValue();
+			}
+		});
+		
+		gridBagConstraints.gridx = 1;
+		configPanel.add(limitTextField, gridBagConstraints);
+		
+		JLabel histeryLabel = new JLabel("min Val");
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 3;
+		configPanel.add(histeryLabel, gridBagConstraints);
+
+		JFormattedTextField histeryTextField = new JFormattedTextField(NumberFormat.getNumberInstance());
+		histeryTextField.setValue(histery);
+		histeryTextField.setColumns(3);
+		histeryTextField.addPropertyChangeListener("value",  new PropertyChangeListener() {
+			
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				histery = ((Number) ((JFormattedTextField)evt.getSource()).getValue()).intValue();
+			}
+		});
+		gridBagConstraints.gridx = 1;
+		configPanel.add(histeryTextField, gridBagConstraints);
+		
+		JLabel minLengthLabel = new JLabel("min length");
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 4;
+		configPanel.add(minLengthLabel, gridBagConstraints);
+
+		JFormattedTextField minLengthTextField = new JFormattedTextField(NumberFormat.getNumberInstance());
+		minLengthTextField.setValue(minLength);
+		minLengthTextField.setColumns(3);
+		minLengthTextField.addPropertyChangeListener("value",  new PropertyChangeListener() {
+			
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				minLength = ((Number) ((JFormattedTextField)evt.getSource()).getValue()).intValue();
+			}
+		});
+		gridBagConstraints.gridx = 1;
+		configPanel.add(minLengthTextField, gridBagConstraints);
+
+		return configPanel;
+	}
+	
+	/**
+	 * for saving configuration 
+	 * @param element to save configuration to.
+	 */
+	public void getConfig(Element element){
+		Element myConfigElement = new Element(ELEMENT_NAME_LineFromSorbel2DIntArray_CONFIG);
+		element.addContent(myConfigElement);
+		myConfigElement.setAttribute("directionx", String.valueOf(xDirection));
+		super.getConfig(element);
+	}
+	
+	/**
+	 * for restoring from saved configuration
+	 * @param element XML Element
+	 */
+	public void setConfig(Element element){
+		Element myConfigElement = element.getChild(ELEMENT_NAME_LineFromSorbel2DIntArray_CONFIG);
+		if(myConfigElement != null){
+			String val = myConfigElement.getAttributeValue("directionx");
+			if(val != null){
+				xDirection =  Boolean.parseBoolean(val);
+			}
+		}
+		super.setConfig(element);
 	}
 	
 	private boolean xDirection = true;
 	private int lineLimit = 500;
 	private int histery = 30;
 	private boolean copyValue = true;
+	private int minLength = 0;
 	
 	private void calculate(int[][] sorbel){
 		if(copyValue){
@@ -132,14 +261,18 @@ public class LineFromSorbel2DIntArray extends Plugin {
 			if(point == null){
 				break;
 			}
+			
 			deactivatePoint(sorbel, point);
 			ArrayList<Point> points = new ArrayList<Point>();
 			points.add(point);
 			PointCloud line = new PointCloud(points);
-			lines.add(line);
 			
 			combinedLineU(point, sorbel, line, 0, 0, yMax);
 			combinedLineD(point, sorbel, line, xMax, 0, yMax);
+
+			if(line.getValue().size() > minLength){
+				lines.add(line);
+			}
 			
 		}
 		return new PointCloundList(lines);
@@ -157,14 +290,18 @@ public class LineFromSorbel2DIntArray extends Plugin {
 			if(point == null){
 				break;
 			}
+			
 			deactivatePoint(sorbel, point);
 			ArrayList<Point> points = new ArrayList<Point>();
 			points.add(point);
 			PointCloud line = new PointCloud(points);
-			lines.add(line);
-
+			
 			combinedLineL(point, sorbel, line, 0, 0, xMax);
 			combinedLineR(point, sorbel, line, yMax, 0, xMax);
+			
+			if(line.getValue().size() > minLength){
+				lines.add(line);
+			}
 			
 		}
 		return new PointCloundList(lines);
