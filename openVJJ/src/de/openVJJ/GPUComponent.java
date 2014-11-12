@@ -18,6 +18,12 @@ public class GPUComponent {
 	static private CLCommandQueue queue;
 	static private boolean gpuReady = false;
 	static private Thread gpuThread = null;
+	static private boolean gpuError = false;
+	
+	public static boolean isGPUError(){
+		return gpuError;
+	}
+	
 	private static void initGPU(){
 		if(gpuReady){
 			return;
@@ -28,6 +34,11 @@ public class GPUComponent {
 				context = CLContext.create();
 			}catch(Exception e){
 				e.printStackTrace();
+				gpuError = true;
+				return;
+			}catch (NoClassDefFoundError e) {
+				e.printStackTrace();
+				gpuError = true;
 				return;
 			}
 		}
@@ -39,7 +50,7 @@ public class GPUComponent {
 	}
 	
 	public static void startGPU(){
-		if(gpuThread != null){
+		if(gpuThread != null || gpuError){
 			return;
 		}
 		GPUThread gpurunnable = new GPUThread();
@@ -115,6 +126,9 @@ public class GPUComponent {
 	}
 	
 	public static void execute(SyncedExequtor exequtor){
+		if(gpuError){
+			return;
+		}
 		startGPU();
 		Thread callingThread = Thread.currentThread();
 		synchronized (todoList) {
@@ -159,6 +173,9 @@ public class GPUComponent {
 		@Override
 		public void run() {
 			initGPU();
+			if(gpuError){
+				return;
+			}
 			exeutor();
 		}
 		

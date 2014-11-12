@@ -3,11 +3,20 @@
  */
 package de.openVJJ.plugins;
 
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
+import javax.swing.ButtonGroup;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
+import org.jdom2.Element;
 
 import de.openVJJ.basic.Connection;
 import de.openVJJ.basic.Value;
@@ -18,6 +27,7 @@ import de.openVJJ.values.PointCloud;
 import de.openVJJ.values.PointCloundList;
 import de.openVJJ.values.VectorValue;
 import de.openVJJ.values.VectorValueList;
+import de.openVJJ.values.VectorValueListList;
 
 /**
  * 
@@ -40,13 +50,14 @@ import de.openVJJ.values.VectorValueList;
  */
 public class PixelLineToVectors extends Plugin {
 
+	public static final String ELEMENT_NAME_PixelLineToVectors_CONFIG = "PixelLineToVectors";
 	private boolean horizontal = true;
 	/**
 	 * 
 	 */
 	public PixelLineToVectors() {
 		addInput("Lines", PointCloundList.class);
-		addOutput("Vectors", VectorValueList.class);
+		addOutput("Vectors", VectorValueListList.class);
 	}
 	/* (non-Javadoc)
 	 * @see de.openVJJ.basic.Plugin#sendStatics()
@@ -88,14 +99,70 @@ public class PixelLineToVectors extends Plugin {
 	 */
 	@Override
 	public JPanel getConfigPannel() {
-		// TODO Auto-generated method stub
-		return null;
+		JPanel configPanel = new JPanel();
+		
+		configPanel.setLayout(new GridBagLayout());
+		GridBagConstraints gridBagConstraints =  new GridBagConstraints();
+		
+
+		JRadioButton xButton = new JRadioButton("X");
+		xButton.addChangeListener(new ChangeListener() {
+			
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				horizontal = ((JRadioButton) e.getSource()).isSelected();
+				
+			}
+		});
+		
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 0;
+		configPanel.add(xButton, gridBagConstraints);
+		
+		JRadioButton yButton = new JRadioButton("y");
+		
+		gridBagConstraints.gridy = 1;
+		configPanel.add(yButton, gridBagConstraints);
+		
+		ButtonGroup group = new ButtonGroup();
+		group.add(yButton);
+		group.add(xButton);
+		
+		xButton.setSelected(horizontal);
+		yButton.setSelected(!horizontal);
+		return configPanel;
+	}
+	
+	/**
+	 * for saving configuration 
+	 * @param element to save configuration to.
+	 */
+	public void getConfig(Element element){
+		Element myConfigElement = new Element(ELEMENT_NAME_PixelLineToVectors_CONFIG);
+		element.addContent(myConfigElement);
+		myConfigElement.setAttribute("horizontal", String.valueOf(horizontal));
+		super.getConfig(element);
+	}
+	
+	/**
+	 * for restoring from saved configuration
+	 * @param element XML Element
+	 */
+	public void setConfig(Element element){
+		Element myConfigElement = element.getChild(ELEMENT_NAME_PixelLineToVectors_CONFIG);
+		if(myConfigElement != null){
+			String val = myConfigElement.getAttributeValue("horizontal");
+			if(val != null){
+				horizontal =  Boolean.parseBoolean(val);
+			}
+		}
+		super.setConfig(element);
 	}
 	
 	private void calculate(PointCloundList pointCloundList){
-		System.out.println("Clouds: " + pointCloundList.getValue().size());
-		List<VectorValue> vectorValues = new ArrayList<VectorValue>();
+		List<VectorValueList> vectorValueLists = new LinkedList<VectorValueList>();
 		for(PointCloud pointCloud : pointCloundList.getValue()){
+			List<VectorValue> vectorValues = new LinkedList<VectorValue>();
 			List<Point> points = pointCloud.getValue();
 			List<Point> copy = new ArrayList<Point>();
 			for(Point point : points){
@@ -105,9 +172,10 @@ public class PixelLineToVectors extends Plugin {
 			while(copy.size()>0){
 				findVector(copy, vectorValues);
 			}
+			vectorValueLists.add( new VectorValueList(vectorValues));
 		}
-		VectorValueList value = new VectorValueList(vectorValues);
-		getConnection("Vectors").transmitValue(value);
+		VectorValueListList valueListList = new VectorValueListList(vectorValueLists);
+		getConnection("Vectors").transmitValue(valueListList);
 	}
 	
 	private void findVector(List<Point> points, List<VectorValue> vectorList){
@@ -135,19 +203,36 @@ public class PixelLineToVectors extends Plugin {
 		Point naibor = null;
 		int direct = Integer.MAX_VALUE; 
 		for(Point point : points){
-			if(start.x == point.x-1){
-				if(start.y == point.y-1){
-					direct = -1;
-					naibor = point;
-				}else if (start.y == point.y) {
-					direct = 0;
-					naibor = point;
-				}else if (start.y == point.y+1) {
-					direct = 1;
-					naibor = point;
+			if(horizontal){
+				if(start.x == point.x-1){
+					if(start.y == point.y-1){
+						direct = -1;
+						naibor = point;
+					}else if (start.y == point.y) {
+						direct = 0;
+						naibor = point;
+					}else if (start.y == point.y+1) {
+						direct = 1;
+						naibor = point;
+					}
+				}else if(start.x < point.x-1){
+					break;
 				}
-			}else if(start.x < point.x-1){
-				break;
+			}else{
+				if(start.y == point.y-1){
+					if(start.x == point.x-1){
+						direct = -1;
+						naibor = point;
+					}else if (start.x == point.x) {
+						direct = 0;
+						naibor = point;
+					}else if (start.x == point.x+1) {
+						direct = 1;
+						naibor = point;
+					}
+				}else if(start.y < point.y-1){
+					break;
+				}
 			}
 		}
 		if(naibor == null){
@@ -167,12 +252,22 @@ public class PixelLineToVectors extends Plugin {
 	private Point findLastNaibor(Point start, List<Point> points, int direct){
 		Point naibor = null;
 		for(Point point : points){
-			if(start.x == point.x-1){
-				if(start.y == point.y+direct){
-					naibor = point;
+			if(horizontal){
+				if(start.x == point.x-1){
+					if(start.y == point.y+direct){
+						naibor = point;
+					}
+				}else if(start.x < point.x-1){
+					break;
 				}
-			}else if(start.x < point.x-1){
-				break;
+			}else{
+				if(start.y == point.y-1){
+					if(start.x == point.x+direct){
+						naibor = point;
+					}
+				}else if(start.y < point.y-1){
+					break;
+				}
 			}
 		}
 		if(naibor == null){

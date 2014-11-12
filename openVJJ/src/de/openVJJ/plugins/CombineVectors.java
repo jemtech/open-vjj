@@ -1,6 +1,7 @@
 package de.openVJJ.plugins;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.swing.JPanel;
@@ -12,12 +13,32 @@ import de.openVJJ.basic.Value.Lock;
 import de.openVJJ.basic.Plugin;
 import de.openVJJ.values.VectorValue;
 import de.openVJJ.values.VectorValueList;
+import de.openVJJ.values.VectorValueListList;
 
+/**
+ * 
+ * Copyright (C) 2014 Jan-Erik Matthies
+ * 
+ * This program is free software;
+ * you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation;
+ * either version 3 of the License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with this program;
+ * if not, see <http://www.gnu.org/licenses/>.
+ * 
+ * @author Jan-Erik Matthies
+ * 
+ */
 public class CombineVectors extends Plugin {
 
 	public CombineVectors() {
-		addInput("Vectors1", VectorValueList.class);
-		addInput("Vectors2", VectorValueList.class);
+		addInput("Vectors1", VectorValueListList.class);
+		addInput("Vectors2", VectorValueListList.class);
 		addOutput("Vectors", VectorValueList.class);
 	}
 	
@@ -27,12 +48,12 @@ public class CombineVectors extends Plugin {
 
 	}
 	
-	private VectorValueList vectors1value;
+	private VectorValueListList vectors1value;
 	private Lock vectors1valueLock;
-	private VectorValueList vectors2value;
+	private VectorValueListList vectors2value;
 	private Lock vectors2valueLock;
 	
-	private void setVectors1value(VectorValueList vectorsValue){
+	private void setVectors1value(VectorValueListList vectorsValue){
 		if(this.vectors1value != null && vectors1valueLock != null ){
 			this.vectors1value.free(vectors1valueLock);
 		}
@@ -40,7 +61,7 @@ public class CombineVectors extends Plugin {
 		vectors1valueLock = this.vectors1value.lock();
 	}
 	
-	private void setVectors2value(VectorValueList vectorsValue){
+	private void setVectors2value(VectorValueListList vectorsValue){
 		if(this.vectors2value != null && vectors2valueLock != null ){
 			this.vectors2value.free(vectors2valueLock);
 		}
@@ -56,7 +77,7 @@ public class CombineVectors extends Plugin {
 				
 				@Override
 				protected void valueReceved(Value value) {
-					setVectors1value((VectorValueList) value);
+					setVectors1value((VectorValueListList) value);
 					calculate();
 				}
 				
@@ -72,7 +93,7 @@ public class CombineVectors extends Plugin {
 				
 				@Override
 				protected void valueReceved(Value value) {
-					setVectors2value((VectorValueList) value);
+					setVectors2value((VectorValueListList) value);
 					calculate();
 				}
 				
@@ -96,18 +117,24 @@ public class CombineVectors extends Plugin {
 		if(vectors1value == null || vectors2value == null){
 			return;
 		}
-		VectorValueList my1ValueList = vectors1value;
+		VectorValueListList my1ValueList = vectors1value;
 		Lock my1Lock = my1ValueList.lock();
 		vectors1value.free(vectors1valueLock);
 		vectors1value = null;
 
-		VectorValueList my2ValueList = vectors2value;
+		VectorValueListList my2ValueList = vectors2value;
 		Lock my2Lock = my2ValueList.lock();
 		vectors2value.free(vectors2valueLock);
 		vectors2value = null;
 		
-		List<VectorValue> valueList = new ArrayList<VectorValue>(my1ValueList.getVectorValues());
-		valueList.addAll(my2ValueList.getVectorValues());
+		List<VectorValue> valueList = new LinkedList<VectorValue>();
+		for(VectorValueList values : my1ValueList.getVectorValues()){
+			valueList.addAll(values.getVectorValues());
+		}
+		for(VectorValueList values : my2ValueList.getVectorValues()){
+			valueList.addAll(values.getVectorValues());
+		}
+		
 		VectorValueList result = new VectorValueList(valueList);
 		
 		my1ValueList.free(my1Lock);

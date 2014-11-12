@@ -200,6 +200,9 @@ public class LineFromSorbel2DIntArray extends Plugin {
 		Element myConfigElement = new Element(ELEMENT_NAME_LineFromSorbel2DIntArray_CONFIG);
 		element.addContent(myConfigElement);
 		myConfigElement.setAttribute("directionx", String.valueOf(xDirection));
+		myConfigElement.setAttribute("lineLimit", String.valueOf(lineLimit));
+		myConfigElement.setAttribute("histery", String.valueOf(histery));
+		myConfigElement.setAttribute("minLength", String.valueOf(minLength));
 		super.getConfig(element);
 	}
 	
@@ -213,6 +216,18 @@ public class LineFromSorbel2DIntArray extends Plugin {
 			String val = myConfigElement.getAttributeValue("directionx");
 			if(val != null){
 				xDirection =  Boolean.parseBoolean(val);
+			}
+			val = myConfigElement.getAttributeValue("lineLimit");
+			if(val != null){
+				lineLimit =  Integer.parseInt(val);
+			}
+			val = myConfigElement.getAttributeValue("histery");
+			if(val != null){
+				histery =  Integer.parseInt(val);
+			}
+			val = myConfigElement.getAttributeValue("minLength");
+			if(val != null){
+				minLength =  Integer.parseInt(val);
 			}
 		}
 		super.setConfig(element);
