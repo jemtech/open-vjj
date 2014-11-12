@@ -16,7 +16,6 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -272,6 +271,8 @@ public class LineFromSorbel2DIntArray extends Plugin {
 
 			if(line.getValue().size() > minLength){
 				lines.add(line);
+			}else{
+				cykle--;
 			}
 			
 		}
@@ -301,6 +302,8 @@ public class LineFromSorbel2DIntArray extends Plugin {
 			
 			if(line.getValue().size() > minLength){
 				lines.add(line);
+			}else{
+				cykle--;
 			}
 			
 		}

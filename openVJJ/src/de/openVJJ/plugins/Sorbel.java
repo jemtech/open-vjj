@@ -5,13 +5,11 @@ package de.openVJJ.plugins;
 
 import javax.swing.JPanel;
 
-import de.openVJJ.GPUComponent;
 import de.openVJJ.basic.Connection;
 import de.openVJJ.basic.Value;
 import de.openVJJ.basic.Connection.ConnectionListener;
 import de.openVJJ.basic.Value.Lock;
 import de.openVJJ.basic.Plugin;
-import de.openVJJ.plugins.SorbelCL.MySyncedExequtor;
 import de.openVJJ.values.Integer2DArrayValue;
 import de.openVJJ.values.IntegerArrayImageValue;
 

@@ -76,7 +76,7 @@ public class XuggleWebCam extends Plugin {
 		configPanel.add(framerateLimitLabel, gridBagConstraints);
 		
 		JSlider rSlider = new JSlider();
-		rSlider.setMinimum(0);
+		rSlider.setMinimum(1);
 		rSlider.setMaximum((int)FRAME_RATE_LIMIT);
 		rSlider.setMajorTickSpacing(64);
 		rSlider.setMinorTickSpacing(8);

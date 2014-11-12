@@ -10,7 +10,6 @@ import de.openVJJ.basic.Value;
 import de.openVJJ.basic.Connection.ConnectionListener;
 import de.openVJJ.basic.Value.Lock;
 import de.openVJJ.basic.Plugin;
-import de.openVJJ.values.CLFloatBufferValue;
 import de.openVJJ.values.Integer2DArrayValue;
 
 /**
