@@ -7,7 +7,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.swing.ButtonGroup;
@@ -160,9 +159,9 @@ public class PixelLineToVectors extends Plugin {
 	}
 	
 	private void calculate(PointCloundList pointCloundList){
-		List<VectorValueList> vectorValueLists = new LinkedList<VectorValueList>();
+		List<VectorValueList> vectorValueLists = new ArrayList<VectorValueList>();
 		for(PointCloud pointCloud : pointCloundList.getValue()){
-			List<VectorValue> vectorValues = new LinkedList<VectorValue>();
+			List<VectorValue> vectorValues = new ArrayList<VectorValue>();
 			List<Point> points = pointCloud.getValue();
 			List<Point> copy = new ArrayList<Point>();
 			for(Point point : points){
