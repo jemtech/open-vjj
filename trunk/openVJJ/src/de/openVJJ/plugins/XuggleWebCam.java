@@ -2,13 +2,22 @@ package de.openVJJ.plugins;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.image.BufferedImage;
 
+import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
+import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+
+import org.jdom2.Element;
 
 import com.xuggle.xuggler.ICodec;
 import com.xuggle.xuggler.IContainer;
@@ -27,16 +36,60 @@ import de.openVJJ.basic.Connection.ConnectionListener;
 import de.openVJJ.basic.Plugin;
 import de.openVJJ.values.BufferedImageValue;
 
+/**
+ * 
+ * Copyright (C) 2014 Jan-Erik Matthies
+ * 
+ * This program is free software;
+ * you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation;
+ * either version 3 of the License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with this program;
+ * if not, see <http://www.gnu.org/licenses/>.
+ * 
+ * @author Jan-Erik Matthies
+ * 
+ */
 public class XuggleWebCam extends Plugin {
 
 	public static final int FRAME_RATE_LIMIT = 50;
+	public static final String ELEMENT_NAME_XuggleWebCam_CONFIG = "XuggleWebCam";
 	
 	private int framerateLimit =  FRAME_RATE_LIMIT;
 	private JLabel framerateLimitLabel;
-	
+	private CaptureThread captureThread;
+	private String driverName = "vfwcap"; //Windows "vfwcap"; Linux "video4linux2"
+    private String deviceName=  "0"; //Windows "0"; Linux "/dev/video0"
+    
+    JTextField deviceNameTextField;
+    JTextField driverNameTextField;
+    
+    private void setDeviceName(String name){
+    	deviceName = name;
+    	if(deviceNameTextField != null){
+    		deviceNameTextField.setText(deviceName);
+    	}
+    }
+    
+    private void setDriverName(String name){
+    	driverName = name;
+    	if(driverNameTextField != null){
+    		driverNameTextField.setText(driverName);
+    	}
+    }
+    
 	public XuggleWebCam(){
 		addOutput("Frames", BufferedImageValue.class);
-		startCapture();
+		try{
+			startCapture();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 	
 	public int getFramerateLimit(){
@@ -52,14 +105,12 @@ public class XuggleWebCam extends Plugin {
 	
 	@Override
 	public void sendStatics() {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	protected ConnectionListener createConnectionListener(String inpuName,
 			Connection connection) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -91,12 +142,120 @@ public class XuggleWebCam extends Plugin {
 		});
 		gridBagConstraints.gridx = 1;
 		configPanel.add(rSlider, gridBagConstraints);
+		
+		JLabel deviceNameLabel = new JLabel("Device name");
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy++;
+		configPanel.add(deviceNameLabel, gridBagConstraints);
+		
+		deviceNameTextField = new JTextField(deviceName);
+		deviceNameTextField.setColumns(20);
+		deviceNameTextField.addFocusListener(new FocusListener() {
+			
+			@Override
+			public void focusLost(FocusEvent e) {
+				setDeviceName(((JTextField)e.getSource()).getText());
+			}
+			
+			@Override
+			public void focusGained(FocusEvent e) {
+			}
+		});
+		gridBagConstraints.gridx = 1;
+		configPanel.add(deviceNameTextField, gridBagConstraints);
+		
+		JLabel driverNameLabel = new JLabel("Driver name");
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy++;
+		configPanel.add(driverNameLabel, gridBagConstraints);
+		
+		driverNameTextField = new JTextField(driverName);
+		driverNameTextField.setColumns(20);
+		driverNameTextField.addFocusListener(new FocusListener() {
+			
+			@Override
+			public void focusLost(FocusEvent e) {
+				setDriverName(((JTextField)e.getSource()).getText());
+			}
+			
+			@Override
+			public void focusGained(FocusEvent e) {
+			}
+		});
+		gridBagConstraints.gridx = 1;
+		configPanel.add(driverNameTextField, gridBagConstraints);
+		
+		JButton restartCaptureButton = new JButton("Restart");
+		restartCaptureButton.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				restartCapture();
+			}
+		});
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy++;
+		configPanel.add(restartCaptureButton, gridBagConstraints);
+		
+		JComboBox<String> defaultSelectionComboBox = new JComboBox<String>(new String[]{"Windows default", "Linux default"} );
+		defaultSelectionComboBox.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JComboBox<?> selectedChoice = (JComboBox<?>) e.getSource();
+			    if ( "Windows default".equals( selectedChoice.getSelectedItem() ) ){
+			    	setDeviceName("0");
+			    	setDriverName("vfwcap");
+			    }else if ( "Linux default".equals( selectedChoice.getSelectedItem() ) ) {
+			    	setDeviceName("/dev/video0");
+			    	setDriverName("video4linux2");
+				}
+			}
+		});
+		gridBagConstraints.gridx = 1;
+		configPanel.add(defaultSelectionComboBox, gridBagConstraints);
+		
 		return configPanel;
 	}
 	
-	private String driverName = "vfwcap"; //Windows "vfwcap"; Linux "video4linux2"
-    private String deviceName=  "0"; //Windows "0"; Linux "/dev/video0"
-    private IContainer container;
+
+	/**
+	 * for saving configuration 
+	 * @param element to save configuration to.
+	 */
+	public void getConfig(Element element){
+		Element myConfigElement = new Element(ELEMENT_NAME_XuggleWebCam_CONFIG);
+		element.addContent(myConfigElement);
+		myConfigElement.setAttribute("driverName", driverName);
+		myConfigElement.setAttribute("deviceName", deviceName);
+		myConfigElement.setAttribute("framerateLimit", String.valueOf(framerateLimit));
+		super.getConfig(element);
+	}
+	
+	/**
+	 * for restoring from saved configuration
+	 * @param element XML Element
+	 */
+	public void setConfig(Element element){
+		Element myConfigElement = element.getChild(ELEMENT_NAME_XuggleWebCam_CONFIG);
+		if(myConfigElement != null){
+			String val = myConfigElement.getAttributeValue("driverName");
+			if(val != null){
+				driverName =  val;
+			}
+			val = myConfigElement.getAttributeValue("deviceName");
+			if(val != null){
+				deviceName =  val;
+			}
+			val = myConfigElement.getAttributeValue("framerateLimit");
+			if(val != null){
+				framerateLimit =  Integer.parseInt(val);
+			}
+		}
+		super.setConfig(element);
+	}
+	
+	private IContainer container;
     private IStreamCoder videoCoder;
 	public void startCapture(){
 
@@ -167,35 +326,42 @@ public class XuggleWebCam extends Plugin {
 	    if (videoCoder.open() < 0)
 	      throw new RuntimeException("could not open video decoder for container: "+deviceName);
 
-	    CaptureThread captureThread = new CaptureThread(videoStreamId);
+	    captureThread = new CaptureThread(videoStreamId);
 	    Thread thread = new Thread(captureThread);
 	    thread.start();
 
 	}
 	
+	private void restartCapture(){
+		stopCapture();
+		startCapture();
+	}
+	
+	private void stopCapture() {
+		if(captureThread != null){
+			captureThread.run = false;
+			captureThread = null;
+		}
+		if (videoCoder != null){
+			videoCoder.close();
+			videoCoder = null;
+		}
+		if (container !=null){
+			container.close();
+			container = null;
+		}
+	}
+	
 	@Override
 	protected void shutdown() {
-	    /*
-	     * Technically since we're exiting anyway, these will be cleaned up by 
-	     * the garbage collector... but because we're nice people and want
-	     * to be invited places for Christmas, we're going to show how to clean up.
-	     */
-	    if (videoCoder != null)
-	    {
-	      videoCoder.close();
-	      videoCoder = null;
-	    }
-	    if (container !=null)
-	    {
-	      container.close();
-	      container = null;
-	    }
+		stopCapture();
 		super.shutdown();
 	}
 	
 	private class CaptureThread implements Runnable{
 		private int videoStreamId = -1;
 		private long lastPictureRecevedAt = -1;
+		private boolean run = true;
 		
 		protected CaptureThread(int videoStreamId){
 			this.videoStreamId = videoStreamId;
@@ -236,7 +402,7 @@ public class XuggleWebCam extends Plugin {
 		    IPacket packet = IPacket.make();
 		    
 			// TODO Auto-generated method stub
-		    while(container.readNextPacket(packet) >= 0)
+		    while(container.readNextPacket(packet) >= 0 && run)
 		    {
 		      /*
 		       * Now we have a packet, let's see if it belongs to our video stream
@@ -303,7 +469,6 @@ public class XuggleWebCam extends Plugin {
 		        /*
 		         * This packet isn't part of our video stream, so we just silently drop it.
 		         */
-		        do {} while(false);
 		      }
 
 		    }

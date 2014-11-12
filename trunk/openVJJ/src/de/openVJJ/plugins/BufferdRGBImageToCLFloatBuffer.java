@@ -40,6 +40,9 @@ public class BufferdRGBImageToCLFloatBuffer extends Plugin {
 				
 				@Override
 				protected void valueReceved(Value value) {
+					if(GPUComponent.isGPUError()){
+						return;
+					}
 					Lock lock = value.lock();
 					BufferedImageValue bufferedImageValue = (BufferedImageValue) value;
 					converte(bufferedImageValue.getImage());

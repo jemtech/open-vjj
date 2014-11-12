@@ -26,8 +26,10 @@ public class SorbelCL extends Plugin {
 		addInput("CLFloat", CLFloatBufferValue.class);
 		addOutput("Sorbel X", CLFloatBufferValue.class);
 		addOutput("Sorbel Y", CLFloatBufferValue.class);
-		MySyncedExequtor mySyncedExequtor = new MySyncedExequtor(null, 0, 0);
-		GPUComponent.execute(mySyncedExequtor);
+		if(!GPUComponent.isGPUError()){
+			MySyncedExequtor mySyncedExequtor = new MySyncedExequtor(null, 0, 0);
+			GPUComponent.execute(mySyncedExequtor);
+		}
 	}
 	
 	@Override
@@ -44,6 +46,9 @@ public class SorbelCL extends Plugin {
 				
 				@Override
 				protected void valueReceved(Value value) {
+					if(GPUComponent.isGPUError()){
+						return;
+					}
 					CLFloatBufferValue bufferValue = (CLFloatBufferValue) value;
 					Lock lock = bufferValue.lock();
 					calculate(bufferValue);
