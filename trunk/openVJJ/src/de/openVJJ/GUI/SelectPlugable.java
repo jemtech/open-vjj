@@ -27,6 +27,7 @@ import de.openVJJ.plugins.BufferdImageToIntegerArray;
 import de.openVJJ.plugins.BufferdRGBImageToCLFloatBuffer;
 import de.openVJJ.plugins.CLFloatBuffersToBufferdRGBImage;
 import de.openVJJ.plugins.CombindLines;
+import de.openVJJ.plugins.CombineVectors;
 import de.openVJJ.plugins.DMXPaketToArtNetDMXPaket;
 import de.openVJJ.plugins.DebugArtNetPaket;
 import de.openVJJ.plugins.DebugInt;
@@ -108,7 +109,8 @@ public class SelectPlugable extends JPanel {
 		CombindLines.class,
 		PixelLineToVectors.class,
 		XuggleWebCam.class,
-		VectorPainter.class
+		VectorPainter.class,
+		CombineVectors.class
 		};
 
 	//public static List<Class<? extends Plugable>> plugableClasses = new ArrayList<Class<? extends Plugable>>();
