@@ -54,6 +54,7 @@ public class PointsToLineOfBestFit extends Plugin {
 
 	private int minLength = 3;
 	private boolean xDirection = true;
+	private double minR = 0.5;
 	
 	public PointsToLineOfBestFit(){
 		addInput("Lines", PointCloundList.class);
@@ -144,7 +145,7 @@ public class PointsToLineOfBestFit extends Plugin {
 		
 		JRadioButton yButton = new JRadioButton("y");
 		
-		gridBagConstraints.gridy = 1;
+		gridBagConstraints.gridy++;
 		configPanel.add(yButton, gridBagConstraints);
 		
 		ButtonGroup group = new ButtonGroup();
@@ -156,7 +157,7 @@ public class PointsToLineOfBestFit extends Plugin {
 		
 		JLabel limitLabel = new JLabel("max Lines");
 		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 2;
+		gridBagConstraints.gridy++;
 		configPanel.add(limitLabel, gridBagConstraints);
 		
 		JFormattedTextField limitTextField = new JFormattedTextField(NumberFormat.getNumberInstance());
@@ -173,6 +174,28 @@ public class PointsToLineOfBestFit extends Plugin {
 		gridBagConstraints.gridx = 1;
 		configPanel.add(limitTextField, gridBagConstraints);
 		
+		JLabel minRLabel = new JLabel("min R");
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy++;
+		configPanel.add(minRLabel, gridBagConstraints);
+		
+		NumberFormat numberFormat = NumberFormat.getNumberInstance();
+		numberFormat.setMaximumFractionDigits(2);
+		numberFormat.setMinimumFractionDigits(2);
+		JFormattedTextField minRTextField = new JFormattedTextField(NumberFormat.getNumberInstance());
+		minRTextField.setValue(minR);
+		minRTextField.setColumns(3);
+		minRTextField.addPropertyChangeListener("value",  new PropertyChangeListener() {
+			
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				minR = ((Number) ((JFormattedTextField)evt.getSource()).getValue()).doubleValue();
+			}
+		});
+		
+		gridBagConstraints.gridx = 1;
+		configPanel.add(minRTextField, gridBagConstraints);
+		
 		return configPanel;
 	}
 	
@@ -183,13 +206,14 @@ public class PointsToLineOfBestFit extends Plugin {
 			if(points.size() < minLength){
 				continue;
 			}
+			int n = points.size();
 			double sumX=0;
 			double sumY=0;
-			double sumSQR=0;
+			double sumXX=0;
 			double sumXY=0;
+			double sumYY=0;
 			int min=Integer.MAX_VALUE;
 			int max=0;
-			//int sumYY=0;
 			if(xDirection){
 				for(Point point : points){
 					if(min > point.x){
@@ -200,9 +224,9 @@ public class PointsToLineOfBestFit extends Plugin {
 					}
 					sumX += point.x;
 					sumY += point.y;
-					sumSQR += point.x * point.x;
+					sumXX += point.x * point.x;
 					sumXY += point.x * point.y;
-				//	sumYY += point.y * point.y;
+					sumYY += point.y * point.y;
 				}
 			}else{
 				for(Point point : points){
@@ -214,32 +238,48 @@ public class PointsToLineOfBestFit extends Plugin {
 					}
 					sumX += point.x;
 					sumY += point.y;
-					sumSQR += point.y * point.y;
+					sumYY += point.y * point.y;
 					sumXY += point.x * point.y;
+					sumXX += point.x * point.x;
 				}
 			}
 
-			VectorValue vectorValue;
+			double ssXY = n * sumXY - sumX * sumY;
+			double ssXX = n * sumXX - sumX * sumX;
+			double ssYY = n * sumYY - sumY * sumY;
+			double mX = ssXY / ssXX ;
+			double mY = ssXY / ssYY ;
+			VectorValue vectorValue = null;
 			if(xDirection){
-				double divisor = points.size() * sumSQR - sumX * sumX;
-				double m = (points.size() * sumXY - sumX * sumY) / divisor ;
-				double b = (sumY * sumSQR - sumX * sumXY) / divisor;
-				int yMin = Math.round((float) (m * min + b));
-				int yMax = Math.round((float) (m * max + b));
-				Point minPoint = new Point(min, yMin);
-				Point maxPoint = new Point(max, yMax);
-				vectorValue = new VectorValue(minPoint, maxPoint);
+				double rm = 1;
+				if(mY != Double.NaN){
+					rm = mX * mY;
+				}
+				if(rm > minR){
+					double bX = (sumY * sumXX - sumX * sumXY) / ssXX;
+					int yMin = Math.round((float) (mX * min + bX));
+					int yMax = Math.round((float) (mX * max + bX));
+					Point minPoint = new Point(min, yMin);
+					Point maxPoint = new Point(max, yMax);
+					vectorValue = new VectorValue(minPoint, maxPoint);
+				}
 			}else{
-				double divisor = points.size() * sumSQR - sumY * sumY;
-				double m = (points.size() * sumXY - sumX * sumY) / divisor ;
-				double b = (sumX * sumSQR - sumY * sumXY) / divisor;
-				int xMin = Math.round((float) (m * min + b));
-				int xMax = Math.round((float) (m * max + b));
-				Point minPoint = new Point(xMin, min);
-				Point maxPoint = new Point(xMax, max);
-				vectorValue = new VectorValue(minPoint, maxPoint);
+				double rm = 1;
+				if(mX != Double.NaN){
+					rm = mX * mY;
+				}
+				if(rm > minR){
+					double bY = (sumX * sumYY - sumY * sumXY) / ssYY;
+					int xMin = Math.round((float) (mY * min + bY));
+					int xMax = Math.round((float) (mY * max + bY));
+					Point minPoint = new Point(xMin, min);
+					Point maxPoint = new Point(xMax, max);
+					vectorValue = new VectorValue(minPoint, maxPoint);
+				}
 			}
-			vectorValues.add(vectorValue);
+			if(vectorValue != null){
+				vectorValues.add(vectorValue);
+			}
 		}
 		getConnection("Vectors").transmitValue(new VectorValueList(vectorValues));
 	}
