@@ -1,14 +1,24 @@
 package de.openVJJ.plugins;
 
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.text.NumberFormat;
 import java.util.zip.ZipOutputStream;
 
+import javax.swing.JFormattedTextField;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 import de.openVJJ.basic.Connection;
 import de.openVJJ.basic.Value;
@@ -46,9 +56,9 @@ public class StramInteger2DArray extends Plugin {
 	//first send size info array[x][y] submit x y data 
 	//use new BufferedOutputStream( socket.getOutputStream() ));
 	
-	String serverAdress = "localhost";
-	int port = 1234;
-	boolean compress = true;
+	private String serverAdress = "localhost";
+	private int port = 1234;
+	private boolean compress = true;
 	
 	public StramInteger2DArray() {
 		addInput("Integer2DArrays", Integer2DArrayValue.class);
@@ -85,8 +95,52 @@ public class StramInteger2DArray extends Plugin {
 
 	@Override
 	public JPanel getConfigPannel() {
-		// TODO Auto-generated method stub
-		return null;
+		JPanel configPanel = new JPanel();
+
+		configPanel.setLayout(new GridBagLayout());
+		GridBagConstraints gridBagConstraints =  new GridBagConstraints();
+
+		JLabel adressLabel = new JLabel("Adress");
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 0;
+		configPanel.add(adressLabel, gridBagConstraints);
+		
+		JTextField adressTextField = new JTextField(serverAdress);
+		adressTextField.setColumns(20);
+		adressTextField.addFocusListener(new FocusListener() {
+			
+			@Override
+			public void focusLost(FocusEvent e) {
+				serverAdress =((JTextField)e.getSource()).getText();
+			}
+			
+			@Override
+			public void focusGained(FocusEvent e) {
+			}
+		});
+		gridBagConstraints.gridx = 1;
+		configPanel.add(adressTextField, gridBagConstraints);
+		
+		JLabel portLabel = new JLabel("Port");
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy ++;
+		configPanel.add(portLabel, gridBagConstraints);
+		
+		JFormattedTextField portTextField = new JFormattedTextField(NumberFormat.getNumberInstance());
+		portTextField.setValue(port);
+		portTextField.setColumns(5);
+		portTextField.addPropertyChangeListener("value",  new PropertyChangeListener() {
+			
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				port = ((Number) ((JFormattedTextField)evt.getSource()).getValue()).intValue();
+			}
+		});
+		
+		gridBagConstraints.gridx = 1;
+		configPanel.add(portTextField, gridBagConstraints);
+		
+		return configPanel;
 	}
 	
 	public void submit(Integer2DArrayValue value){
