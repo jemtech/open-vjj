@@ -48,13 +48,6 @@ import de.openVJJ.values.PointCloundList;
  * 
  */
 public class StramInteger2DArray extends Plugin {
-
-	// for compressoin option
-	//see http://www.oracle.com/technetwork/articles/java/compress-1565076.html
-	// new ZipOutputStream(bufferedOutputStream);
-	
-	//first send size info array[x][y] submit x y data 
-	//use new BufferedOutputStream( socket.getOutputStream() ));
 	
 	private String serverAdress = "localhost";
 	private int port = 1234;
