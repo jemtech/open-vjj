@@ -1,5 +1,8 @@
 package de.openVJJ.plugins;
 
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,6 +12,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import de.openVJJ.basic.Connection;
@@ -36,7 +43,7 @@ import de.openVJJ.basic.Plugin;
 public class EMClustering extends Plugin {
 	
 	private int initialClusterCount = 2;
-	private double maxVariance = 0.5;
+	private double maxVariance = 0.3;
 
 	@Override
 	public void sendStatics() {
@@ -65,6 +72,7 @@ public class EMClustering extends Plugin {
 	private class EMPoint {
 		double[] values;
 		double e = Double.MAX_VALUE;
+		Object identifier;
 	}
 
 	/**
@@ -166,15 +174,20 @@ public class EMClustering extends Plugin {
 				System.out.println("opti " + j + " e: " + variance.e + " at: " + new SimpleDateFormat("HH:mm:ss").format(new Date()));
 			} while (variance.change);
 			System.out.println(variance.e + " run " + i);
-			for(EMCluster cluster : clusters){
-				System.out.print(cluster.points.size() + ": ");
-				for(double val : cluster.center.values){
-					System.out.print(val + "; ");
-				}
-				System.out.print("\n");
-			}
+//			for(EMCluster cluster : clusters){
+//				System.out.print(cluster.points.size() + ": ");
+//				for(double val : cluster.center.values){
+//					System.out.print(val + "; ");
+//				}
+//				System.out.print("\n");
+//			}
 			if (variance.e > (maxVariance * maxVariance)) { //because we don't use square root
-				clusters.add(new EMCluster(variance.wrongest, values.size()));
+				EMCluster newCluster = new EMCluster(variance.wrongest, values.size());
+				clusters.add(newCluster);
+				variance.wrongestCluster.points.delete(variance.wrongestActualIndex);
+				variance.wrongestCluster.points.execute();
+				newCluster.points.add(variance.wrongest);
+				newCluster.points.execute();
 			} else {
 				return clusters;
 			}
@@ -216,6 +229,8 @@ public class EMClustering extends Plugin {
 	 */
 	private class UpdateClusterResult {
 		EMPoint wrongest;
+		EMCluster wrongestCluster;
+		int wrongestActualIndex;
 		double e;
 		boolean change = false;
 	}
@@ -228,7 +243,7 @@ public class EMClustering extends Plugin {
 	private UpdateClusterResult updateClusters(List<EMCluster> clusters) {
 		UpdateClusterResult result = new UpdateClusterResult();
 		ExecutorService updateService = Executors.newFixedThreadPool(clusters.size());
-		List<UpdateClusterPoints> clusterUpdaters = new ArrayList<>(clusters.size());
+		List<UpdateClusterPoints> clusterUpdaters = new ArrayList<UpdateClusterPoints>(clusters.size());
 		for (EMCluster pointCluster : clusters) {
 			//paralell
 			UpdateClusterPoints clusterUpdater = new UpdateClusterPoints(pointCluster, clusters);
@@ -247,8 +262,7 @@ public class EMClustering extends Plugin {
 		
 		for(UpdateClusterPoints clusterUpdater : clusterUpdaters){
 			if(result.e < clusterUpdater.result.e){
-				result.e = clusterUpdater.result.e;
-				result.wrongest = clusterUpdater.result.wrongest;
+				result = clusterUpdater.result;
 			}
 		}
 //		System.out.println("start doing " + changes.size() + " changes at " + new SimpleDateFormat("HH:mm:ss").format(new Date()));
@@ -296,7 +310,7 @@ public class EMClustering extends Plugin {
 		@Override
 		public void run() {
 			ExecutorService updateService = Executors.newFixedThreadPool(4);
-			List<UpdatePointsCluster> piontUpdaters = new ArrayList<>(pointCluster.points.size());
+			List<UpdatePointsCluster> piontUpdaters = new ArrayList<UpdatePointsCluster>(pointCluster.points.size());
 			for(int i = 0; i < pointCluster.points.size(); i++){
 				EMPoint point = pointCluster.points.get(i);
 				UpdatePointsCluster pointUpdater = new UpdatePointsCluster(point, clusters, i, pointCluster);
@@ -319,6 +333,8 @@ public class EMClustering extends Plugin {
 				if (result.e < pointUpdater.point.e) {
 					result.e = pointUpdater.point.e;
 					result.wrongest = pointUpdater.point;
+					result.wrongestActualIndex = pointUpdater.actualIndex;
+					result.wrongestCluster = pointCluster;
 				}
 			}
 		}
@@ -533,6 +549,10 @@ public class EMClustering extends Plugin {
 	}
 	
 
+	private static class Position{
+		int x;
+		int y;
+	}
 	/**
 	 * Just for testing
 	 * @param args
@@ -541,20 +561,63 @@ public class EMClustering extends Plugin {
 		long start = System.currentTimeMillis();
 		System.out.println("start: " + new SimpleDateFormat("HH:mm:ss").format(new Date()));
 		EMClustering clustering = new EMClustering();
-		List<EMPoint> values = new ArrayList<EMPoint>(800*600);
-		for(int i = 0; i < 800*600; i++){
-			EMPoint point = clustering.new EMPoint();
-			point.values = new double[5];
-			for(int k = 0; k < point.values.length; k++){
-				point.values[k] = Math.random();
+		
+		BufferedImage img = null;
+		try {
+		    img = ImageIO.read(new File("/home/janerik/Desktop/test.jpeg"));
+		} catch (IOException e) {
+		}
+		int pixelCount = img.getHeight() * img.getWidth();
+
+		List<EMPoint> values = new ArrayList<EMPoint>(pixelCount);
+		for(int i = 0; i < img.getHeight(); i++){
+			for(int k = 0; k < img.getWidth(); k++ ){
+				Position position = new Position();
+				position.x = k;
+				position.y = i;
+				
+				EMPoint point = clustering.new EMPoint();
+				
+				point.identifier = position;
+				
+				point.values = new double[3];
+				
+				int color = img.getRGB(k, i);
+				point.values[0] = ((color & 0x00ff0000) >> 16) / (double) 255;
+				point.values[1] = ((color & 0x0000ff00) >> 8) / (double) 255;
+				point.values[2] = (color & 0x000000ff) / (double) 255;
+//				int alpha = (color>>24) & 0xff;
+				
+
+				values.add(point);
 			}
-			values.add(point);
 		}
 		System.out.println("values generatet: " + new SimpleDateFormat("HH:mm:ss").format(new Date()));
 		System.out.println("start with: " + values.size());
-		System.out.println(clustering.calculate(values).size());
+		List<EMCluster> clusters = clustering.calculate(values);
+		System.out.println(clusters.size());
 		System.out.println(System.currentTimeMillis() - start);
 		System.out.println("finish: " + new SimpleDateFormat("HH:mm:ss").format(new Date()));
+		img = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_INT_RGB);
+		for(EMCluster cluster : clusters){
+			int r = (int) (cluster.center.values[0] * 255);
+			int g = (int) (cluster.center.values[1] * 255);
+			int b = (int) (cluster.center.values[2] * 255);
+			int a = 0;
+			int color = (a << 24) | (r << 16) | (g << 8) | b;
+			for(int i = 0; i < cluster.points.size(); i++){
+				EMPoint point = cluster.points.get(i);
+				img.setRGB(((Position)point.identifier).x ,((Position)point.identifier).y, color);
+			}
+		}
+
+		JFrame frame = new JFrame();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setVisible(true);
+        
+        JLabel picLabel = new JLabel(new ImageIcon(img));
+        frame.add(picLabel);
+        frame.setBounds(20, 20, img.getWidth(), img.getHeight());
 	}
 
 }
