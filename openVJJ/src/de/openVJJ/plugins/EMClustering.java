@@ -56,26 +56,94 @@ public class EMClustering extends Plugin {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
+	
+	/**
+	 * This class holds the Data for calculation
+	 * @author Jan-Erik Matthies
+	 *
+	 */
 	private class EMPoint {
 		double[] values;
+		double e = Double.MAX_VALUE;
 	}
 
+	/**
+	 * This class contains the matching data points
+	 * @author JEMTech
+	 *
+	 */
 	private class EMCluster {
+		AsyncList<EMPoint> points;
+		EMPoint center;
+		double saveDistance;
+		double moved;
+		/**
+		 * constructor for an empty cluster
+		 * @param center the initial cluster center
+		 * @param maxSize the count of all data-points
+		 */
 		public EMCluster(EMPoint center, int maxSize) {
 			this.center = center;
 			points = new AsyncList<EMPoint>(maxSize);
 		}
 
+		/**
+		 * constructor with initial data-points
+		 * @param center  the initial cluster center
+		 * @param maxSize the count of all data-points
+		 * @param initialData the initial cluster points
+		 */
 		public EMCluster(EMPoint center, int maxSize, Collection<EMPoint> initialData) {
 			this.center = center;
 			points = new AsyncList<EMPoint>(maxSize, initialData);
 		}
 		
-		AsyncList<EMPoint> points;
-		EMPoint center;
+		/**
+		 * updates the save distance to the other clusters
+		 * @param allClusters
+		 */
+		public void updateSaveDistance(Collection<EMCluster> allClusters){
+			saveDistance = Double.MAX_VALUE;
+			for(EMCluster cluster : allClusters){
+				if(cluster == this){
+					continue;
+				}
+				double distance = diffnorm2(cluster.center, center);
+				if(distance < saveDistance){
+					saveDistance = distance;
+				}
+			}
+			saveDistance = saveDistance/2;
+		}
+		
+		/**
+		 * calculates the center of the given cluster
+		 * @param cluster
+		 */
+		private void updateClusterCenter() {
+			if(points.size() < 1) return;
+			EMPoint center = new EMPoint();
+			center.values = new double[points.get(0).values.length];
+			for (int i = 0; i < points.size(); i++) {
+				EMPoint point = points.get(i);
+				for (int k = 0; k < center.values.length; k++) {
+					center.values[k] += point.values[k];
+				}
+			}
+			double count = points.size();
+			for (int i = 0; i < center.values.length; i++) {
+				center.values[i] = center.values[i] / count;
+			}
+			moved = diffnorm2(center, this.center);
+			this.center = center;
+		}
 	}
 
+	/**
+	 * runs the optimization algorithm with the given values and returns the resulting clusters
+	 * @param values the values to cluster
+	 * @return the resulting clusters
+	 */
 	private List<EMCluster> calculate(List<EMPoint> values) {
 		List<EMCluster> clusters = initClusters(values);
 		System.out.println("init finish. Start with " + clusters.size() + "Clusters");
@@ -89,7 +157,10 @@ public class EMClustering extends Plugin {
 				variance = updateClusters(clusters);
 				if (variance.e > 0) {
 					for (EMCluster cluster : clusters) {
-						updateClusterCenter(cluster);
+						cluster.updateClusterCenter();
+					}
+					for (EMCluster cluster : clusters) {
+						cluster.updateSaveDistance(clusters);
 					}
 				}
 				System.out.println("opti " + j + " e: " + variance.e + " at: " + new SimpleDateFormat("HH:mm:ss").format(new Date()));
@@ -110,6 +181,11 @@ public class EMClustering extends Plugin {
 		}
 	}
 
+	/**
+	 * Initializes the initial clusters with the given data
+	 * @param values the values to calculate
+	 * @return the initial clusters
+	 */
 	private List<EMCluster> initClusters(List<EMPoint> values) {
 		List<EMCluster> clusters = new ArrayList<EMCluster>();
 
@@ -133,27 +209,24 @@ public class EMClustering extends Plugin {
 		return clusters;
 	}
 
+	/**
+	 * The result of a cluster update
+	 * @author Jan-Erik Matthies
+	 *
+	 */
 	private class UpdateClusterResult {
 		EMPoint wrongest;
 		double e;
 		boolean change = false;
 	}
 
-//	private class Change {
-//		public Change(EMPoint point, EMCluster from, EMCluster to) {
-//			this.point = point;
-//			this.from = from;
-//			this.to = to;
-//		}
-//
-//		EMPoint point;
-//		EMCluster from;
-//		EMCluster to;
-//	}
-
+	/**
+	 * sorts the points to the nearest cluster
+	 * @param clusters
+	 * @return update informations
+	 */
 	private UpdateClusterResult updateClusters(List<EMCluster> clusters) {
 		UpdateClusterResult result = new UpdateClusterResult();
-//		List<Change> changes = new ArrayList<>();
 		ExecutorService updateService = Executors.newFixedThreadPool(clusters.size());
 		List<UpdateClusterPoints> clusterUpdaters = new ArrayList<>(clusters.size());
 		for (EMCluster pointCluster : clusters) {
@@ -173,7 +246,6 @@ public class EMClustering extends Plugin {
 		}
 		
 		for(UpdateClusterPoints clusterUpdater : clusterUpdaters){
-//			changes.addAll(clusterUpdater.changes);
 			if(result.e < clusterUpdater.result.e){
 				result.e = clusterUpdater.result.e;
 				result.wrongest = clusterUpdater.result.wrongest;
@@ -197,18 +269,30 @@ public class EMClustering extends Plugin {
 		return result;
 	}
 	
+	/**
+	 * updates the points of the given cluster
+	 * @author Jan-Erik Matthies
+	 *
+	 */
 	private class UpdateClusterPoints implements Runnable{
 		
 		EMCluster pointCluster;
 		List<EMCluster> clusters;
 		UpdateClusterResult result = new UpdateClusterResult();
-//		List<Change> changes = new ArrayList<>();
 		
+		/**
+		 * constructor 
+		 * @param pointCluster the cluster to update
+		 * @param clusters all clusters
+		 */
 		public UpdateClusterPoints(EMCluster pointCluster, List<EMCluster> clusters){
 			this.pointCluster = pointCluster;
 			this.clusters = clusters;
 		}
 
+		/**
+		 * runs the optimization
+		 */
 		@Override
 		public void run() {
 			ExecutorService updateService = Executors.newFixedThreadPool(4);
@@ -232,8 +316,8 @@ public class EMClustering extends Plugin {
 			
 			for(UpdatePointsCluster pointUpdater : piontUpdaters){
 
-				if (result.e < pointUpdater.pointE) {
-					result.e = pointUpdater.pointE;
+				if (result.e < pointUpdater.point.e) {
+					result.e = pointUpdater.point.e;
 					result.wrongest = pointUpdater.point;
 				}
 			}
@@ -241,15 +325,26 @@ public class EMClustering extends Plugin {
 		
 	}
 	
+	/**
+	 * add the point to the nearest Cluster
+	 * @author Jan-Erik Matthies
+	 *
+	 */
 	private class UpdatePointsCluster implements Runnable{
 
 		EMPoint point;
 		List<EMCluster> clusters;
-		double pointE = Double.MAX_VALUE;
 		EMCluster newCluster = null;
 		int actualIndex;
 		EMCluster oldCluster;
 		
+		/**
+		 * constructor
+		 * @param point the point to optimize
+		 * @param clusters all clusters
+		 * @param actualIndex actual index at its cluster
+		 * @param oldCluster points actual cluster
+		 */
 		public UpdatePointsCluster(EMPoint point, List<EMCluster> clusters, int actualIndex, EMCluster oldCluster){
 			this.point = point;
 			this.clusters = clusters;
@@ -257,24 +352,42 @@ public class EMClustering extends Plugin {
 			this.oldCluster = oldCluster;
 		}
 
+		/**
+		 * runs the optimization
+		 */
 		@Override
 		public void run() {
-			for (EMCluster cluster : clusters) {
-				double e = diffnorm2(cluster.center, point);
-				if (e < pointE) {
-					newCluster = cluster;
-					pointE = e;
+			newCluster = oldCluster;
+			point.e = point.e - oldCluster.moved;
+			if(point.e < oldCluster.saveDistance){
+				//there can not be a better cluster
+				return;
+			}
+			point.e = diffnorm2(oldCluster.center, point);
+			if(oldCluster.saveDistance < point.e){
+				for (EMCluster cluster : clusters) {
+					if(cluster == oldCluster) continue;
+					double e = diffnorm2(cluster.center, point);
+					if (e < point.e) {
+						newCluster = cluster;
+						point.e = e;
+					}
+				}
+				if (newCluster != oldCluster) {
+					oldCluster.points.delete(actualIndex);
+					newCluster.points.add(point);
 				}
 			}
 
-			if (newCluster != oldCluster) {
-				oldCluster.points.delete(actualIndex);
-				newCluster.points.add(point);
-//				changes.add(new Change(pointUpdater.point, pointCluster, pointUpdater.newCluster));
-			}
 		}
 	}
 
+	/**
+	 * calculates the distance between two points
+	 * @param point1
+	 * @param point2
+	 * @return the distence
+	 */
 	double diffnorm2(EMPoint point1, EMPoint point2) {
 		double r = 0.0;
 		for (int i = 0; i < point1.values.length; i++) {
@@ -284,44 +397,13 @@ public class EMClustering extends Plugin {
 		//return Math.sqrt(r); we don't need to because values are relative
 		return r;
 	}
-
-	private void updateClusterCenter(EMCluster cluster) {
-		if(cluster.points.size() < 1) return;
-		EMPoint center = new EMPoint();
-		center.values = new double[cluster.points.get(0).values.length];
-		for (int i = 0; i < cluster.points.size(); i++) {
-			EMPoint point = cluster.points.get(i);
-			for (int k = 0; k < center.values.length; k++) {
-				center.values[k] += point.values[k];
-			}
-		}
-		double count = cluster.points.size();
-		for (int i = 0; i < center.values.length; i++) {
-			center.values[i] = center.values[i] / count;
-		}
-		cluster.center = center;
-	}
 	
-	public static void main(String[] args){
-		long start = System.currentTimeMillis();
-		System.out.println("start: " + new SimpleDateFormat("HH:mm:ss").format(new Date()));
-		EMClustering clustering = new EMClustering();
-		List<EMPoint> values = new ArrayList<EMPoint>(800*600);
-		for(int i = 0; i < 800*600; i++){
-			EMPoint point = clustering.new EMPoint();
-			point.values = new double[5];
-			for(int k = 0; k < point.values.length; k++){
-				point.values[k] = Math.random();
-			}
-			values.add(point);
-		}
-		System.out.println("values generatet: " + new SimpleDateFormat("HH:mm:ss").format(new Date()));
-		System.out.println("start with: " + values.size());
-		System.out.println(clustering.calculate(values).size());
-		System.out.println(System.currentTimeMillis() - start);
-		System.out.println("finish: " + new SimpleDateFormat("HH:mm:ss").format(new Date()));
-	}
-	
+	/**
+	 * a extreme fast list but unsafe
+	 * @author Jan-Erik Matthies
+	 *
+	 * @param <T>
+	 */
 	private class AsyncList<T extends Object>{
 		private int maxSize;
 		private T[] data;
@@ -330,17 +412,29 @@ public class EMClustering extends Plugin {
 		private int toDeleteCount = 0;
 		private T[] toAdd;
 		private int toAddCount = 0;
-		
+
+		/**
+		 * constructor
+		 * @param maxSize maximum amount of elements
+		 */
 		public AsyncList(int maxSize){
 			this.maxSize = maxSize;
 			initArrays();
 		}
 		
+		/**
+		 * constructor
+		 * @param maxSize maximum amount of elements
+		 * @param initialData the initial data to add
+		 */
 		public AsyncList(int maxSize, Collection<T> initialData){
 			this.maxSize = maxSize;
 			initArrays(initialData.toArray());
 		}
 		
+		/**
+		 * Initializes the the lists
+		 */
 		@SuppressWarnings("unchecked")
 		private void initArrays(){
 			this.data = null;
@@ -349,6 +443,10 @@ public class EMClustering extends Plugin {
 		}
 		
 
+		/**
+		 * Initializes the the lists and adds initial data
+		 * @param initialData data to add
+		 */
 		@SuppressWarnings("unchecked")
 		private void initArrays(Object[] initialData){
 			this.data = (T[]) initialData;
@@ -357,20 +455,36 @@ public class EMClustering extends Plugin {
 			this.toAdd = (T[]) new Object[maxSize - initialData.length];
 		}
 		
+		/**
+		 * returns the element at the given index
+		 * @param index of the element
+		 * @return the selected element
+		 */
 		public T get(int index){
 			return data[index];
 		}
 		
-		public void add(T toAdd){
+		/**
+		 * adds an element to the end of the list
+		 * @param toAdd the element to add
+		 */
+		synchronized public void add(T toAdd){
 			this.toAdd[toAddCount] = toAdd;
 			toAddCount++;
 		}
 		
-		public void delete(int indexToDelete){
+		/**
+		 * deletes the element at the given index
+		 * @param indexToDelete index of the element to delete
+		 */
+		synchronized public void delete(int indexToDelete){
 			toDelete[toDeleteCount] = indexToDelete;
 			toDeleteCount++;
 		}
 		
+		/**
+		 * executes the deletes and removes
+		 */
 		public void execute(){
 			//Deleting
 			for(int i = 0; i < toDeleteCount; i++){
@@ -402,13 +516,45 @@ public class EMClustering extends Plugin {
 			toAddCount = 0;
 		}
 		
+		/**
+		 * @return the size of the list
+		 */
 		public int size(){
 			return dataCount;
 		}
 		
+		/**
+		 * 
+		 * @return the amount of changes to execute
+		 */
 		public int changes(){
 			return toDeleteCount + toAddCount;
 		}
+	}
+	
+
+	/**
+	 * Just for testing
+	 * @param args
+	 */
+	public static void main(String[] args){
+		long start = System.currentTimeMillis();
+		System.out.println("start: " + new SimpleDateFormat("HH:mm:ss").format(new Date()));
+		EMClustering clustering = new EMClustering();
+		List<EMPoint> values = new ArrayList<EMPoint>(800*600);
+		for(int i = 0; i < 800*600; i++){
+			EMPoint point = clustering.new EMPoint();
+			point.values = new double[5];
+			for(int k = 0; k < point.values.length; k++){
+				point.values[k] = Math.random();
+			}
+			values.add(point);
+		}
+		System.out.println("values generatet: " + new SimpleDateFormat("HH:mm:ss").format(new Date()));
+		System.out.println("start with: " + values.size());
+		System.out.println(clustering.calculate(values).size());
+		System.out.println(System.currentTimeMillis() - start);
+		System.out.println("finish: " + new SimpleDateFormat("HH:mm:ss").format(new Date()));
 	}
 
 }
