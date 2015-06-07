@@ -18,9 +18,15 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import de.openVJJ.basic.AsyncList;
 import de.openVJJ.basic.Connection;
+import de.openVJJ.basic.Value;
 import de.openVJJ.basic.Connection.ConnectionListener;
+import de.openVJJ.basic.Value.Lock;
 import de.openVJJ.basic.Plugin;
+import de.openVJJ.values.ArtNetPacketValue;
+import de.openVJJ.values.DataPoint;
+import de.openVJJ.values.ValueList;
 /**
  * 
  * Copyright (C) 2015 Jan-Erik Matthies
@@ -43,8 +49,13 @@ import de.openVJJ.basic.Plugin;
 public class EMClustering extends Plugin {
 	
 	private int initialClusterCount = 2;
-	private double maxVariance = 0.3;
+	private double maxVariance = 0.2;
 
+	public EMClustering(){
+		addInput("Data", ValueList.class);
+		addOutput("Cluster", ValueList.class);
+	}
+	
 	@Override
 	public void sendStatics() {
 		// TODO Auto-generated method stub
@@ -54,7 +65,30 @@ public class EMClustering extends Plugin {
 	@Override
 	protected ConnectionListener createConnectionListener(String inpuName,
 			Connection connection) {
-		// TODO Auto-generated method stub
+		if("Data".equals(inpuName)){
+			return new ConnectionListener(connection) {
+				
+				@Override
+				protected void valueReceved(Value value) {
+					Lock lock = value.lock();
+					ValueList<Value> data = (ValueList<Value>) value;
+					List<EMPoint> points = new ArrayList<EMPoint>();
+					for(Value de : data){
+						DataPoint<float[]> point = (DataPoint<float[]>) de;
+						EMPoint myPoint = new EMPoint();
+						myPoint.identifier = point.getXPosition();
+						myPoint.values = point.getData();
+					}
+					value.free(lock);
+				}
+				
+				@Override
+				protected void connectionShutdownCalled() {
+					// TODO Auto-generated method stub
+					
+				}
+			};
+		}
 		return null;
 	}
 
@@ -70,7 +104,7 @@ public class EMClustering extends Plugin {
 	 *
 	 */
 	private class EMPoint {
-		double[] values;
+		float[] values;
 		double e = Double.MAX_VALUE;
 		Object identifier;
 	}
@@ -131,14 +165,14 @@ public class EMClustering extends Plugin {
 		private void updateClusterCenter() {
 			if(points.size() < 1) return;
 			EMPoint center = new EMPoint();
-			center.values = new double[points.get(0).values.length];
+			center.values = new float[points.get(0).values.length];
 			for (int i = 0; i < points.size(); i++) {
 				EMPoint point = points.get(i);
 				for (int k = 0; k < center.values.length; k++) {
 					center.values[k] += point.values[k];
 				}
 			}
-			double count = points.size();
+			float count = points.size();
 			for (int i = 0; i < center.values.length; i++) {
 				center.values[i] = center.values[i] / count;
 			}
@@ -171,7 +205,8 @@ public class EMClustering extends Plugin {
 						cluster.updateSaveDistance(clusters);
 					}
 				}
-				System.out.println("opti " + j + " e: " + variance.e + " at: " + new SimpleDateFormat("HH:mm:ss").format(new Date()));
+				System.out.println("opti " + j + " e: " + variance.e + " in C with save " + (variance.wrongestCluster != null ? variance.wrongestCluster.saveDistance : "") + " at: " + new SimpleDateFormat("HH:mm:ss").format(new Date()));
+
 			} while (variance.change);
 			System.out.println(variance.e + " run " + i);
 //			for(EMCluster cluster : clusters){
@@ -184,9 +219,10 @@ public class EMClustering extends Plugin {
 			if (variance.e > (maxVariance * maxVariance)) { //because we don't use square root
 				EMCluster newCluster = new EMCluster(variance.wrongest, values.size());
 				clusters.add(newCluster);
+				variance.wrongest.e = 0;
 				variance.wrongestCluster.points.delete(variance.wrongestActualIndex);
 				variance.wrongestCluster.points.execute();
-				newCluster.points.add(variance.wrongest);
+				newCluster.points.fastAdd(variance.wrongest);
 				newCluster.points.execute();
 			} else {
 				return clusters;
@@ -205,7 +241,7 @@ public class EMClustering extends Plugin {
 		int pointValueCount = values.get(0).values.length;
 		for (int i = 0; i < initialClusterCount; i++) {
 			EMCluster cluster;
-			double pointVal;
+			float pointVal;
 			if (i == 0) {
 				pointVal = 0;
 				cluster = new EMCluster(new EMPoint(), values.size(), values);
@@ -214,7 +250,7 @@ public class EMClustering extends Plugin {
 				pointVal = i / (initialClusterCount - 1);
 			}
 			clusters.add(cluster);
-			cluster.center.values = new double[pointValueCount];
+			cluster.center.values = new float[pointValueCount];
 			for (int v = 0; v < pointValueCount; v++) {
 				cluster.center.values[v] = pointVal;
 			}
@@ -391,7 +427,7 @@ public class EMClustering extends Plugin {
 				}
 				if (newCluster != oldCluster) {
 					oldCluster.points.delete(actualIndex);
-					newCluster.points.add(point);
+					newCluster.points.fastAdd(point);
 				}
 			}
 
@@ -414,140 +450,7 @@ public class EMClustering extends Plugin {
 		return r;
 	}
 	
-	/**
-	 * a extreme fast list but unsafe
-	 * @author Jan-Erik Matthies
-	 *
-	 * @param <T>
-	 */
-	private class AsyncList<T extends Object>{
-		private int maxSize;
-		private T[] data;
-		private int dataCount = 0;
-		private int[] toDelete;
-		private int toDeleteCount = 0;
-		private T[] toAdd;
-		private int toAddCount = 0;
-
-		/**
-		 * constructor
-		 * @param maxSize maximum amount of elements
-		 */
-		public AsyncList(int maxSize){
-			this.maxSize = maxSize;
-			initArrays();
-		}
 		
-		/**
-		 * constructor
-		 * @param maxSize maximum amount of elements
-		 * @param initialData the initial data to add
-		 */
-		public AsyncList(int maxSize, Collection<T> initialData){
-			this.maxSize = maxSize;
-			initArrays(initialData.toArray());
-		}
-		
-		/**
-		 * Initializes the the lists
-		 */
-		@SuppressWarnings("unchecked")
-		private void initArrays(){
-			this.data = null;
-			this.toDelete = null;
-			this.toAdd = (T[]) new Object[maxSize];
-		}
-		
-
-		/**
-		 * Initializes the the lists and adds initial data
-		 * @param initialData data to add
-		 */
-		@SuppressWarnings("unchecked")
-		private void initArrays(Object[] initialData){
-			this.data = (T[]) initialData;
-			this.dataCount = initialData.length;
-			this.toDelete = new int[initialData.length];
-			this.toAdd = (T[]) new Object[maxSize - initialData.length];
-		}
-		
-		/**
-		 * returns the element at the given index
-		 * @param index of the element
-		 * @return the selected element
-		 */
-		public T get(int index){
-			return data[index];
-		}
-		
-		/**
-		 * adds an element to the end of the list
-		 * @param toAdd the element to add
-		 */
-		synchronized public void add(T toAdd){
-			this.toAdd[toAddCount] = toAdd;
-			toAddCount++;
-		}
-		
-		/**
-		 * deletes the element at the given index
-		 * @param indexToDelete index of the element to delete
-		 */
-		synchronized public void delete(int indexToDelete){
-			toDelete[toDeleteCount] = indexToDelete;
-			toDeleteCount++;
-		}
-		
-		/**
-		 * executes the deletes and removes
-		 */
-		public void execute(){
-			//Deleting
-			for(int i = 0; i < toDeleteCount; i++){
-				data[toDelete[i]] = null;
-			}
-			//coppy to new
-			@SuppressWarnings("unchecked")
-			T[] dataNew = (T[]) new Object[dataCount + toAddCount - toDeleteCount];
-			int dataCountNew = 0;
-			for(int i = 0; i < dataCount; i++){
-				if(data[i] != null){
-					dataNew[dataCountNew] = data[i];
-					dataCountNew++;
-				}
-			}
-			//append new
-			data = dataNew;
-			dataCount = dataCountNew;
-			for(int i = 0; i < toAddCount; i++){
-				data[dataCount] = toAdd[i];
-				dataCount++;
-			}
-			//reset temps
-			toDelete = new int[dataCount];
-			toDeleteCount = 0;
-			@SuppressWarnings("unchecked")
-			T[] toAddNew = (T[]) new Object[maxSize - dataCountNew];
-			toAdd = toAddNew;
-			toAddCount = 0;
-		}
-		
-		/**
-		 * @return the size of the list
-		 */
-		public int size(){
-			return dataCount;
-		}
-		
-		/**
-		 * 
-		 * @return the amount of changes to execute
-		 */
-		public int changes(){
-			return toDeleteCount + toAddCount;
-		}
-	}
-	
 
 	private static class Position{
 		int x;
@@ -580,18 +483,88 @@ public class EMClustering extends Plugin {
 				
 				point.identifier = position;
 				
-				point.values = new double[3];
+				point.values = new float[4];
 				
 				int color = img.getRGB(k, i);
-				point.values[0] = ((color & 0x00ff0000) >> 16) / (double) 255;
-				point.values[1] = ((color & 0x0000ff00) >> 8) / (double) 255;
-				point.values[2] = (color & 0x000000ff) / (double) 255;
-//				int alpha = (color>>24) & 0xff;
-				
+				float r = ((color & 0x00ff0000) >> 16) / 255f; //red
+				float g = ((color & 0x0000ff00) >> 8) / 255f; // green
+				float b = (color & 0x000000ff) / 255f; //blue
+//				point.values[3] = (color>>24) & 0xff; //alpha
 
+//				point.values[0] = r;
+//				point.values[1] = g;
+//				point.values[2] = b;
+				
+				
+				//calculate intense
+				float intenseMax;
+				float intenseD;
+				float col;
+				if(r > g && r > b){
+					intenseMax = r;
+					point.values[0] = 1;
+					if(g < b){
+						intenseD = intenseMax - g;
+						point.values[2] = (intenseD != 0d ? (b - g) / intenseD : 0);
+					}else{
+						intenseD = intenseMax - b;
+						point.values[1] = (intenseD != 0d ? (g - b) / intenseD : 0);
+					}
+					col = 1f + (intenseD != 0d ? (g - b) / intenseD : 0);
+					point.values[3] = intenseD;
+				}else if(g > b){
+					intenseMax = g;
+					point.values[1] = 1;
+					if(r < b){
+						intenseD = intenseMax - r;
+						point.values[2] = (intenseD != 0d ? (b - r) / intenseD : 0);
+					}else{
+						intenseD = intenseMax - b;
+						point.values[0] = (intenseD != 0d ? (r - b) / intenseD : 0);
+					}
+					col = 3f + (intenseD != 0d ? (b - r) / intenseD : 0);
+					point.values[3] = intenseD;
+				}else{
+					intenseMax = b;
+					point.values[2] = 1;
+					if(g < r){
+						intenseD = intenseMax - g;
+						point.values[0] = (intenseD != 0d ? (r - g) / intenseD : 0);
+					}else{
+						intenseD = intenseMax - r;
+						point.values[1] = (intenseD != 0d ? (g - r) / intenseD : 0);
+					}
+					col = 5f + (intenseD != 0d ? (r - g) / intenseD : 0);
+					point.values[3] = intenseD;
+				}
+//				point.values[0] = col / 6d;
+//				point.values[1] = intenseD/intenseMax;
+//				point.values[2] = intenseMax;
+//				point.values[1] = 0;
+//				point.values[2] = 0;
+				
+				
 				values.add(point);
 			}
 		}
+		for(EMPoint point : values){
+			int r = (int) (point.values[0] * 255d * point.values[3]);
+			int g = (int) (point.values[1] * 255d * point.values[3]);
+			int b = (int) (point.values[2] * 255d * point.values[3]);
+			int a = 255;
+			int color = (a << 24) | (r << 16) | (g << 8) | b;
+			img.setRGB(((Position)point.identifier).x ,((Position)point.identifier).y, color);
+		}
+		
+
+		JFrame frameo = new JFrame();
+		frameo.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frameo.setVisible(true);
+        
+        JLabel picLabelo = new JLabel(new ImageIcon(img));
+        frameo.add(picLabelo);
+        frameo.setBounds(20, 20, img.getWidth(), img.getHeight());
+		
 		System.out.println("values generatet: " + new SimpleDateFormat("HH:mm:ss").format(new Date()));
 		System.out.println("start with: " + values.size());
 		List<EMCluster> clusters = clustering.calculate(values);
@@ -600,10 +573,11 @@ public class EMClustering extends Plugin {
 		System.out.println("finish: " + new SimpleDateFormat("HH:mm:ss").format(new Date()));
 		img = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_INT_RGB);
 		for(EMCluster cluster : clusters){
-			int r = (int) (cluster.center.values[0] * 255);
-			int g = (int) (cluster.center.values[1] * 255);
-			int b = (int) (cluster.center.values[2] * 255);
-			int a = 0;
+			int r = (int) (Math.random() * 255); //(int) (cluster.center.values[0] * 255d * cluster.center.values[3]);
+			int g = (int) (Math.random() * 255); //(int) (cluster.center.values[1] * 255d * cluster.center.values[3]);
+			int b = (int) (Math.random() * 255); //(int) (cluster.center.values[2] * 255d * cluster.center.values[3]);
+			System.out.println(r + " " + g + " " + b);
+			int a = 255;
 			int color = (a << 24) | (r << 16) | (g << 8) | b;
 			for(int i = 0; i < cluster.points.size(); i++){
 				EMPoint point = cluster.points.get(i);
